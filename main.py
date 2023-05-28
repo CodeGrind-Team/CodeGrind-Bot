@@ -641,9 +641,8 @@ async def send_message_at_midnight():
                 # Pin the message
                 async for message in channel.history(limit=1):
                     await message.pin()
-                    return
 
-        if now.hour == 0 and now.minute == 5:
+        if now.hour == 0 and now.minute == 4:
             # retrieve every server the bot is in
             server_ids = [guild.id for guild in client.guilds]
             print('Server IDs:', server_ids)
