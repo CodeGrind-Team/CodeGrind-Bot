@@ -1,25 +1,18 @@
-import re
-import string
-import discord
-from discord import app_commands
-from discord.ext import commands
-import requests
-import random
-import datetime
-from discord.ext import tasks
-from bs4 import BeautifulSoup
-import time
 import asyncio
-import aiocron
-import openai
-import os
-import numpy as np
-from io import BytesIO
-from PIL import Image
-# math
-import math
+import datetime
 import json
+import os
+import random
+import string
+
+import discord
+import requests
+from bs4 import BeautifulSoup
+from discord.ext import commands
+from dotenv import load_dotenv
 from keep_alive import keep_alive
+
+load_dotenv()
 
 session = requests.Session()
 intents = discord.Intents().all()
@@ -420,7 +413,7 @@ async def delete(interaction: discord.Interaction):
 @client.tree.command(
     name="question",
     description="Request a question based on difficulty or at random")
-async def question(interaction: discord.Interaction, difficulty: str = "random"):  
+async def question(interaction: discord.Interaction, difficulty: str = "random"):
     if difficulty == "easy":
         response = requests.get("https://leetcode.com/api/problems/all/")
         # Check if the request was successful
