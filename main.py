@@ -31,7 +31,7 @@ async def setdailychannel(interaction: discord.Interaction, channel: discord.Tex
             channels = file.readlines()
             print(channels)
             print(channel.id)
-            if (str(channel.id) + "\n") in channels or channel.id in channels:
+            if str(channel.id) + "\n" in channels or channel.id in channels:
                 embed = discord.Embed(
                     title="Error!",
                     description="This channel is already set as the daily channel!",
@@ -98,6 +98,7 @@ async def removedailychannel(interaction: discord.Interaction, channel: discord.
 @client.tree.command(name="leaderboard", description="View the leaderboard")
 async def leaderboard(interaction: discord.Interaction, page: int = 1):
     print(interaction.guild.id)
+
     if not os.path.exists(f"{interaction.guild.id}_leetcode_stats.json"):
         embed = discord.Embed(
             title="Leaderboard",
@@ -105,44 +106,44 @@ async def leaderboard(interaction: discord.Interaction, page: int = 1):
             color=discord.Color.red())
         await interaction.response.send_message(embed=embed)
         return
-    else:
-        with open(f"{interaction.guild.id}_leetcode_stats.json", "r", encoding="UTF-8") as file:
-            data = json.load(file)
-        sorted_data = sorted(data.items(),
-                             key=lambda x: x[1]["total_score"],
-                             reverse=True)
-        leaderboard = []
-        start_index = (page - 1) * 10
-        end_index = page * 10
-        for i, (
-            username,
-            stats,
-        ) in enumerate(sorted_data[start_index:end_index], start=start_index+1):
-            profile_link = f"https://leetcode.com/{username}"
-            # Get the discord_username from the stats data in the JSON file
-            discord_username = stats.get("discord_username")
-            # Get the link_yes_no from the stats data in the JSON file
-            link_yes_no = stats.get("link_yes_no")
-            if discord_username:
-                if link_yes_no == "yes":
-                    leaderboard.append(
-                        f"**{i}. [{discord_username}]({profile_link})** Score: {stats['total_score']}"
-                    )
-                else:
-                    leaderboard.append(
-                        f"**{i}. {discord_username}** Score: {stats['total_score']}")
+
+    with open(f"{interaction.guild.id}_leetcode_stats.json", "r", encoding="UTF-8") as file:
+        data = json.load(file)
+    sorted_data = sorted(data.items(),
+                         key=lambda x: x[1]["total_score"],
+                         reverse=True)
+    leaderboard = []
+    start_index = (page - 1) * 10
+    end_index = page * 10
+    for i, (
+        username,
+        stats,
+    ) in enumerate(sorted_data[start_index:end_index], start=start_index+1):
+        profile_link = f"https://leetcode.com/{username}"
+        # Get the discord_username from the stats data in the JSON file
+        discord_username = stats.get("discord_username")
+        # Get the link_yes_no from the stats data in the JSON file
+        link_yes_no = stats.get("link_yes_no")
+        if discord_username:
+            if link_yes_no == "yes":
+                leaderboard.append(
+                    f"**{i}. [{discord_username}]({profile_link})** Score: {stats['total_score']}"
+                )
             else:
                 leaderboard.append(
-                    f"**{i}. {username}** Score: {stats['total_score']}")
-        embed = discord.Embed(title="Leaderboard",
-                              color=discord.Color.yellow())
-        embed.description = "\n".join(leaderboard)
-        # Score Methodology: Easy: 1, Medium: 3, Hard: 5
-        embed.set_footer(
-            text="Score Methodology: Easy: 1 point, Medium: 3 points, Hard: 5 points")
-        # Score Equation: Easy * 1 + Medium * 3 + Hard * 5 = Total Score
-        await interaction.response.send_message(embed=embed)
-        return
+                    f"**{i}. {discord_username}** Score: {stats['total_score']}")
+        else:
+            leaderboard.append(
+                f"**{i}. {username}** Score: {stats['total_score']}")
+    embed = discord.Embed(title="Leaderboard",
+                          color=discord.Color.yellow())
+    embed.description = "\n".join(leaderboard)
+    # Score Methodology: Easy: 1, Medium: 3, Hard: 5
+    embed.set_footer(
+        text="Score Methodology: Easy: 1 point, Medium: 3 points, Hard: 5 points")
+    # Score Equation: Easy * 1 + Medium * 3 + Hard * 5 = Total Score
+    await interaction.response.send_message(embed=embed)
+    return
 
 
 @client.tree.command(name="stats", description="Prints the stats of a user")
@@ -150,24 +151,22 @@ async def stats(interaction: discord.Interaction, username: str = None):
     if username is None:
         with open(f"{interaction.guild.id}_leetcode_stats.json", "r", encoding="UTF-8") as file:
             data = json.load(file)
-        
+
         for user, user_data in data.items():
             if user_data["discord_id"] == interaction.user.id:
                 username = user
                 break
-        
 
-        
         if username is None:
             embed = discord.Embed(
                 title="Error!",
                 description="You have not added your LeetCode username yet!",
                 color=discord.Color.red())
-            embed.add_field(name="Add your LeetCode username", value="Use the `/add <username>` command to add your LeetCode username.")
+            embed.add_field(name="Add your LeetCode username",
+                            value="Use the `/add <username>` command to add your LeetCode username.")
             await interaction.response.send_message(embed=embed, ephemeral=True)
             return
-                
-        
+
     url = f"https://leetcode.com/{username}"
     print(url)
     response = requests.get(url, timeout=10)
@@ -287,6 +286,8 @@ async def add(interaction: discord.Interaction, username: str, link: str = "yes"
         if username in existing_data:
             await interaction.response.send_message(f"User {username} already exists")
             return
+    else:
+        existing_data = {}
 
     generated_string = ''.join(random.choices(string.ascii_letters, k=8))
     embed = discord.Embed(title="Profile Update Required",
@@ -754,8 +755,6 @@ def get_daily_LC_link():
     difficulty = response_data['data']['challenge']['question']['difficulty']
     # Extract and print the date
     date = response_data['data']['challenge']['date']
-
-    
 
 
 my_secret = os.environ['TOKEN']
