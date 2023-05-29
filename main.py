@@ -27,7 +27,7 @@ async def setdailychannel(interaction: discord.Interaction, channel: discord.Tex
     if interaction.user.guild_permissions.administrator:
         # open the dailychannels.txt file in append mode
         # check if the channel is already in the file
-        with open("dailychannels.txt", "r") as file:
+        with open("dailychannels.txt", "r", encoding="UTF-8") as file:
             channels = file.readlines()
             print(channels)
             print(channel.id)
@@ -39,11 +39,11 @@ async def setdailychannel(interaction: discord.Interaction, channel: discord.Tex
                 await interaction.response.send_message(embed=embed, ephemeral=True)
                 return
             else:
-                with open("dailychannels.txt", "a") as file:
+                with open("dailychannels.txt", "a", encoding="UTF-8") as file:
                     file.write(f"{channel.id}\n")
                 embed = discord.Embed(
                     title="Success!",
-                    description=f"This channel has been set as the daily channel!",
+                    description="This channel has been set as the daily channel!",
                     color=discord.Color.green())
                 await interaction.response.send_message(embed=embed, ephemeral=True)
                 return
@@ -64,18 +64,18 @@ async def removedailychannel(interaction: discord.Interaction, channel: discord.
     if interaction.user.guild_permissions.administrator:
         # open the dailychannels.txt file in append mode
         # check if the channel is already in the file
-        with open("dailychannels.txt", "r") as file:
+        with open("dailychannels.txt", "r", encoding="UTF-8") as file:
             channels = file.readlines()
             print(channels)
             print(channel.id)
             if (str(channel.id) + "\n") in channels or channel.id in channels:
-                with open("dailychannels.txt", "w") as file:
+                with open("dailychannels.txt", "w", encoding="UTF-8") as file:
                     for line in channels:
                         if line.strip("\n") != str(channel.id):
                             file.write(line)
                 embed = discord.Embed(
                     title="Success!",
-                    description=f"This channel has been removed as the daily channel!",
+                    description="This channel has been removed as the daily channel!",
                     color=discord.Color.green())
                 await interaction.response.send_message(embed=embed, ephemeral=True)
                 return
@@ -106,7 +106,7 @@ async def leaderboard(interaction: discord.Interaction, page: int = 1):
         await interaction.response.send_message(embed=embed)
         return
     else:
-        with open(f"{interaction.guild.id}_leetcode_stats.json", "r") as file:
+        with open(f"{interaction.guild.id}_leetcode_stats.json", "r", encoding="UTF-8") as file:
             data = json.load(file)
         sorted_data = sorted(data.items(),
                              key=lambda x: x[1]["total_score"],
@@ -149,7 +149,7 @@ async def leaderboard(interaction: discord.Interaction, page: int = 1):
 async def stats(interaction: discord.Interaction, username: str):
     url = f"https://leetcode.com/{username}"
     print(url)
-    response = requests.get(url)
+    response = requests.get(url, timeout=10)
 
     # Create a BeautifulSoup object to parse the HTML
     soup = BeautifulSoup(response.text, "html.parser")
@@ -234,7 +234,7 @@ async def daily(interaction: discord.Interaction):
     '''
     }
 
-    response = requests.post(url, json=data, headers=headers)
+    response = requests.post(url, json=data, headers=headers, timeout=10)
     response_data = response.json()
 
     # Extract and print the link
@@ -244,7 +244,7 @@ async def daily(interaction: discord.Interaction):
     # Extract and print the difficulty
     difficulty = response_data['data']['challenge']['question']['difficulty']
     # Extract and print the date
-    date = response_data['data']['challenge']['date']
+    # date = response_data['data']['challenge']['date']
     link = f"https://leetcode.com{link}"
     embed = discord.Embed(title=f"Daily Problem: {title}",
                           color=discord.Color.blue())
@@ -261,14 +261,14 @@ async def daily(interaction: discord.Interaction):
 )
 async def add(interaction: discord.Interaction, username: str, link: str = None):
     if os.path.exists(f"{interaction.guild.id}_leetcode_stats.json"):
-        with open(f"{interaction.guild.id}_leetcode_stats.json", "r") as file:
+        with open(f"{interaction.guild.id}_leetcode_stats.json", "r", encoding="UTF-8") as file:
             existing_data = json.load(file)
         if username in existing_data:
             await interaction.response.send_message(f"User {username} already exists")
             return
 
     generated_string = ''.join(random.choices(string.ascii_letters, k=8))
-    embed = discord.Embed(title=f"Profile Update Required",
+    embed = discord.Embed(title="Profile Update Required",
                           color=discord.Color.red())
     embed.add_field(name="Generated Sequence",
                     value=f"{generated_string}",
@@ -276,7 +276,7 @@ async def add(interaction: discord.Interaction, username: str, link: str = None)
     embed.add_field(name="Username", value=f"{username}", inline=False)
     embed.add_field(
         name="Instructions",
-        value=f"Please change your LeetCode Profile Name to the generated sequence.",
+        value="Please change your LeetCode Profile Name to the generated sequence.",
         inline=False)
     embed.add_field(
         name="Profile Name Change",
@@ -291,7 +291,7 @@ async def add(interaction: discord.Interaction, username: str, link: str = None)
     for _ in range(12):
         url = f"https://leetcode.com/{username}"
         print(url)
-        response = requests.get(url)
+        response = requests.get(url, timeout=10)
         soup = BeautifulSoup(response.text, "html.parser")
 
         rank_element = soup.find(
@@ -312,7 +312,7 @@ async def add(interaction: discord.Interaction, username: str, link: str = None)
     if profile_name == generated_string:
         url = f"https://leetcode.com/{username}"
         print(url)
-        response = requests.get(url)
+        response = requests.get(url, timeout=10)
         soup = BeautifulSoup(response.text, "html.parser")
 
         rank_element = soup.find(
@@ -352,9 +352,9 @@ async def add(interaction: discord.Interaction, username: str, link: str = None)
             "discord_id": interaction.user.id
         }
 
-        with open(f"{interaction.guild.id}_leetcode_stats.json", "w") as file:
+        with open(f"{interaction.guild.id}_leetcode_stats.json", "w", encoding="UTF-8") as file:
             json.dump(existing_data, file)
-        embed = discord.Embed(title=f"Profile Added",
+        embed = discord.Embed(title="Profile Added",
                               color=discord.Color.green())
         embed.add_field(name="Username:", value=f"{username}", inline=False)
         await interaction.edit_original_response(embed=embed)
@@ -374,7 +374,7 @@ async def delete(interaction: discord.Interaction):
     if os.path.exists(f"{interaction.guild.id}_leetcode_stats.json"):
         print("File exists")
         # Open the file
-        with open(f"{interaction.guild.id}_leetcode_stats.json", "r") as file:
+        with open(f"{interaction.guild.id}_leetcode_stats.json", "r", encoding="UTF-8") as file:
             data = json.load(file)
 
             # Iterate through the data points
@@ -384,10 +384,10 @@ async def delete(interaction: discord.Interaction):
                     # Delete the data point
                     del data[username]
                     # Save the updated data
-                    with open(f"{interaction.guild.id}_leetcode_stats.json", "w") as file:
+                    with open(f"{interaction.guild.id}_leetcode_stats.json", "w", encoding="UTF-8") as file:
                         json.dump(data, file)
                     # Send a message to the user
-                    embed = discord.Embed(title=f"Profile Deleted",
+                    embed = discord.Embed(title="Profile Deleted",
                                           color=discord.Color.green())
                     embed.add_field(name="Username:",
                                     value=f"{username}", inline=False)
@@ -395,13 +395,13 @@ async def delete(interaction: discord.Interaction):
                     break
             else:
                 # No matching data point found
-                embed = discord.Embed(title=f"Profile Not Found",
+                embed = discord.Embed(title="Profile Not Found",
                                       color=discord.Color.red())
                 await interaction.response.send_message(embed=embed, ephemeral=True)
 
     else:
         # File does not exist
-        embed = discord.Embed(title=f"Profile Not Found",
+        embed = discord.Embed(title="Profile Not Found",
                               color=discord.Color.red())
         # This server does not have a leaderboard yet
         embed.add_field(name="Error:",
@@ -415,7 +415,8 @@ async def delete(interaction: discord.Interaction):
     description="Request a question based on difficulty or at random")
 async def question(interaction: discord.Interaction, difficulty: str = "random"):
     if difficulty == "easy":
-        response = requests.get("https://leetcode.com/api/problems/all/")
+        response = requests.get(
+            "https://leetcode.com/api/problems/all/", timeout=10)
         # Check if the request was successful
         if response.status_code == 200:
             # Load the response data as a JSON object
@@ -446,7 +447,8 @@ async def question(interaction: discord.Interaction, difficulty: str = "random")
                 "An error occurred while trying to get the question from LeetCode.")
         return
     elif difficulty == "medium":
-        response = requests.get("https://leetcode.com/api/problems/all/")
+        response = requests.get(
+            "https://leetcode.com/api/problems/all/", timeout=10)
         # Check if the request was successful
         if response.status_code == 200:
             # Load the response data as a JSON object
@@ -475,7 +477,8 @@ async def question(interaction: discord.Interaction, difficulty: str = "random")
                 "An error occurred while trying to get the question from LeetCode.")
         return
     elif difficulty == "hard":
-        response = requests.get("https://leetcode.com/api/problems/all/")
+        response = requests.get(
+            "https://leetcode.com/api/problems/all/", timeout=10)
         # Check if the request was successful
         if response.status_code == 200:
             # Load the response data as a JSON object
@@ -563,7 +566,7 @@ async def help(interaction: discord.Interaction):
 @ client.event
 async def on_ready():
     print(datetime.datetime.utcnow().hour, datetime.datetime.utcnow().time)
-    print("Logged in as a bot {0.user}".format(client))
+    print(f"Logged in as a bot {client.user}")
     server_ids = [guild.id for guild in client.guilds]
     print('Server IDs:', server_ids)
     try:
@@ -625,7 +628,7 @@ async def send_message_at_midnight():
                             value=f"{difficulty}", inline=True)
             embed.add_field(name="**Link**", value=f"{link}", inline=False)
             # import channels from dailychannels.txt
-            with open('dailychannels.txt', 'r') as f:
+            with open('dailychannels.txt', 'r', encoding="UTF-8") as f:
                 channels = f.readlines()
             channels = [channel.strip() for channel in channels]
             for channel_id in channels:
@@ -645,12 +648,12 @@ async def send_message_at_midnight():
                 print(server_id)
                 # retrieve the keys from the json file
                 if os.path.exists(f"{server_id}_leetcode_stats.json"):
-                    with open(f'{server_id}_leetcode_stats.json', 'r') as f:
+                    with open(f'{server_id}_leetcode_stats.json', 'r', encoding="UTF-8") as f:
                         data = json.load(f)
                     for username in data.keys():
                         url = f"https://leetcode.com/{username}/"
                         print(url)
-                        response = requests.get(url)
+                        response = requests.get(url, timeout=10)
                         soup = BeautifulSoup(response.text, "html.parser")
 
                         rank_element = soup.find(
@@ -685,7 +688,7 @@ async def send_message_at_midnight():
 
                         print(data[username])
                         # update the json file
-                        with open(f"{server_id}_leetcode_stats.json", "w") as f:
+                        with open(f"{server_id}_leetcode_stats.json", "w", encoding="UTF-8") as f:
                             json.dump(data, f, indent=4)
 
 
@@ -719,7 +722,7 @@ def get_daily_LC_link():
     '''
     }
 
-    response = requests.post(url, json=data, headers=headers)
+    response = requests.post(url, json=data, headers=headers, timeout=10)
     response_data = response.json()
 
     # Extract and print the link
