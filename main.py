@@ -31,7 +31,7 @@ async def setdailychannel(interaction: discord.Interaction, channel: discord.Tex
             channels = file.readlines()
             print(channels)
             print(channel.id)
-            if (str(channel.id) + "\n") in channels or channel.id in channels:
+            if str(channel.id) + "\n" in channels or channel.id in channels:
                 embed = discord.Embed(
                     title="Error!",
                     description="This channel is already set as the daily channel!",
@@ -95,9 +95,68 @@ async def removedailychannel(interaction: discord.Interaction, channel: discord.
         return
 
 
+class Pagination(discord.ui.View):
+    def __init__(self, pages=None, page=0):
+        super().__init__()
+        self.page = page
+
+        if pages is None:
+            self.pages = []
+        else:
+            self.pages = pages
+
+        self.max_page = len(self.pages) - 1
+
+        if self.page == 0:
+            self.previous.style = discord.ButtonStyle.gray
+            self.previous.disabled = True
+
+        if self.page == self.max_page:
+            self.next.style = discord.ButtonStyle.gray
+            self.next.disabled = True
+
+    @discord.ui.button(label='<', style=discord.ButtonStyle.blurple)
+    async def previous(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if self.page - 1 >= 0:
+            self.page -= 1
+            await interaction.message.edit(embed=self.pages[self.page])
+
+            if self.page == 0:
+                button.style = discord.ButtonStyle.gray
+                button.disabled = True
+
+        # if self.page < self.max_page:
+        self.next.style = discord.ButtonStyle.blurple
+        self.next.disabled = False
+
+        print(self.page + 1)
+
+        await interaction.response.edit_message(view=self)
+
+    @discord.ui.button(label='>', style=discord.ButtonStyle.blurple)
+    async def next(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if self.page + 1 <= self.max_page:
+            self.page += 1
+            await interaction.message.edit(embed=self.pages[self.page])
+
+            if self.page == self.max_page:
+                button.style = discord.ButtonStyle.gray
+                button.disabled = True
+
+        self.previous.style = discord.ButtonStyle.blurple
+        self.previous.disabled = False
+
+        print(self.page + 1)
+
+        await interaction.response.edit_message(view=self)
+
+
 @client.tree.command(name="leaderboard", description="View the leaderboard")
 async def leaderboard(interaction: discord.Interaction, page: int = 1):
     print(interaction.guild.id)
+
+    users_per_page = 10
+
     if not os.path.exists(f"{interaction.guild.id}_leetcode_stats.json"):
         embed = discord.Embed(
             title="All-Time Leaderboard",
@@ -105,16 +164,24 @@ async def leaderboard(interaction: discord.Interaction, page: int = 1):
             color=discord.Color.red())
         await interaction.response.send_message(embed=embed)
         return
-    else:
-        with open(f"{interaction.guild.id}_leetcode_stats.json", "r", encoding="UTF-8") as file:
-            data = json.load(file)
-        sorted_data = sorted(data.items(),
-                             key=lambda x: x[1]["total_score"],
-                             reverse=True)
+
+    with open(f"{interaction.guild.id}_leetcode_stats.json", "r", encoding="UTF-8") as file:
+        data = json.load(file)
+
+    sorted_data = sorted(data.items(),
+                         key=lambda x: x[1]["total_score"],
+                         reverse=True)
+
+    pages = []
+    page_count = -(-len(sorted_data)//users_per_page)
+
+    for i in range(page_count):
         leaderboard = []
-        start_index = (page - 1) * 10
-        end_index = page * 10
-        for i, (username, stats) in enumerate(sorted_data[start_index:end_index], start=start_index+1):
+
+        for j, (
+            username,
+            stats,
+        ) in enumerate(sorted_data[i * users_per_page: i * users_per_page + users_per_page], start=i * users_per_page + 1):
             profile_link = f"https://leetcode.com/{username}"
             # Get the discord_username from the stats data in the JSON file
             discord_username = stats.get("discord_username")
@@ -172,9 +239,13 @@ async def leaderboard(interaction: discord.Interaction, page: int = 1):
         embed.set_footer(
             text="Score Methodology: Easy: 1 point, Medium: 3 points, Hard: 9 points")
         # Score Equation: Easy * 1 + Medium * 3 + Hard * 9 = Total Score
-        await interaction.response.send_message(embed=embed)
         print(leaderboard)
-        return
+        pages.append(embed)
+
+    # https://stackoverflow.com/questions/65755309/divide-the-leaderboard-into-pages-discord-py
+    page = page - 1 if page > 0 else 0
+    await interaction.response.send_message(embed=pages[page], view=Pagination(pages, page))
+    # message = await interaction.original_response()
 
 
 
@@ -183,24 +254,22 @@ async def stats(interaction: discord.Interaction, username: str = None):
     if username is None:
         with open(f"{interaction.guild.id}_leetcode_stats.json", "r", encoding="UTF-8") as file:
             data = json.load(file)
-        
+
         for user, user_data in data.items():
             if user_data["discord_id"] == interaction.user.id:
                 username = user
                 break
-        
 
-        
         if username is None:
             embed = discord.Embed(
                 title="Error!",
                 description="You have not added your LeetCode username yet!",
                 color=discord.Color.red())
-            embed.add_field(name="Add your LeetCode username", value="Use the `/add <username>` command to add your LeetCode username.")
+            embed.add_field(name="Add your LeetCode username",
+                            value="Use the `/add <username>` command to add your LeetCode username.")
             await interaction.response.send_message(embed=embed, ephemeral=True)
             return
-                
-        
+
     url = f"https://leetcode.com/{username}"
     print(url)
     response = requests.get(url, timeout=10)
@@ -320,6 +389,8 @@ async def add(interaction: discord.Interaction, username: str, link: str = "yes"
         if username in existing_data:
             await interaction.response.send_message(f"User {username} already exists")
             return
+    else:
+        existing_data = {}
 
     generated_string = ''.join(random.choices(string.ascii_letters, k=8))
     embed = discord.Embed(title="Profile Update Required",
@@ -415,7 +486,7 @@ async def add(interaction: discord.Interaction, username: str, link: str = "yes"
 
         return
     else:
-        embed = discord.Embed(title=f"Profile Not Added",
+        embed = discord.Embed(title="Profile Not Added",
                               color=discord.Color.red())
         embed.add_field(name="Username:", value=f"{username}", inline=False)
         await interaction.edit_original_response(embed=embed)
@@ -788,8 +859,6 @@ def get_daily_LC_link():
     difficulty = response_data['data']['challenge']['question']['difficulty']
     # Extract and print the date
     date = response_data['data']['challenge']['date']
-
-    
 
 
 my_secret = os.environ['TOKEN']

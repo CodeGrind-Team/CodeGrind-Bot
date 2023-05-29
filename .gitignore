@@ -174,5 +174,6 @@ poetry.toml
 pyrightconfig.json
 
 tempCodeRunnerFile.py
+*.json
 
 # End of https://www.toptal.com/developers/gitignore/api/python
