@@ -96,9 +96,10 @@ async def removedailychannel(interaction: discord.Interaction, channel: discord.
 
 
 class Pagination(discord.ui.View):
-    def __init__(self, pages=None, page=0):
+    def __init__(self, user_id, pages=None, page=0):
         super().__init__()
         self.page = page
+        self.user_id = user_id
 
         if pages is None:
             self.pages = []
@@ -117,6 +118,9 @@ class Pagination(discord.ui.View):
 
     @discord.ui.button(label='<', style=discord.ButtonStyle.blurple)
     async def previous(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if interaction.user.id != self.user_id:
+            return
+
         if self.page - 1 >= 0:
             self.page -= 1
             await interaction.message.edit(embed=self.pages[self.page])
@@ -135,6 +139,9 @@ class Pagination(discord.ui.View):
 
     @discord.ui.button(label='>', style=discord.ButtonStyle.blurple)
     async def next(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if interaction.user.id != self.user_id:
+            return
+
         if self.page + 1 <= self.max_page:
             self.page += 1
             await interaction.message.edit(embed=self.pages[self.page])
@@ -193,59 +200,64 @@ async def leaderboard(interaction: discord.Interaction, page: int = 1):
                         leaderboard.append(
                             f"**🥇 [{discord_username}]({profile_link})**  {stats['total_score']} points"
                         )
-                        print(f"**🥇 [{discord_username}]({profile_link})**  {stats['total_score']} points")
+                        print(
+                            f"**🥇 [{discord_username}]({profile_link})**  {stats['total_score']} points")
                     elif j == 2:
                         leaderboard.append(
                             f"**🥈 [{discord_username}]({profile_link})**  {stats['total_score']} points"
                         )
-                        print(f"**🥈 [{discord_username}]({profile_link})**  {stats['total_score']} points")
+                        print(
+                            f"**🥈 [{discord_username}]({profile_link})**  {stats['total_score']} points")
                     elif j == 3:
                         leaderboard.append(
                             f"**🥉 [{discord_username}]({profile_link})**  {stats['total_score']} points"
                         )
-                        print(f"**🥉 [{discord_username}]({profile_link})**  {stats['total_score']} points")
+                        print(
+                            f"**🥉 [{discord_username}]({profile_link})**  {stats['total_score']} points")
                     else:
                         leaderboard.append(
                             f"**{j}\. [{discord_username}]({profile_link})**  {stats['total_score']} points"
                         )
-                        print(f"**{j}\. [{discord_username}]({profile_link})**  {stats['total_score']} points")
+                        print(
+                            f"**{j}\. [{discord_username}]({profile_link})**  {stats['total_score']} points")
                 else:
-                    if j== 1:
+                    if j == 1:
                         leaderboard.append(
                             f"**🥇 {discord_username}**  {stats['total_score']} points"
                         )
-                        print(f"**🥇 {discord_username}**  {stats['total_score']} points")
+                        print(
+                            f"**🥇 {discord_username}**  {stats['total_score']} points")
                     elif j == 2:
                         leaderboard.append(
                             f"**🥈 {discord_username}**  {stats['total_score']} points"
                         )
-                        print(f"**🥈 {discord_username}**  {stats['total_score']} points")
+                        print(
+                            f"**🥈 {discord_username}**  {stats['total_score']} points")
                     elif j == 3:
                         leaderboard.append(
                             f"**🥉 {discord_username}**  {stats['total_score']} points"
                         )
-                        print(f"**🥉 {discord_username}**  {stats['total_score']} points")
+                        print(
+                            f"**🥉 {discord_username}**  {stats['total_score']} points")
                     else:
                         leaderboard.append(
                             f"**{j}\. {discord_username}**  {stats['total_score']} points"
                         )
-                        print(f"**{j}\. {discord_username}**  {stats['total_score']} points")
+                        print(
+                            f"**{j}\. {discord_username}**  {stats['total_score']} points")
 
-                    
         embed = discord.Embed(title="All-Time Leaderboard",
                               color=discord.Color.yellow())
         embed.description = "\n".join(leaderboard)
         # Score Methodology: Easy: 1, Medium: 3, Hard: 9
-        embed.set_footer(text=f"Score Methodology: Easy: 1 point, Medium: 3 points, Hard: 9 points\n\nPage {i + 1}/{page_count}")
+        embed.set_footer(
+            text=f"Score Methodology: Easy: 1 point, Medium: 3 points, Hard: 9 points\n\nPage {i + 1}/{page_count}")
         # Score Equation: Easy * 1 + Medium * 3 + Hard * 9 = Total Score
         print(leaderboard)
         pages.append(embed)
 
-    # https://stackoverflow.com/questions/65755309/divide-the-leaderboard-into-pages-discord-py
     page = page - 1 if page > 0 else 0
-    await interaction.response.send_message(embed=pages[page], view=Pagination(pages, page))
-    # message = await interaction.original_response()
-
+    await interaction.response.send_message(embed=pages[page], view=Pagination(interaction.user.id, pages, page))
 
 
 @client.tree.command(name="stats", description="Prints the stats of a user")
