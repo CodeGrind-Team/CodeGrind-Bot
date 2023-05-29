@@ -601,10 +601,10 @@ async def on_ready():
 async def send_message_at_midnight():
     await client.wait_until_ready()
     while not client.is_closed():
-        await asyncio.sleep(60)  # sleep for a minute
+        await asyncio.sleep(3600)  # sleep for a minute
         now = datetime.datetime.utcnow()
         print(now.hour, now.minute)
-        if now.hour == 0 and now.minute == 5:
+        if now.hour == 0:
             # get the channel object
             # send the message
             print("hi")
@@ -659,7 +659,7 @@ async def send_message_at_midnight():
                 async for message in channel.history(limit=1):
                     await message.pin()
 
-        if now.hour == 0 and now.minute == 4:
+        if now.hour == 0 or now.hour == 12:
             # retrieve every server the bot is in
             server_ids = [guild.id for guild in client.guilds]
             print('Server IDs:', server_ids)
@@ -704,7 +704,8 @@ async def send_message_at_midnight():
                             "total_questions_done": total_questions_done,
                             "total_score": total_score,
                             "discord_username": data.get(username).get("discord_username"),
-                            "link_yes_no": data.get(username).get("link_yes_no")
+                            "link_yes_no": data.get(username).get("link_yes_no"),
+                            "discord_id": data.get(username).get("discord_id")
                         }
 
                         print(data[username])
