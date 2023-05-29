@@ -189,55 +189,54 @@ async def leaderboard(interaction: discord.Interaction, page: int = 1):
             link_yes_no = stats.get("link_yes_no")
             if discord_username:
                 if link_yes_no == "yes":
-                    if i == 1:
+                    if j == 1:
                         leaderboard.append(
                             f"**🥇 [{discord_username}]({profile_link})**  {stats['total_score']} points"
                         )
                         print(f"**🥇 [{discord_username}]({profile_link})**  {stats['total_score']} points")
-                    elif i == 2:
+                    elif j == 2:
                         leaderboard.append(
                             f"**🥈 [{discord_username}]({profile_link})**  {stats['total_score']} points"
                         )
                         print(f"**🥈 [{discord_username}]({profile_link})**  {stats['total_score']} points")
-                    elif i == 3:
+                    elif j == 3:
                         leaderboard.append(
                             f"**🥉 [{discord_username}]({profile_link})**  {stats['total_score']} points"
                         )
                         print(f"**🥉 [{discord_username}]({profile_link})**  {stats['total_score']} points")
                     else:
                         leaderboard.append(
-                            f"**{i}\. [{discord_username}]({profile_link})**  {stats['total_score']} points"
+                            f"**{j}\. [{discord_username}]({profile_link})**  {stats['total_score']} points"
                         )
-                        print(f"**{i}\. [{discord_username}]({profile_link})**  {stats['total_score']} points")
+                        print(f"**{j}\. [{discord_username}]({profile_link})**  {stats['total_score']} points")
                 else:
-                    if i == 1:
+                    if j== 1:
                         leaderboard.append(
                             f"**🥇 {discord_username}**  {stats['total_score']} points"
                         )
                         print(f"**🥇 {discord_username}**  {stats['total_score']} points")
-                    elif i == 2:
+                    elif j == 2:
                         leaderboard.append(
                             f"**🥈 {discord_username}**  {stats['total_score']} points"
                         )
                         print(f"**🥈 {discord_username}**  {stats['total_score']} points")
-                    elif i == 3:
+                    elif j == 3:
                         leaderboard.append(
                             f"**🥉 {discord_username}**  {stats['total_score']} points"
                         )
                         print(f"**🥉 {discord_username}**  {stats['total_score']} points")
                     else:
                         leaderboard.append(
-                            f"**{i}\. {discord_username}**  {stats['total_score']} points"
+                            f"**{j}\. {discord_username}**  {stats['total_score']} points"
                         )
-                        print(f"**{i}\. {discord_username}**  {stats['total_score']} points")
+                        print(f"**{j}\. {discord_username}**  {stats['total_score']} points")
 
                     
         embed = discord.Embed(title="All-Time Leaderboard",
                               color=discord.Color.yellow())
         embed.description = "\n".join(leaderboard)
         # Score Methodology: Easy: 1, Medium: 3, Hard: 9
-        embed.set_footer(
-            text="Score Methodology: Easy: 1 point, Medium: 3 points, Hard: 9 points")
+        embed.set_footer(text=f"Score Methodology: Easy: 1 point, Medium: 3 points, Hard: 9 points\n\nPage {i + 1}/{page_count}")
         # Score Equation: Easy * 1 + Medium * 3 + Hard * 9 = Total Score
         print(leaderboard)
         pages.append(embed)
@@ -798,7 +797,7 @@ async def send_message_at_midnight():
                         hard_completed = int(numbers[2])
 
                         total_questions_done = easy_completed + medium_completed + hard_completed
-                        total_score = easy_completed * 1 + medium_completed * 3 + hard_completed * 5
+                        total_score = easy_completed * 1 + medium_completed * 3 + hard_completed * 9
 
                         data[username] = {
                             "rank": rank,
