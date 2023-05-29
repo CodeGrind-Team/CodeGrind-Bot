@@ -95,8 +95,64 @@ async def removedailychannel(interaction: discord.Interaction, channel: discord.
         return
 
 
+class Pagination(discord.ui.View):
+    def __init__(self, pages=None, page=0):
+        super().__init__()
+        self.page = page
+
+        if pages is None:
+            self.pages = []
+        else:
+            self.pages = pages
+
+        self.max_page = len(self.pages) - 1
+
+        if self.page == 0:
+            self.previous.style = discord.ButtonStyle.gray
+            self.previous.disabled = True
+
+        if self.page == self.max_page:
+            self.next.style = discord.ButtonStyle.gray
+            self.next.disabled = True
+
+    @discord.ui.button(label='<', style=discord.ButtonStyle.blurple)
+    async def previous(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if self.page - 1 >= 0:
+            self.page -= 1
+            await interaction.message.edit(embed=self.pages[self.page])
+
+            if self.page == 0:
+                button.style = discord.ButtonStyle.gray
+                button.disabled = True
+
+        # if self.page < self.max_page:
+        self.next.style = discord.ButtonStyle.blurple
+        self.next.disabled = False
+
+        print(self.page + 1)
+
+        await interaction.response.edit_message(view=self)
+
+    @discord.ui.button(label='>', style=discord.ButtonStyle.blurple)
+    async def next(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if self.page + 1 <= self.max_page:
+            self.page += 1
+            await interaction.message.edit(embed=self.pages[self.page])
+
+            if self.page == self.max_page:
+                button.style = discord.ButtonStyle.gray
+                button.disabled = True
+
+        self.previous.style = discord.ButtonStyle.blurple
+        self.previous.disabled = False
+
+        print(self.page + 1)
+
+        await interaction.response.edit_message(view=self)
+
+
 @client.tree.command(name="leaderboard", description="View the leaderboard")
-async def leaderboard(interaction: discord.Interaction):
+async def leaderboard(interaction: discord.Interaction, page: int = 1):
     print(interaction.guild.id)
 
     users_per_page = 10
@@ -115,7 +171,7 @@ async def leaderboard(interaction: discord.Interaction):
     sorted_data = sorted(data.items(),
                          key=lambda x: x[1]["total_score"],
                          reverse=True)
-    
+
     pages = []
     page_count = -(-len(sorted_data)//users_per_page)
 
@@ -125,7 +181,7 @@ async def leaderboard(interaction: discord.Interaction):
         for j, (
             username,
             stats,
-        ) in enumerate(sorted_data[i * users_per_page: i * users_per_page + users_per_page], start=i * names_per_page + 1):
+        ) in enumerate(sorted_data[i * users_per_page: i * users_per_page + users_per_page], start=i * users_per_page + 1):
             profile_link = f"https://leetcode.com/{username}"
             # Get the discord_username from the stats data in the JSON file
             discord_username = stats.get("discord_username")
@@ -142,9 +198,9 @@ async def leaderboard(interaction: discord.Interaction):
             else:
                 leaderboard.append(
                     f"**{j}. {username}** Score: {stats['total_score']}")
-                
+
         embed = discord.Embed(title="Leaderboard",
-                          color=discord.Color.yellow())
+                              color=discord.Color.yellow())
         embed.description = "\n".join(leaderboard)
         # Score Methodology: Easy: 1, Medium: 3, Hard: 5
         embed.set_footer(
@@ -153,34 +209,9 @@ async def leaderboard(interaction: discord.Interaction):
         pages.append(embed)
 
     # https://stackoverflow.com/questions/65755309/divide-the-leaderboard-into-pages-discord-py
-    index = 0
-    await interaction.response.send_message(embed=pages[0])
-    message = await interaction.original_response()
-
-    emojis = ["◀️", "🚫", "▶️"]
-    for emoji in emojis:
-        await message.add_reaction(emoji)
-
-    while not client.is_closed():
-        try:
-            react, _ = await client.wait_for(
-                "reaction_add",
-                timeout = 60.0,
-                check = lambda r, u: r.emoji in emojis and u.id == interaction.user.id and r.message.id == message.id
-            )
-            if react.emoji == emojis[0] and index > 0:
-                index -= 1
-            elif react.emoji == emojis[1]:
-                await message.delete()
-                break
-            elif react.emoji == emojis[2] and index < len(pages) - 1:
-                index += 1
-
-            await message.edit(embed=pages[index])
-        except asyncio.TimeoutError:
-            await message.delete()
-            break
-
+    page = page - 1 if page > 0 else 0
+    await interaction.response.send_message(embed=pages[page], view=Pagination(pages, page))
+    # message = await interaction.original_response()
 
 
 @client.tree.command(name="stats", description="Prints the stats of a user")
