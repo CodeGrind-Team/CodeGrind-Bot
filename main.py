@@ -119,6 +119,7 @@ class Pagination(discord.ui.View):
     @discord.ui.button(label='<', style=discord.ButtonStyle.blurple)
     async def previous(self, interaction: discord.Interaction, button: discord.ui.Button):
         if interaction.user.id != self.user_id:
+            await interaction.response.defer()
             return
 
         if self.page - 1 >= 0:
@@ -140,6 +141,7 @@ class Pagination(discord.ui.View):
     @discord.ui.button(label='>', style=discord.ButtonStyle.blurple)
     async def next(self, interaction: discord.Interaction, button: discord.ui.Button):
         if interaction.user.id != self.user_id:
+            await interaction.response.defer()
             return
 
         if self.page + 1 <= self.max_page:
