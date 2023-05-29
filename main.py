@@ -159,7 +159,7 @@ async def leaderboard(interaction: discord.Interaction, page: int = 1):
 
     if not os.path.exists(f"{interaction.guild.id}_leetcode_stats.json"):
         embed = discord.Embed(
-            title="Leaderboard",
+            title="All-Time Leaderboard",
             description="No one has added their LeetCode username yet.",
             color=discord.Color.red())
         await interaction.response.send_message(embed=embed)
@@ -189,29 +189,64 @@ async def leaderboard(interaction: discord.Interaction, page: int = 1):
             link_yes_no = stats.get("link_yes_no")
             if discord_username:
                 if link_yes_no == "yes":
-                    leaderboard.append(
-                        f"**{j}. [{discord_username}]({profile_link})** Score: {stats['total_score']}"
-                    )
+                    if i == 1:
+                        leaderboard.append(
+                            f"**🥇 [{discord_username}]({profile_link})**  {stats['total_score']} points"
+                        )
+                        print(f"**🥇 [{discord_username}]({profile_link})**  {stats['total_score']} points")
+                    elif i == 2:
+                        leaderboard.append(
+                            f"**🥈 [{discord_username}]({profile_link})**  {stats['total_score']} points"
+                        )
+                        print(f"**🥈 [{discord_username}]({profile_link})**  {stats['total_score']} points")
+                    elif i == 3:
+                        leaderboard.append(
+                            f"**🥉 [{discord_username}]({profile_link})**  {stats['total_score']} points"
+                        )
+                        print(f"**🥉 [{discord_username}]({profile_link})**  {stats['total_score']} points")
+                    else:
+                        leaderboard.append(
+                            f"**{i}\. [{discord_username}]({profile_link})**  {stats['total_score']} points"
+                        )
+                        print(f"**{i}\. [{discord_username}]({profile_link})**  {stats['total_score']} points")
                 else:
-                    leaderboard.append(
-                        f"**{j}. {discord_username}** Score: {stats['total_score']}")
-            else:
-                leaderboard.append(
-                    f"**{j}. {username}** Score: {stats['total_score']}")
+                    if i == 1:
+                        leaderboard.append(
+                            f"**🥇 {discord_username}**  {stats['total_score']} points"
+                        )
+                        print(f"**🥇 {discord_username}**  {stats['total_score']} points")
+                    elif i == 2:
+                        leaderboard.append(
+                            f"**🥈 {discord_username}**  {stats['total_score']} points"
+                        )
+                        print(f"**🥈 {discord_username}**  {stats['total_score']} points")
+                    elif i == 3:
+                        leaderboard.append(
+                            f"**🥉 {discord_username}**  {stats['total_score']} points"
+                        )
+                        print(f"**🥉 {discord_username}**  {stats['total_score']} points")
+                    else:
+                        leaderboard.append(
+                            f"**{i}\. {discord_username}**  {stats['total_score']} points"
+                        )
+                        print(f"**{i}\. {discord_username}**  {stats['total_score']} points")
 
-        embed = discord.Embed(title="Leaderboard",
+                    
+        embed = discord.Embed(title="All-Time Leaderboard",
                               color=discord.Color.yellow())
         embed.description = "\n".join(leaderboard)
-        # Score Methodology: Easy: 1, Medium: 3, Hard: 5
+        # Score Methodology: Easy: 1, Medium: 3, Hard: 9
         embed.set_footer(
-            text=f"Score Methodology: Easy: 1 point, Medium: 3 points, Hard: 5 points\n\nPage {i + 1}/{page_count}")
-        # Score Equation: Easy * 1 + Medium * 3 + Hard * 5 = Total Score
+            text="Score Methodology: Easy: 1 point, Medium: 3 points, Hard: 9 points")
+        # Score Equation: Easy * 1 + Medium * 3 + Hard * 9 = Total Score
+        print(leaderboard)
         pages.append(embed)
 
     # https://stackoverflow.com/questions/65755309/divide-the-leaderboard-into-pages-discord-py
     page = page - 1 if page > 0 else 0
     await interaction.response.send_message(embed=pages[page], view=Pagination(pages, page))
     # message = await interaction.original_response()
+
 
 
 @client.tree.command(name="stats", description="Prints the stats of a user")
@@ -267,7 +302,7 @@ async def stats(interaction: discord.Interaction, username: str = None):
         print(numbers)
 
         total_questions_done = easy_completed + medium_completed + hard_completed
-        total_score = easy_completed * 1 + medium_completed * 3 + hard_completed * 5
+        total_score = easy_completed * 1 + medium_completed * 3 + hard_completed * 9
 
         embed = discord.Embed(
             title=f"Rank: {rank}", color=discord.Color.green())
@@ -637,7 +672,7 @@ async def help(interaction: discord.Interaction):
         inline=False)
     embed.add_field(
         name="Score Calculation",
-        value="The score is calculated based on the amount of questions you have solved. Easy questions are worth 1 point, medium questions are worth 3 points, and hard questions are worth 5 points.",
+        value="The score is calculated based on the amount of questions you have solved. Easy questions are worth 1 point, medium questions are worth 3 points, and hard questions are worth 9 points.",
         inline=False)
     # for adminstrators
     if interaction.user.guild_permissions.administrator:
@@ -670,10 +705,10 @@ async def on_ready():
 async def send_message_at_midnight():
     await client.wait_until_ready()
     while not client.is_closed():
-        await asyncio.sleep(60)  # sleep for a minute
+        await asyncio.sleep(3600)  # sleep for a minute
         now = datetime.datetime.utcnow()
         print(now.hour, now.minute)
-        if now.hour == 0 and now.minute == 5:
+        if now.hour == 0:
             # get the channel object
             # send the message
             print("hi")
@@ -728,7 +763,7 @@ async def send_message_at_midnight():
                 async for message in channel.history(limit=1):
                     await message.pin()
 
-        if now.hour == 0 and now.minute == 4:
+        if now.hour == 0 or now.hour == 12:
             # retrieve every server the bot is in
             server_ids = [guild.id for guild in client.guilds]
             print('Server IDs:', server_ids)
@@ -773,7 +808,8 @@ async def send_message_at_midnight():
                             "total_questions_done": total_questions_done,
                             "total_score": total_score,
                             "discord_username": data.get(username).get("discord_username"),
-                            "link_yes_no": data.get(username).get("link_yes_no")
+                            "link_yes_no": data.get(username).get("link_yes_no"),
+                            "discord_id": data.get(username).get("discord_id")
                         }
 
                         print(data[username])
