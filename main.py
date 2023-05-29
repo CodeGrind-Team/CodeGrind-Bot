@@ -100,7 +100,7 @@ async def leaderboard(interaction: discord.Interaction, page: int = 1):
     print(interaction.guild.id)
     if not os.path.exists(f"{interaction.guild.id}_leetcode_stats.json"):
         embed = discord.Embed(
-            title="Leaderboard",
+            title="All-Time Leaderboard",
             description="No one has added their LeetCode username yet.",
             color=discord.Color.red())
         await interaction.response.send_message(embed=embed)
@@ -114,10 +114,7 @@ async def leaderboard(interaction: discord.Interaction, page: int = 1):
         leaderboard = []
         start_index = (page - 1) * 10
         end_index = page * 10
-        for i, (
-            username,
-            stats,
-        ) in enumerate(sorted_data[start_index:end_index], start=start_index+1):
+        for i, (username, stats) in enumerate(sorted_data[start_index:end_index], start=start_index+1):
             profile_link = f"https://leetcode.com/{username}"
             # Get the discord_username from the stats data in the JSON file
             discord_username = stats.get("discord_username")
@@ -125,24 +122,30 @@ async def leaderboard(interaction: discord.Interaction, page: int = 1):
             link_yes_no = stats.get("link_yes_no")
             if discord_username:
                 if link_yes_no == "yes":
-                    leaderboard.append(
-                        f"**{i}. [{discord_username}]({profile_link})** Score: {stats['total_score']}"
-                    )
+                    if i > 0:
+                        leaderboard.append(
+                            f"**{i}. [{discord_username}]({profile_link})**  {stats['total_score']} points"
+                        )
+                        print(f"**{i}. [{discord_username}]({profile_link})**  {stats['total_score']} points")
                 else:
-                    leaderboard.append(
-                        f"**{i}. {discord_username}** Score: {stats['total_score']}")
-            else:
-                leaderboard.append(
-                    f"**{i}. {username}** Score: {stats['total_score']}")
-        embed = discord.Embed(title="Leaderboard",
+                    if i > 0:
+                        leaderboard.append(
+                            f"**{i}. {discord_username}**  {stats['total_score']} points"
+                        )
+                        print(f"**{i} {discord_username}**  {stats['total_score']} points")
+
+                    
+        embed = discord.Embed(title="All-Time Leaderboard",
                               color=discord.Color.yellow())
         embed.description = "\n".join(leaderboard)
-        # Score Methodology: Easy: 1, Medium: 3, Hard: 5
+        # Score Methodology: Easy: 1, Medium: 3, Hard: 9
         embed.set_footer(
-            text="Score Methodology: Easy: 1 point, Medium: 3 points, Hard: 5 points")
-        # Score Equation: Easy * 1 + Medium * 3 + Hard * 5 = Total Score
+            text="Score Methodology: Easy: 1 point, Medium: 4 points, Hard: 9 points")
+        # Score Equation: Easy * 1 + Medium * 3 + Hard * 9 = Total Score
         await interaction.response.send_message(embed=embed)
+        print(leaderboard)
         return
+
 
 
 @client.tree.command(name="stats", description="Prints the stats of a user")
@@ -568,7 +571,7 @@ async def help(interaction: discord.Interaction):
         inline=False)
     embed.add_field(
         name="Score Calculation",
-        value="The score is calculated based on the amount of questions you have solved. Easy questions are worth 1 point, medium questions are worth 3 points, and hard questions are worth 5 points.",
+        value="The score is calculated based on the amount of questions you have solved. Easy questions are worth 1 point, medium questions are worth 3 points, and hard questions are worth 9 points.",
         inline=False)
     # for adminstrators
     if interaction.user.guild_permissions.administrator:
