@@ -96,8 +96,10 @@ async def removedailychannel(interaction: discord.Interaction, channel: discord.
 
 
 @client.tree.command(name="leaderboard", description="View the leaderboard")
-async def leaderboard(interaction: discord.Interaction, page: int = 1):
+async def leaderboard(interaction: discord.Interaction):
     print(interaction.guild.id)
+
+    users_per_page = 10
 
     if not os.path.exists(f"{interaction.guild.id}_leetcode_stats.json"):
         embed = discord.Embed(
@@ -109,41 +111,76 @@ async def leaderboard(interaction: discord.Interaction, page: int = 1):
 
     with open(f"{interaction.guild.id}_leetcode_stats.json", "r", encoding="UTF-8") as file:
         data = json.load(file)
+
     sorted_data = sorted(data.items(),
                          key=lambda x: x[1]["total_score"],
                          reverse=True)
-    leaderboard = []
-    start_index = (page - 1) * 10
-    end_index = page * 10
-    for i, (
-        username,
-        stats,
-    ) in enumerate(sorted_data[start_index:end_index], start=start_index+1):
-        profile_link = f"https://leetcode.com/{username}"
-        # Get the discord_username from the stats data in the JSON file
-        discord_username = stats.get("discord_username")
-        # Get the link_yes_no from the stats data in the JSON file
-        link_yes_no = stats.get("link_yes_no")
-        if discord_username:
-            if link_yes_no == "yes":
-                leaderboard.append(
-                    f"**{i}. [{discord_username}]({profile_link})** Score: {stats['total_score']}"
-                )
+    
+    pages = []
+    page_count = -(-len(sorted_data)//users_per_page)
+
+    for i in range(page_count):
+        leaderboard = []
+
+        for j, (
+            username,
+            stats,
+        ) in enumerate(sorted_data[i * users_per_page: i * users_per_page + users_per_page], start=i * names_per_page + 1):
+            profile_link = f"https://leetcode.com/{username}"
+            # Get the discord_username from the stats data in the JSON file
+            discord_username = stats.get("discord_username")
+            # Get the link_yes_no from the stats data in the JSON file
+            link_yes_no = stats.get("link_yes_no")
+            if discord_username:
+                if link_yes_no == "yes":
+                    leaderboard.append(
+                        f"**{j}. [{discord_username}]({profile_link})** Score: {stats['total_score']}"
+                    )
+                else:
+                    leaderboard.append(
+                        f"**{j}. {discord_username}** Score: {stats['total_score']}")
             else:
                 leaderboard.append(
-                    f"**{i}. {discord_username}** Score: {stats['total_score']}")
-        else:
-            leaderboard.append(
-                f"**{i}. {username}** Score: {stats['total_score']}")
-    embed = discord.Embed(title="Leaderboard",
+                    f"**{j}. {username}** Score: {stats['total_score']}")
+                
+        embed = discord.Embed(title="Leaderboard",
                           color=discord.Color.yellow())
-    embed.description = "\n".join(leaderboard)
-    # Score Methodology: Easy: 1, Medium: 3, Hard: 5
-    embed.set_footer(
-        text="Score Methodology: Easy: 1 point, Medium: 3 points, Hard: 5 points")
-    # Score Equation: Easy * 1 + Medium * 3 + Hard * 5 = Total Score
-    await interaction.response.send_message(embed=embed)
-    return
+        embed.description = "\n".join(leaderboard)
+        # Score Methodology: Easy: 1, Medium: 3, Hard: 5
+        embed.set_footer(
+            text=f"Score Methodology: Easy: 1 point, Medium: 3 points, Hard: 5 points\n\nPage {i + 1}/{page_count}")
+        # Score Equation: Easy * 1 + Medium * 3 + Hard * 5 = Total Score
+        pages.append(embed)
+
+    # https://stackoverflow.com/questions/65755309/divide-the-leaderboard-into-pages-discord-py
+    index = 0
+    await interaction.response.send_message(embed=pages[0])
+    message = await interaction.original_response()
+
+    emojis = ["◀️", "🚫", "▶️"]
+    for emoji in emojis:
+        await message.add_reaction(emoji)
+
+    while not client.is_closed():
+        try:
+            react, _ = await client.wait_for(
+                "reaction_add",
+                timeout = 60.0,
+                check = lambda r, u: r.emoji in emojis and u.id == interaction.user.id and r.message.id == message.id
+            )
+            if react.emoji == emojis[0] and index > 0:
+                index -= 1
+            elif react.emoji == emojis[1]:
+                await message.delete()
+                break
+            elif react.emoji == emojis[2] and index < len(pages) - 1:
+                index += 1
+
+            await message.edit(embed=pages[index])
+        except asyncio.TimeoutError:
+            await message.delete()
+            break
+
 
 
 @client.tree.command(name="stats", description="Prints the stats of a user")
@@ -383,7 +420,7 @@ async def add(interaction: discord.Interaction, username: str, link: str = "yes"
 
         return
     else:
-        embed = discord.Embed(title=f"Profile Not Added",
+        embed = discord.Embed(title="Profile Not Added",
                               color=discord.Color.red())
         embed.add_field(name="Username:", value=f"{username}", inline=False)
         await interaction.edit_original_response(embed=embed)
