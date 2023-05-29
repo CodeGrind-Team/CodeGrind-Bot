@@ -146,7 +146,28 @@ async def leaderboard(interaction: discord.Interaction, page: int = 1):
 
 
 @client.tree.command(name="stats", description="Prints the stats of a user")
-async def stats(interaction: discord.Interaction, username: str):
+async def stats(interaction: discord.Interaction, username: str = None):
+    if username is None:
+        with open(f"{interaction.guild.id}_leetcode_stats.json", "r", encoding="UTF-8") as file:
+            data = json.load(file)
+        
+        for user, user_data in data.items():
+            if user_data["discord_id"] == interaction.user.id:
+                username = user
+                break
+        
+
+        
+        if username is None:
+            embed = discord.Embed(
+                title="Error!",
+                description="You have not added your LeetCode username yet!",
+                color=discord.Color.red())
+            embed.add_field(name="Add your LeetCode username", value="Use the `/add <username>` command to add your LeetCode username.")
+            await interaction.response.send_message(embed=embed, ephemeral=True)
+            return
+                
+        
     url = f"https://leetcode.com/{username}"
     print(url)
     response = requests.get(url, timeout=10)
@@ -259,7 +280,7 @@ async def daily(interaction: discord.Interaction):
     name="add",
     description="Adds a user to the leaderboard. Answer with 'yes' to link your LeetCode profile to the leaderboard."
 )
-async def add(interaction: discord.Interaction, username: str, link: str = None):
+async def add(interaction: discord.Interaction, username: str, link: str = "yes"):
     if os.path.exists(f"{interaction.guild.id}_leetcode_stats.json"):
         with open(f"{interaction.guild.id}_leetcode_stats.json", "r", encoding="UTF-8") as file:
             existing_data = json.load(file)
@@ -348,7 +369,7 @@ async def add(interaction: discord.Interaction, username: str, link: str = None)
             "total_questions_done": total_questions_done,
             "total_score": total_score,
             "discord_username": discord_username,
-            "link_yes_or_no": link,
+            "link_yes_no": link,
             "discord_id": interaction.user.id
         }
 
@@ -535,7 +556,7 @@ async def help(interaction: discord.Interaction):
         inline=False)
     embed.add_field(
         name="Getting Your Stats",
-        value="Use `/stats {username}` to get your LeetCode statistics.",
+        value="Use `/stats` to get your LeetCode statistics, *or* use `/stats {username}` to get the LeetCode statistics of another user.",
         inline=False)
     embed.add_field(
         name="Server Leaderboard",
@@ -733,6 +754,8 @@ def get_daily_LC_link():
     difficulty = response_data['data']['challenge']['question']['difficulty']
     # Extract and print the date
     date = response_data['data']['challenge']['date']
+
+    
 
 
 my_secret = os.environ['TOKEN']
