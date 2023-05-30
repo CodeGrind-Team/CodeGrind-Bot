@@ -251,10 +251,10 @@ async def leaderboard(interaction: discord.Interaction, page: int = 1):
         embed = discord.Embed(title="All-Time Leaderboard",
                               color=discord.Color.yellow())
         embed.description = "\n".join(leaderboard)
-        # Score Methodology: Easy: 1, Medium: 3, Hard: 9
+        # Score Methodology: Easy: 1, Medium: 3, Hard: 7
         embed.set_footer(
-            text=f"Score Methodology: Easy: 1 point, Medium: 3 points, Hard: 9 points\n\nPage {i + 1}/{page_count}")
-        # Score Equation: Easy * 1 + Medium * 3 + Hard * 9 = Total Score
+            text=f"Score Methodology: Easy: 1 point, Medium: 3 points, Hard: 7 points\n\nPage {i + 1}/{page_count}")
+        # Score Equation: Easy * 1 + Medium * 3 + Hard * 7 = Total Score
         print(leaderboard)
         pages.append(embed)
 
@@ -315,7 +315,7 @@ async def stats(interaction: discord.Interaction, username: str = None):
         print(numbers)
 
         total_questions_done = easy_completed + medium_completed + hard_completed
-        total_score = easy_completed * 1 + medium_completed * 3 + hard_completed * 9
+        total_score = easy_completed * 1 + medium_completed * 3 + hard_completed * 7
 
         embed = discord.Embed(
             title=f"Rank: {rank}", color=discord.Color.green())
@@ -400,7 +400,12 @@ async def add(interaction: discord.Interaction, username: str, link: str = "yes"
         with open(f"{interaction.guild.id}_leetcode_stats.json", "r", encoding="UTF-8") as file:
             existing_data = json.load(file)
         if username in existing_data:
-            await interaction.response.send_message(f"User {username} already exists")
+            embed = discord.Embed(
+                title="Error!",
+                description="You have already added your LeetCode account!",
+                color=discord.Color.red())
+            embed.add_field(name="Remove your LeetCode username", value="Use the `/remove` command to remove your LeetCode username.")
+            await interaction.response.send_message(embed=embed, ephemeral=True)
             return
     else:
         existing_data = {}
@@ -685,7 +690,7 @@ async def help(interaction: discord.Interaction):
         inline=False)
     embed.add_field(
         name="Score Calculation",
-        value="The score is calculated based on the amount of questions you have solved. Easy questions are worth 1 point, medium questions are worth 3 points, and hard questions are worth 9 points.",
+        value="The score is calculated based on the amount of questions you have solved. Easy questions are worth 1 point, medium questions are worth 3 points, and hard questions are worth 7 points.",
         inline=False)
     # for adminstrators
     if interaction.user.guild_permissions.administrator:
