@@ -18,6 +18,8 @@ session = requests.Session()
 intents = discord.Intents().all()
 client = commands.Bot(command_prefix=',', intents=intents)
 
+DIFFICULTY_SCORE = {"easy": 1, "medium": 3, "hard": 7}
+
 
 @client.tree.command(name="setdailychannel", description="Set where the daily problem will be sent")
 async def setdailychannel(interaction: discord.Interaction, channel: discord.TextChannel = None):
@@ -253,7 +255,7 @@ async def leaderboard(interaction: discord.Interaction, page: int = 1):
         embed.description = "\n".join(leaderboard)
         # Score Methodology: Easy: 1, Medium: 3, Hard: 7
         embed.set_footer(
-            text=f"Score Methodology: Easy: 1 point, Medium: 3 points, Hard: 7 points\n\nPage {i + 1}/{page_count}")
+            text=f"Score Methodology: Easy: {DIFFICULTY_SCORE['easy']} point, Medium: {DIFFICULTY_SCORE['medium']} points, Hard: {DIFFICULTY_SCORE['hard']} points\n\nPage {i + 1}/{page_count}")
         # Score Equation: Easy * 1 + Medium * 3 + Hard * 7 = Total Score
         print(leaderboard)
         pages.append(embed)
@@ -315,7 +317,7 @@ async def stats(interaction: discord.Interaction, username: str = None):
         print(numbers)
 
         total_questions_done = easy_completed + medium_completed + hard_completed
-        total_score = easy_completed * 1 + medium_completed * 3 + hard_completed * 7
+        total_score = easy_completed * DIFFICULTY_SCORE['easy'] + medium_completed * DIFFICULTY_SCORE['medium']  + hard_completed * DIFFICULTY_SCORE['hard'] 
 
         embed = discord.Embed(
             title=f"Rank: {rank}", color=discord.Color.green())
@@ -404,7 +406,8 @@ async def add(interaction: discord.Interaction, username: str, link: str = "yes"
                 title="Error!",
                 description="You have already added your LeetCode account!",
                 color=discord.Color.red())
-            embed.add_field(name="Remove your LeetCode username", value="Use the `/remove` command to remove your LeetCode username.")
+            embed.add_field(name="Remove your LeetCode username",
+                            value="Use the `/remove` command to remove your LeetCode username.")
             await interaction.response.send_message(embed=embed, ephemeral=True)
             return
     else:
@@ -690,7 +693,7 @@ async def help(interaction: discord.Interaction):
         inline=False)
     embed.add_field(
         name="Score Calculation",
-        value="The score is calculated based on the amount of questions you have solved. Easy questions are worth 1 point, medium questions are worth 3 points, and hard questions are worth 7 points.",
+        value=f"The score is calculated based on the amount of questions you have solved. Easy questions are worth {DIFFICULTY_SCORE['easy']} point, medium questions are worth {DIFFICULTY_SCORE['medium']} points, and hard questions are worth {DIFFICULTY_SCORE['hard']} points.",
         inline=False)
     # for adminstrators
     if interaction.user.guild_permissions.administrator:
