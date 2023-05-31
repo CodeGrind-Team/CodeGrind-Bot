@@ -1,6 +1,7 @@
 import asyncio
 import datetime
 import json
+import logging
 import os
 import random
 import string
@@ -10,13 +11,23 @@ import requests
 from bs4 import BeautifulSoup
 from discord.ext import commands
 from dotenv import load_dotenv
+
 from keep_alive import keep_alive
+
+logging.basicConfig(filename="logs.log",
+                    format='%(asctime)s %(message)s',
+                    filemode='w')
+
+logger = logging.getLogger()
 
 load_dotenv()
 
 session = requests.Session()
 intents = discord.Intents().all()
 client = commands.Bot(command_prefix=',', intents=intents)
+
+DIFFICULTY_SCORE = {"easy": 1, "medium": 3, "hard": 7}
+RANK_EMOJI = {1: "🥇", 2: "🥈", 3: "🥉"}
 
 
 @client.tree.command(name="setdailychannel", description="Set where the daily problem will be sent")
@@ -29,8 +40,8 @@ async def setdailychannel(interaction: discord.Interaction, channel: discord.Tex
         # check if the channel is already in the file
         with open("dailychannels.txt", "r", encoding="UTF-8") as file:
             channels = file.readlines()
-            print(channels)
-            print(channel.id)
+            logger.debug(channels)
+            logger.debug(channel.id)
             if str(channel.id) + "\n" in channels or channel.id in channels:
                 embed = discord.Embed(
                     title="Error!",
@@ -66,8 +77,8 @@ async def removedailychannel(interaction: discord.Interaction, channel: discord.
         # check if the channel is already in the file
         with open("dailychannels.txt", "r", encoding="UTF-8") as file:
             channels = file.readlines()
-            print(channels)
-            print(channel.id)
+            logger.debug(channels)
+            logger.debug(channel.id)
             if (str(channel.id) + "\n") in channels or channel.id in channels:
                 with open("dailychannels.txt", "w", encoding="UTF-8") as file:
                     for line in channels:
@@ -134,7 +145,7 @@ class Pagination(discord.ui.View):
         self.next.style = discord.ButtonStyle.blurple
         self.next.disabled = False
 
-        print(self.page + 1)
+        logger.debug(self.page + 1)
 
         await interaction.response.edit_message(view=self)
 
@@ -155,14 +166,14 @@ class Pagination(discord.ui.View):
         self.previous.style = discord.ButtonStyle.blurple
         self.previous.disabled = False
 
-        print(self.page + 1)
+        logger.debug(self.page + 1)
 
         await interaction.response.edit_message(view=self)
 
 
 @client.tree.command(name="leaderboard", description="View the leaderboard")
 async def leaderboard(interaction: discord.Interaction, page: int = 1):
-    print(interaction.guild.id)
+    logger.debug(interaction.guild.id)
 
     users_per_page = 10
 
@@ -195,67 +206,23 @@ async def leaderboard(interaction: discord.Interaction, page: int = 1):
             # Get the discord_username from the stats data in the JSON file
             discord_username = stats.get("discord_username")
             # Get the link_yes_no from the stats data in the JSON file
-            link_yes_no = stats.get("link_yes_no")
+            link_yes_no = stats.get("link_yes_no") == "yes"
+
             if discord_username:
-                if link_yes_no == "yes":
-                    if j == 1:
-                        leaderboard.append(
-                            f"**🥇 [{discord_username}]({profile_link})**  {stats['total_score']} points"
-                        )
-                        print(
-                            f"**🥇 [{discord_username}]({profile_link})**  {stats['total_score']} points")
-                    elif j == 2:
-                        leaderboard.append(
-                            f"**🥈 [{discord_username}]({profile_link})**  {stats['total_score']} points"
-                        )
-                        print(
-                            f"**🥈 [{discord_username}]({profile_link})**  {stats['total_score']} points")
-                    elif j == 3:
-                        leaderboard.append(
-                            f"**🥉 [{discord_username}]({profile_link})**  {stats['total_score']} points"
-                        )
-                        print(
-                            f"**🥉 [{discord_username}]({profile_link})**  {stats['total_score']} points")
-                    else:
-                        leaderboard.append(
-                            f"**{j}\. [{discord_username}]({profile_link})**  {stats['total_score']} points"
-                        )
-                        print(
-                            f"**{j}\. [{discord_username}]({profile_link})**  {stats['total_score']} points")
-                else:
-                    if j == 1:
-                        leaderboard.append(
-                            f"**🥇 {discord_username}**  {stats['total_score']} points"
-                        )
-                        print(
-                            f"**🥇 {discord_username}**  {stats['total_score']} points")
-                    elif j == 2:
-                        leaderboard.append(
-                            f"**🥈 {discord_username}**  {stats['total_score']} points"
-                        )
-                        print(
-                            f"**🥈 {discord_username}**  {stats['total_score']} points")
-                    elif j == 3:
-                        leaderboard.append(
-                            f"**🥉 {discord_username}**  {stats['total_score']} points"
-                        )
-                        print(
-                            f"**🥉 {discord_username}**  {stats['total_score']} points")
-                    else:
-                        leaderboard.append(
-                            f"**{j}\. {discord_username}**  {stats['total_score']} points"
-                        )
-                        print(
-                            f"**{j}\. {discord_username}**  {stats['total_score']} points")
+                number_rank = f"{j}\."
+                discord_username_with_link = f"[{discord_username}]({profile_link})"
+                leaderboard.append(
+                    f"**{RANK_EMOJI[j] if j in RANK_EMOJI else number_rank} {discord_username_with_link if link_yes_no else discord_username}**  {stats['total_score']} points"
+                )
 
         embed = discord.Embed(title="All-Time Leaderboard",
                               color=discord.Color.yellow())
         embed.description = "\n".join(leaderboard)
         # Score Methodology: Easy: 1, Medium: 3, Hard: 7
         embed.set_footer(
-            text=f"Score Methodology: Easy: 1 point, Medium: 3 points, Hard: 7 points\n\nPage {i + 1}/{page_count}")
+            text=f"Score Methodology: Easy: {DIFFICULTY_SCORE['easy']} point, Medium: {DIFFICULTY_SCORE['medium']} points, Hard: {DIFFICULTY_SCORE['hard']} points\n\nPage {i + 1}/{page_count}")
         # Score Equation: Easy * 1 + Medium * 3 + Hard * 7 = Total Score
-        print(leaderboard)
+        logger.debug(leaderboard)
         pages.append(embed)
 
     page = page - 1 if page > 0 else 0
@@ -284,7 +251,7 @@ async def stats(interaction: discord.Interaction, username: str = None):
             return
 
     url = f"https://leetcode.com/{username}"
-    print(url)
+    logger.debug(url)
     response = requests.get(url, timeout=10)
 
     # Create a BeautifulSoup object to parse the HTML
@@ -293,17 +260,17 @@ async def stats(interaction: discord.Interaction, username: str = None):
     # Find the <span> element with the specified class for rank
     rank_element = soup.find(
         "span", class_="ttext-label-1 dark:text-dark-label-1 font-medium")
-    print(rank_element)
+    logger.debug(rank_element)
 
     rank = rank_element.text.strip() if rank_element else "N/A"
-    print(rank)
+    logger.debug(rank)
 
     # Find all the <span> elements with the specified class for question counts
     span_elements = soup.find_all(
         "span",
         class_="mr-[5px] text-base font-medium leading-[20px] text-label-1 dark:text-dark-label-1"
     )
-    print(span_elements)
+    logger.debug(span_elements)
 
     # Extract the text from each <span> element and store it in an array
     numbers = [span_element.text for span_element in span_elements]
@@ -312,10 +279,12 @@ async def stats(interaction: discord.Interaction, username: str = None):
         easy_completed = int(numbers[0])
         medium_completed = int(numbers[1])
         hard_completed = int(numbers[2])
-        print(numbers)
+        logger.debug(numbers)
 
         total_questions_done = easy_completed + medium_completed + hard_completed
-        total_score = easy_completed * 1 + medium_completed * 3 + hard_completed * 7
+        total_score = easy_completed * DIFFICULTY_SCORE['easy'] + medium_completed * \
+            DIFFICULTY_SCORE['medium'] + \
+            hard_completed * DIFFICULTY_SCORE['hard']
 
         embed = discord.Embed(
             title=f"Rank: {rank}", color=discord.Color.green())
@@ -406,7 +375,8 @@ async def add(interaction: discord.Interaction, username: str, link: str = "yes"
                 title="Error!",
                 description="You have already added your LeetCode account!",
                 color=discord.Color.red())
-            embed.add_field(name="Remove your LeetCode username", value="Use the `/remove` command to remove your LeetCode username.")
+            embed.add_field(name="Remove your LeetCode username",
+                            value="Use the `/remove` command to remove your LeetCode username.")
             await interaction.response.send_message(embed=embed, ephemeral=True)
             return
     else:
@@ -435,7 +405,7 @@ async def add(interaction: discord.Interaction, username: str, link: str = "yes"
 
     for _ in range(12):
         url = f"https://leetcode.com/{username}"
-        print(url)
+        logger.debug(url)
         response = requests.get(url, timeout=10)
         soup = BeautifulSoup(response.text, "html.parser")
 
@@ -456,7 +426,7 @@ async def add(interaction: discord.Interaction, username: str, link: str = "yes"
 
     if profile_name == generated_string:
         url = f"https://leetcode.com/{username}"
-        print(url)
+        logger.debug(url)
         response = requests.get(url, timeout=10)
         soup = BeautifulSoup(response.text, "html.parser")
 
@@ -517,7 +487,7 @@ async def add(interaction: discord.Interaction, username: str, link: str = "yes"
 async def delete(interaction: discord.Interaction):
     # Check if the file exists
     if os.path.exists(f"{interaction.guild.id}_leetcode_stats.json"):
-        print("File exists")
+        logger.debug("File exists")
         # Open the file
         with open(f"{interaction.guild.id}_leetcode_stats.json", "r", encoding="UTF-8") as file:
             data = json.load(file)
@@ -692,7 +662,7 @@ async def help(interaction: discord.Interaction):
         inline=False)
     embed.add_field(
         name="Score Calculation",
-        value="The score is calculated based on the amount of questions you have solved. Easy questions are worth 1 point, medium questions are worth 3 points, and hard questions are worth 7 points.",
+        value=f"The score is calculated based on the amount of questions you have solved. Easy questions are worth {DIFFICULTY_SCORE['easy']} point, medium questions are worth {DIFFICULTY_SCORE['medium']} points, and hard questions are worth {DIFFICULTY_SCORE['hard']} points.",
         inline=False)
     # for adminstrators
     if interaction.user.guild_permissions.administrator:
@@ -710,15 +680,16 @@ async def help(interaction: discord.Interaction):
 
 @ client.event
 async def on_ready():
-    print(datetime.datetime.utcnow().hour, datetime.datetime.utcnow().time)
-    print(f"Logged in as a bot {client.user}")
+    logger.debug("%s %s", datetime.datetime.utcnow().hour,
+                 datetime.datetime.utcnow().time)
+    logger.debug("Logged in as a bot %s", client.user)
     server_ids = [guild.id for guild in client.guilds]
-    print('Server IDs:', server_ids)
+    logger.debug('Server IDs: %s', server_ids)
     try:
         synced = await client.tree.sync()
-        print(f"Synced {len(synced)} commands")
+        logger.debug("Synced %s commands", len(synced))
     except Exception as e:
-        print(e)
+        logger.exception(e)
     await send_message_at_midnight()
 
 
@@ -727,11 +698,10 @@ async def send_message_at_midnight():
     while not client.is_closed():
         await asyncio.sleep(3600)  # sleep for a hour
         now = datetime.datetime.utcnow()
-        print(now.hour, now.minute)
+        logger.debug("%s %s", now.hour, now.minute)
         if now.hour == 0:
             # get the channel object
             # send the message
-            print("hi")
             url = 'https://leetcode.com/graphql'
 
             headers = {
@@ -786,11 +756,11 @@ async def send_message_at_midnight():
         if now.hour == 0 or now.hour == 6 or now.hour == 12 or now.hour == 18:
             # retrieve every server the bot is in
             server_ids = [guild.id for guild in client.guilds]
-            print('Server IDs:', server_ids)
+            logger.debug('Server IDs: %s', server_ids)
 
             # for each server, retrieve the leaderboard
             for server_id in server_ids:
-                print(server_id)
+                logger.debug(server_id)
                 # retrieve the keys from the json file
                 if os.path.exists(f"{server_id}_leetcode_stats.json"):
                     print("Path exists, retrieving data")
@@ -798,7 +768,7 @@ async def send_message_at_midnight():
                         data = json.load(f)
                     for username in data.keys():
                         url = f"https://leetcode.com/{username}/"
-                        print(url)
+                        logger.debug(url)
                         response = requests.get(url, timeout=10)
                         soup = BeautifulSoup(response.text, "html.parser")
 
@@ -833,55 +803,16 @@ async def send_message_at_midnight():
                             "discord_id": data.get(username).get("discord_id")
                         }
 
-                        print(data[username])
+                        logger.debug(data[username])
                         # update the json file
                         with open(f"{server_id}_leetcode_stats.json", "w", encoding="UTF-8") as f:
                             json.dump(data, f, indent=4)
 
 
-@ client.event
-async def on_message(message):
-    channel = client.get_channel(message.channel.id)
+if __name__ == "__main__":
+    logger.setLevel(logging.DEBUG)
+    logger.info("Logger is in DEBUG mode")
 
-
-def get_daily_LC_link():
-    url = 'https://leetcode.com/graphql'
-
-    headers = {
-        'Content-Type': 'application/json',
-    }
-
-    data = {
-        'operationName':
-        'daily',
-        'query':
-        '''
-        query daily {
-            challenge: activeDailyCodingChallengeQuestion {
-                date
-                link
-                question {
-                    difficulty
-                    title
-                }
-            }
-        }
-    '''
-    }
-
-    response = requests.post(url, json=data, headers=headers, timeout=10)
-    response_data = response.json()
-
-    # Extract and print the link
-    link = response_data['data']['challenge']['link']
-    # Extract and print the title
-    title = response_data['data']['challenge']['question']['title']
-    # Extract and print the difficulty
-    difficulty = response_data['data']['challenge']['question']['difficulty']
-    # Extract and print the date
-    date = response_data['data']['challenge']['date']
-
-
-my_secret = os.environ['TOKEN']
-keep_alive()
-client.run(my_secret)
+    my_secret = os.environ['TOKEN']
+    keep_alive()
+    client.run(my_secret)
