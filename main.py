@@ -19,6 +19,7 @@ intents = discord.Intents().all()
 client = commands.Bot(command_prefix=',', intents=intents)
 
 DIFFICULTY_SCORE = {"easy": 1, "medium": 3, "hard": 7}
+RANK_EMOJI = {1: "🥇", 2: "🥈", 3: "🥉"}
 
 
 @client.tree.command(name="setdailychannel", description="Set where the daily problem will be sent")
@@ -197,58 +198,14 @@ async def leaderboard(interaction: discord.Interaction, page: int = 1):
             # Get the discord_username from the stats data in the JSON file
             discord_username = stats.get("discord_username")
             # Get the link_yes_no from the stats data in the JSON file
-            link_yes_no = stats.get("link_yes_no")
+            link_yes_no = stats.get("link_yes_no") == "yes"
+
             if discord_username:
-                if link_yes_no == "yes":
-                    if j == 1:
-                        leaderboard.append(
-                            f"**🥇 [{discord_username}]({profile_link})**  {stats['total_score']} points"
-                        )
-                        print(
-                            f"**🥇 [{discord_username}]({profile_link})**  {stats['total_score']} points")
-                    elif j == 2:
-                        leaderboard.append(
-                            f"**🥈 [{discord_username}]({profile_link})**  {stats['total_score']} points"
-                        )
-                        print(
-                            f"**🥈 [{discord_username}]({profile_link})**  {stats['total_score']} points")
-                    elif j == 3:
-                        leaderboard.append(
-                            f"**🥉 [{discord_username}]({profile_link})**  {stats['total_score']} points"
-                        )
-                        print(
-                            f"**🥉 [{discord_username}]({profile_link})**  {stats['total_score']} points")
-                    else:
-                        leaderboard.append(
-                            f"**{j}\. [{discord_username}]({profile_link})**  {stats['total_score']} points"
-                        )
-                        print(
-                            f"**{j}\. [{discord_username}]({profile_link})**  {stats['total_score']} points")
-                else:
-                    if j == 1:
-                        leaderboard.append(
-                            f"**🥇 {discord_username}**  {stats['total_score']} points"
-                        )
-                        print(
-                            f"**🥇 {discord_username}**  {stats['total_score']} points")
-                    elif j == 2:
-                        leaderboard.append(
-                            f"**🥈 {discord_username}**  {stats['total_score']} points"
-                        )
-                        print(
-                            f"**🥈 {discord_username}**  {stats['total_score']} points")
-                    elif j == 3:
-                        leaderboard.append(
-                            f"**🥉 {discord_username}**  {stats['total_score']} points"
-                        )
-                        print(
-                            f"**🥉 {discord_username}**  {stats['total_score']} points")
-                    else:
-                        leaderboard.append(
-                            f"**{j}\. {discord_username}**  {stats['total_score']} points"
-                        )
-                        print(
-                            f"**{j}\. {discord_username}**  {stats['total_score']} points")
+                number_rank = f"{j}\."
+                discord_username_with_link = f"[{discord_username}]({profile_link})"
+                leaderboard.append(
+                    f"**{RANK_EMOJI[j] if j in RANK_EMOJI else number_rank} {discord_username_with_link if link_yes_no else discord_username}**  {stats['total_score']} points"
+                )
 
         embed = discord.Embed(title="All-Time Leaderboard",
                               color=discord.Color.yellow())
@@ -317,7 +274,9 @@ async def stats(interaction: discord.Interaction, username: str = None):
         print(numbers)
 
         total_questions_done = easy_completed + medium_completed + hard_completed
-        total_score = easy_completed * DIFFICULTY_SCORE['easy'] + medium_completed * DIFFICULTY_SCORE['medium']  + hard_completed * DIFFICULTY_SCORE['hard'] 
+        total_score = easy_completed * DIFFICULTY_SCORE['easy'] + medium_completed * \
+            DIFFICULTY_SCORE['medium'] + \
+            hard_completed * DIFFICULTY_SCORE['hard']
 
         embed = discord.Embed(
             title=f"Rank: {rank}", color=discord.Color.green())
