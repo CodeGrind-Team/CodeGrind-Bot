@@ -223,8 +223,8 @@ class Pagination(discord.ui.View):
 #     await interaction.channel.send(file=discord.File(graph_filename))
 
 
-@client.tree.command(name="leaderboard", description="View the leaderboard")
-async def leaderboard(interaction: discord.Interaction, timeframe_field: str, page: int = 1):
+
+async def create_leaderboard(interaction: discord.Interaction, timeframe_field: str = "total_score", page: int = 1):
     logger.debug(interaction.guild.id)
 
     users_per_page = 10
@@ -282,13 +282,14 @@ async def leaderboard(interaction: discord.Interaction, timeframe_field: str, pa
 
 
 @client.tree.command(name="leaderboard", description="View the All-Time leaderboard")
-async def all_time(interaction: discord.Interaction, page: int = 1):
-    await leaderboard(interaction, "total_score", page)
-
+async def leaderboard(interaction: discord.Interaction, timeframe_field: str = "total_score", page: int = 1):
+    await create_leaderboard(interaction, timeframe_field, page)
 
 @client.tree.command(name="weekly", description="View the Weekly leaderboard")
 async def weekly(interaction: discord.Interaction, page: int = 1):
-    await leaderboard(interaction, "week_score", page)
+    await create_leaderboard(interaction, "week_score", page)
+
+
 
 
 @client.tree.command(name="stats", description="Prints the stats of a user")
