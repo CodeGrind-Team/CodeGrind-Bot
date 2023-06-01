@@ -7,10 +7,10 @@ import requests
 from bs4 import BeautifulSoup
 from discord.ext import commands
 
-from bot_globals import DIFFICULTY_SCORE, client, logger
+from bot_globals import DIFFICULTY_SCORE, logger
 
 
-def update_stats(now: datetime):
+def update_stats(client, now: datetime):
     # retrieve every server the bot is in
     server_ids = [guild.id for guild in client.guilds]
     logger.debug('Server IDs: %s', server_ids)

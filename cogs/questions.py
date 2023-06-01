@@ -4,13 +4,13 @@ import discord
 import requests
 from discord.ext import commands
 
-from bot_globals import client, session, logger
+from bot_globals import session, logger
 
 
 class Questions(commands.Cog):
     def __init__(self, client):
         self.client = client
-        
+
     @discord.app_commands.command(name="daily", description="Returns the daily problem")
     async def daily(self, interaction: discord.Interaction):
         url = 'https://leetcode.com/graphql'

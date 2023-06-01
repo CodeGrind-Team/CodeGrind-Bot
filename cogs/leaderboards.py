@@ -4,8 +4,7 @@ import os
 import discord
 from discord.ext import commands
 
-from bot_globals import (DIFFICULTY_SCORE, RANK_EMOJI, TIMEFRAME_TITLE, client,
-                         logger)
+from bot_globals import DIFFICULTY_SCORE, RANK_EMOJI, TIMEFRAME_TITLE, logger
 
 
 class Pagination(discord.ui.View):

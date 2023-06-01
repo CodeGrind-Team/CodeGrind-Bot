@@ -77,7 +77,7 @@ async def send_message_at_midnight():
                     await message.pin()
 
         if now.hour == 0 or now.hour == 6 or now.hour == 12 or now.hour == 18:
-            update_stats(now)
+            update_stats(client, now)
 
 
 @client.event
@@ -89,7 +89,7 @@ async def on_ready():
     logger.info('Server IDs: %s', server_ids)
 
     # ? updates stats on
-    update_stats(datetime.now())
+    update_stats(client, datetime.now())
     logger.debug("Stats updated")
 
     try:
