@@ -310,10 +310,10 @@ async def stats(interaction: discord.Interaction, username: str = None):
             text=f"Total: {total_questions_done} | Score: {total_score}")
 
         embed.set_author(
-            name=f"{username}",
+            name=f"{username}'s LeetCode Stats",
             icon_url="https://repository-images.githubusercontent.com/98157751/7e85df00-ec67-11e9-98d3-684a4b66ae37"
         )
-        await interaction.response.send_message(embed=embed)
+        await interaction.response.send_message(embed=embed, ephemeral=True)
         return
     else:
         embed = discord.Embed(
@@ -692,7 +692,7 @@ async def help(interaction: discord.Interaction):
 async def send_message_at_midnight():
     await client.wait_until_ready()
     while not client.is_closed():
-        await asyncio.sleep(3600)  # sleep for a minute
+        await asyncio.sleep(3600)  # sleep for a hour
         now = datetime.utcnow()
         logger.debug("%s %s", now.hour, now.minute)
         if now.hour == 0:
@@ -749,7 +749,7 @@ async def send_message_at_midnight():
                 async for message in channel.history(limit=1):
                     await message.pin()
 
-        if now.hour == 0 or now.hour == 12:
+        if now.hour == 0 or now.hour == 6 or now.hour == 12 or now.hour == 18:
             update_stats(now)
 
 
@@ -847,7 +847,7 @@ async def on_ready():
     server_ids = [guild.id for guild in client.guilds]
     logger.info('Server IDs: %s', server_ids)
 
-    # ? updates stats on start
+    # ? updates stats on
     update_stats(datetime.now())
     logger.debug("Stats updated")
 
