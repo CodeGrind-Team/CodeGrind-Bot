@@ -804,15 +804,19 @@ def update_stats(now: datetime):
                     data[username]["week_score"] = 0
 
                 start_of_week = now - timedelta(days=now.weekday() % 7)
-                start_of_week_date = start_of_week.strftime("%d/%m/%Y")
 
-                if str(start_of_week_date) in data[username]["history"]:
+                while start_of_week <= now:
+                    start_of_week_date = start_of_week.strftime("%d/%m/%Y")
+                    if str(start_of_week_date) not in data[username]["history"]:
+                        start_of_week += timedelta(days=1)
+                        continue
+
                     start_of_week_easy_completed = data[username]["history"][str(
-                        start_of_week_date)]
+                        start_of_week_date)]['easy']
                     start_of_week_medium_completed = data[username]["history"][str(
-                        start_of_week_date)]
+                        start_of_week_date)]['medium']
                     start_of_week_hard_completed = data[username]["history"][str(
-                        start_of_week_date)]
+                        start_of_week_date)]['hard']
 
                     start_of_week_score = start_of_week_easy_completed * \
                         DIFFICULTY_SCORE["easy"] + start_of_week_medium_completed * \
@@ -822,6 +826,7 @@ def update_stats(now: datetime):
                     week_score = total_score - start_of_week_score
 
                     data[username]["week_score"] = week_score
+                    break
 
                 data[username]["rank"] = rank
                 data[username]["easy"] = easy_completed
@@ -840,7 +845,7 @@ def update_stats(now: datetime):
                     json.dump(data, f, indent=4)
 
 
-@ client.event
+@client.event
 async def on_ready():
     logger.info("%s %s", datetime.utcnow().hour,
                 datetime.utcnow().time)
