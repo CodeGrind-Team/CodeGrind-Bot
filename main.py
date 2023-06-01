@@ -31,8 +31,8 @@ client = commands.Bot(command_prefix=',', intents=intents)
 
 DIFFICULTY_SCORE = {"easy": 1, "medium": 3, "hard": 7}
 RANK_EMOJI = {1: "🥇", 2: "🥈", 3: "🥉"}
-FIELD_TITLE_TIMEFRAME = {
-    "total_score": "All-Time", "week_score": "Weekly"}
+TIMEFRAME_TITLE = {"alltime": {"field": "total_score",
+                                      "title": "All-Time"}, "weekly": {"field": "week_score", "title": "Weekly"}}
 
 
 @client.tree.command(name="setdailychannel", description="Set where the daily problem will be sent")
@@ -176,7 +176,8 @@ class Pagination(discord.ui.View):
         await interaction.response.edit_message(view=self)
 
 
-
+# @todo: add a graph command
+# @body: This command will display a graph of the leaderboard. The graph command code is below, but needs to be optimised and fully integrated with the bot.
 # @client.tree.command(name="graph", description="View the leaderboard graph")
 # async def graph(interaction: discord.Interaction, page: int = 1):
 #     # Read the JSON file
@@ -224,14 +225,14 @@ class Pagination(discord.ui.View):
 
 
 
-async def create_leaderboard(interaction: discord.Interaction, timeframe_field: str = "total_score", page: int = 1):
+async def create_leaderboard(interaction: discord.Interaction, timeframe: str = "alltime", page: int = 1):    
     logger.debug(interaction.guild.id)
 
     users_per_page = 10
 
     if not os.path.exists(f"{interaction.guild.id}_leetcode_stats.json"):
         embed = discord.Embed(
-            title=f"{FIELD_TITLE_TIMEFRAME[timeframe_field]} Leaderboard",
+            title=f"{TIMEFRAME_TITLE[timeframe]['title']} Leaderboard",
             description="No one has added their LeetCode username yet.",
             color=discord.Color.red())
         await interaction.response.send_message(embed=embed)
@@ -241,7 +242,7 @@ async def create_leaderboard(interaction: discord.Interaction, timeframe_field: 
         data = json.load(file)
 
     sorted_data = sorted(data.items(),
-                         key=lambda x: x[1][timeframe_field],
+                         key=lambda x: x[1][TIMEFRAME_TITLE[timeframe]["field"]],
                          reverse=True)
 
     pages = []
@@ -264,10 +265,9 @@ async def create_leaderboard(interaction: discord.Interaction, timeframe_field: 
                 number_rank = f"{j}\."
                 discord_username_with_link = f"[{discord_username}]({profile_link})"
                 leaderboard.append(
-                    f"**{RANK_EMOJI[j] if j in RANK_EMOJI else number_rank} {discord_username_with_link if link_yes_no else discord_username}**  {stats[timeframe_field]} points"
-                )
+                    f"**{RANK_EMOJI[j] if j in RANK_EMOJI else number_rank} {discord_username_with_link if link_yes_no else discord_username}**  {stats[TIMEFRAME_TITLE[timeframe]['field']]}")
 
-        embed = discord.Embed(title=f"{FIELD_TITLE_TIMEFRAME[timeframe_field]} Leaderboard",
+        embed = discord.Embed(title=f"{TIMEFRAME_TITLE[timeframe]['title']} Leaderboard",
                               color=discord.Color.yellow())
         embed.description = "\n".join(leaderboard)
         # Score Methodology: Easy: 1, Medium: 3, Hard: 7
@@ -282,14 +282,19 @@ async def create_leaderboard(interaction: discord.Interaction, timeframe_field: 
 
 
 @client.tree.command(name="leaderboard", description="View the All-Time leaderboard")
-async def leaderboard(interaction: discord.Interaction, timeframe_field: str = "total_score", page: int = 1):
-    await create_leaderboard(interaction, timeframe_field, page)
+async def leaderboard(interaction: discord.Interaction, timeframe: str = "alltime", page: int = 1):
+    timeframe = timeframe.lower()
+    
+    if timeframe not in TIMEFRAME_TITLE:
+        await interaction.response.defer()
+        return
+    
+    await create_leaderboard(interaction, timeframe, page)
+
 
 @client.tree.command(name="weekly", description="View the Weekly leaderboard")
 async def weekly(interaction: discord.Interaction, page: int = 1):
-    await create_leaderboard(interaction, "week_score", page)
-
-
+    await create_leaderboard(interaction, "weekly", page)
 
 
 @client.tree.command(name="stats", description="Prints the stats of a user")
