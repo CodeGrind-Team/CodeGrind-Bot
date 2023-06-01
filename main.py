@@ -1,10 +1,10 @@
 import asyncio
-import datetime
 import json
 import logging
 import os
 import random
 import string
+from datetime import datetime, timedelta
 
 import discord
 import requests
@@ -28,6 +28,8 @@ client = commands.Bot(command_prefix=',', intents=intents)
 
 DIFFICULTY_SCORE = {"easy": 1, "medium": 3, "hard": 7}
 RANK_EMOJI = {1: "🥇", 2: "🥈", 3: "🥉"}
+FIELD_TITLE_TIMEFRAME = {
+    "total_score": "All-Time", "week_score": "Weekly"}
 
 
 @client.tree.command(name="setdailychannel", description="Set where the daily problem will be sent")
@@ -171,15 +173,14 @@ class Pagination(discord.ui.View):
         await interaction.response.edit_message(view=self)
 
 
-@client.tree.command(name="leaderboard", description="View the leaderboard")
-async def leaderboard(interaction: discord.Interaction, page: int = 1):
+async def leaderboard(interaction: discord.Interaction, timeframe_field: str, page: int = 1):
     logger.debug(interaction.guild.id)
 
     users_per_page = 10
 
     if not os.path.exists(f"{interaction.guild.id}_leetcode_stats.json"):
         embed = discord.Embed(
-            title="All-Time Leaderboard",
+            title=f"{FIELD_TITLE_TIMEFRAME[timeframe_field]} Leaderboard",
             description="No one has added their LeetCode username yet.",
             color=discord.Color.red())
         await interaction.response.send_message(embed=embed)
@@ -189,7 +190,7 @@ async def leaderboard(interaction: discord.Interaction, page: int = 1):
         data = json.load(file)
 
     sorted_data = sorted(data.items(),
-                         key=lambda x: x[1]["total_score"],
+                         key=lambda x: x[1][timeframe_field],
                          reverse=True)
 
     pages = []
@@ -212,10 +213,10 @@ async def leaderboard(interaction: discord.Interaction, page: int = 1):
                 number_rank = f"{j}\."
                 discord_username_with_link = f"[{discord_username}]({profile_link})"
                 leaderboard.append(
-                    f"**{RANK_EMOJI[j] if j in RANK_EMOJI else number_rank} {discord_username_with_link if link_yes_no else discord_username}**  {stats['total_score']} points"
+                    f"**{RANK_EMOJI[j] if j in RANK_EMOJI else number_rank} {discord_username_with_link if link_yes_no else discord_username}**  {stats[timeframe_field]} points"
                 )
 
-        embed = discord.Embed(title="All-Time Leaderboard",
+        embed = discord.Embed(title=f"{FIELD_TITLE_TIMEFRAME[timeframe_field]} Leaderboard",
                               color=discord.Color.yellow())
         embed.description = "\n".join(leaderboard)
         # Score Methodology: Easy: 1, Medium: 3, Hard: 7
@@ -227,6 +228,16 @@ async def leaderboard(interaction: discord.Interaction, page: int = 1):
 
     page = page - 1 if page > 0 else 0
     await interaction.response.send_message(embed=pages[page], view=Pagination(interaction.user.id, pages, page))
+
+
+@client.tree.command(name="leaderboard", description="View the All-Time leaderboard")
+async def all_time(interaction: discord.Interaction, page: int = 1):
+    await leaderboard(interaction, "total_score", page)
+
+
+@client.tree.command(name="weekly", description="View the Weekly leaderboard")
+async def weekly(interaction: discord.Interaction, page: int = 1):
+    await leaderboard(interaction, "week_score", page)
 
 
 @client.tree.command(name="stats", description="Prints the stats of a user")
@@ -460,9 +471,11 @@ async def add(interaction: discord.Interaction, username: str, link: str = "yes"
             "hard": hard_completed,
             "total_questions_done": total_questions_done,
             "total_score": total_score,
+            "week_score": 0,
             "discord_username": discord_username,
             "link_yes_no": link,
-            "discord_id": interaction.user.id
+            "discord_id": interaction.user.id,
+            "history": {}
         }
 
         with open(f"{interaction.guild.id}_leetcode_stats.json", "w", encoding="UTF-8") as file:
@@ -676,26 +689,11 @@ async def help(interaction: discord.Interaction):
     await interaction.response.send_message(embed=embed, ephemeral=True)
 
 
-@ client.event
-async def on_ready():
-    logger.debug("%s %s", datetime.datetime.utcnow().hour,
-                 datetime.datetime.utcnow().time)
-    logger.debug("Logged in as a bot %s", client.user)
-    server_ids = [guild.id for guild in client.guilds]
-    logger.debug('Server IDs: %s', server_ids)
-    try:
-        synced = await client.tree.sync()
-        logger.debug("Synced %s commands", len(synced))
-    except Exception as e:
-        logger.exception(e)
-    await send_message_at_midnight()
-
-
 async def send_message_at_midnight():
     await client.wait_until_ready()
     while not client.is_closed():
         await asyncio.sleep(3600)  # sleep for a minute
-        now = datetime.datetime.utcnow()
+        now = datetime.utcnow()
         logger.debug("%s %s", now.hour, now.minute)
         if now.hour == 0:
             # get the channel object
@@ -752,59 +750,113 @@ async def send_message_at_midnight():
                     await message.pin()
 
         if now.hour == 0 or now.hour == 12:
-            # retrieve every server the bot is in
-            server_ids = [guild.id for guild in client.guilds]
-            logger.debug('Server IDs: %s', server_ids)
+            update_stats(now)
 
-            # for each server, retrieve the leaderboard
-            for server_id in server_ids:
-                logger.debug(server_id)
-                # retrieve the keys from the json file
-                if os.path.exists(f"{server_id}_leetcode_stats.json"):
-                    with open(f'{server_id}_leetcode_stats.json', 'r', encoding="UTF-8") as f:
-                        data = json.load(f)
-                    for username in data.keys():
-                        url = f"https://leetcode.com/{username}/"
-                        logger.debug(url)
-                        response = requests.get(url, timeout=10)
-                        soup = BeautifulSoup(response.text, "html.parser")
 
-                        rank_element = soup.find(
-                            "span", class_="ttext-label-1 dark:text-dark-label-1 font-medium")
-                        rank = rank_element.text.strip() if rank_element else "N/A"
+def update_stats(now: datetime):
+    # retrieve every server the bot is in
+    server_ids = [guild.id for guild in client.guilds]
+    logger.debug('Server IDs: %s', server_ids)
 
-                        span_elements = soup.find_all(
-                            "span",
-                            class_="mr-[5px] text-base font-medium leading-[20px] text-label-1 dark:text-dark-label-1"
-                        )
+    # for each server, retrieve the leaderboard
+    for server_id in server_ids:
+        logger.debug(server_id)
+        # retrieve the keys from the json file
+        if os.path.exists(f"{server_id}_leetcode_stats.json"):
+            with open(f'{server_id}_leetcode_stats.json', 'r', encoding="UTF-8") as f:
+                data = json.load(f)
+            for username in data.keys():
+                url = f"https://leetcode.com/{username}/"
+                logger.debug(url)
+                response = requests.get(url, timeout=10)
+                soup = BeautifulSoup(response.text, "html.parser")
 
-                        numbers = [
-                            span_element.text for span_element in span_elements]
+                rank_element = soup.find(
+                    "span", class_="ttext-label-1 dark:text-dark-label-1 font-medium")
+                rank = rank_element.text.strip() if rank_element else "N/A"
 
-                        easy_completed = int(numbers[0])
-                        medium_completed = int(numbers[1])
-                        hard_completed = int(numbers[2])
+                span_elements = soup.find_all(
+                    "span",
+                    class_="mr-[5px] text-base font-medium leading-[20px] text-label-1 dark:text-dark-label-1"
+                )
 
-                        total_questions_done = easy_completed + medium_completed + hard_completed
-                        total_score = easy_completed * 1 + medium_completed * 3 + hard_completed * 9
+                numbers = [
+                    span_element.text for span_element in span_elements]
 
-                        data[username] = {
-                            "rank": rank,
-                            "easy": easy_completed,
-                            "medium": medium_completed,
-                            "hard": hard_completed,
-                            "total_questions_done": total_questions_done,
-                            "total_score": total_score,
-                            "discord_username": data.get(username).get("discord_username"),
-                            "link_yes_no": data.get(username).get("link_yes_no"),
-                            "discord_id": data.get(username).get("discord_id")
-                        }
+                easy_completed = int(numbers[0])
+                medium_completed = int(numbers[1])
+                hard_completed = int(numbers[2])
 
-                        logger.debug(data[username])
-                        # update the json file
-                        with open(f"{server_id}_leetcode_stats.json", "w", encoding="UTF-8") as f:
-                            json.dump(data, f, indent=4)
+                total_questions_done = easy_completed + medium_completed + hard_completed
+                total_score = easy_completed * \
+                    DIFFICULTY_SCORE["easy"] + medium_completed * \
+                    DIFFICULTY_SCORE["medium"] + \
+                    hard_completed * DIFFICULTY_SCORE["hard"]
 
+                # Due to this field is added after some users have already been added,
+                # it needs to be created and set to an empty dictionary
+                # TODO: replace this with a function to automatically fill in missing fields
+                if "history" not in data[username]:
+                    data[username]["history"] = {}
+
+                if "week_score" not in data[username]:
+                    data[username]["week_score"] = 0
+
+                start_of_week = now - timedelta(days=now.weekday() % 7)
+                start_of_week_date = start_of_week.strftime("%D")
+
+                if str(start_of_week_date) in data[username]["history"]:
+                    start_of_week_easy_completed = data[username]["history"][str(
+                        start_of_week_date)]
+                    start_of_week_medium_completed = data[username]["history"][str(
+                        start_of_week_date)]
+                    start_of_week_hard_completed = data[username]["history"][str(
+                        start_of_week_date)]
+
+                    start_of_week_score = start_of_week_easy_completed * \
+                        DIFFICULTY_SCORE["easy"] + start_of_week_medium_completed * \
+                        DIFFICULTY_SCORE["medium"] + \
+                        start_of_week_hard_completed * \
+                        DIFFICULTY_SCORE["hard"]
+                    week_score = total_score - start_of_week_score
+
+                    data[username]["week_score"] = week_score
+
+                data[username]["rank"] = rank
+                data[username]["easy"] = easy_completed
+                data[username]["medium"] = medium_completed
+                data[username]["hard"] = hard_completed
+                data[username]["total_questions_done"] = total_questions_done
+                data[username]["total_score"] = total_score
+
+                if str(now.strftime("%D")) not in data[username]["history"]:
+                    data[username]["history"][str(now.strftime("%D"))] = {
+                        "easy": easy_completed, "medium": medium_completed, "hard": hard_completed}
+
+                logger.debug(data[username])
+                # update the json file
+                with open(f"{server_id}_leetcode_stats.json", "w", encoding="UTF-8") as f:
+                    json.dump(data, f, indent=4)
+
+
+@ client.event
+async def on_ready():
+    logger.info("%s %s", datetime.utcnow().hour,
+                datetime.utcnow().time)
+    logger.info("Logged in as a bot %s", client.user)
+    server_ids = [guild.id for guild in client.guilds]
+    logger.info('Server IDs: %s', server_ids)
+
+    # ? updates stats on start
+    update_stats(datetime.now())
+    logger.debug("Stats updated")
+
+    try:
+        synced = await client.tree.sync()
+        logger.info("Synced %s commands", len(synced))
+    except Exception as e:
+        logger.exception(e)
+    await send_message_at_midnight()
 
 if __name__ == "__main__":
     logger.setLevel(logging.DEBUG)
