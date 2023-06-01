@@ -6,6 +6,9 @@ import os
 import random
 import string
 
+import matplotlib.pyplot as plt
+import json
+
 import discord
 import requests
 from bs4 import BeautifulSoup
@@ -169,6 +172,53 @@ class Pagination(discord.ui.View):
         logger.debug(self.page + 1)
 
         await interaction.response.edit_message(view=self)
+
+
+
+# @client.tree.command(name="graph", description="View the leaderboard graph")
+# async def graph(interaction: discord.Interaction, page: int = 1):
+#     # Read the JSON file
+#     server_id = str(interaction.guild.id)
+#     with open(f"{server_id}_leetcode_stats.json", "r") as file:
+#         data = json.load(file)
+    
+#     # Extract the usernames and scores
+#     sorted_data = sorted(data.items(), key=lambda x: x[1]["total_score"], reverse=True)
+#     usernames = []
+#     scores = []
+#     for user, stats in sorted_data:
+#         usernames.append(stats["discord_username"])
+#         scores.append(stats["total_score"])
+    
+#     # Calculate pagination
+#     items_per_page = 10
+#     start_idx = (page - 1) * items_per_page
+#     end_idx = start_idx + items_per_page
+    
+#     # Slice the data based on the page
+#     usernames = usernames[start_idx:end_idx]
+#     scores = scores[start_idx:end_idx]
+    
+#     # Create the graph
+#     plt.figure(figsize=(10, 6))
+#     plt.plot(usernames, scores, marker='o')
+#     plt.xlabel("Usernames")
+#     plt.ylabel("Total Scores")
+#     plt.title("Leaderboard")
+#     plt.xticks(rotation=45)
+    
+#     # Save the graph as an image
+#     graph_filename = "leaderboard_graph.png"
+#     plt.savefig(graph_filename)
+#     plt.close()
+    
+#     # Send the graph image on Discord
+#     embed = discord.Embed(
+#         title=f"Leaderboard Graph (Page {page})",
+#         description="Here is the leaderboard graph.",
+#         color=discord.Color.blurple())
+#     await interaction.response.send_message(embed=embed)
+#     await interaction.channel.send(file=discord.File(graph_filename))
 
 
 @client.tree.command(name="leaderboard", description="View the leaderboard")
