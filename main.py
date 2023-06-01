@@ -308,7 +308,6 @@ async def stats(interaction: discord.Interaction, username: str = None):
 
         embed.set_footer(
             text=f"Total: {total_questions_done} | Score: {total_score}")
-        
 
         embed.set_author(
             name=f"{username}'s LeetCode Stats",
@@ -755,7 +754,6 @@ async def send_message_at_midnight():
             update_stats(now)
 
 
-
 def update_stats(now: datetime):
     # retrieve every server the bot is in
     server_ids = [guild.id for guild in client.guilds]
@@ -806,7 +804,7 @@ def update_stats(now: datetime):
                     data[username]["week_score"] = 0
 
                 start_of_week = now - timedelta(days=now.weekday() % 7)
-                start_of_week_date = start_of_week.strftime("%D")
+                start_of_week_date = start_of_week.strftime("%d/%m/%Y")
 
                 if str(start_of_week_date) in data[username]["history"]:
                     start_of_week_easy_completed = data[username]["history"][str(
@@ -832,8 +830,8 @@ def update_stats(now: datetime):
                 data[username]["total_questions_done"] = total_questions_done
                 data[username]["total_score"] = total_score
 
-                if str(now.strftime("%D")) not in data[username]["history"]:
-                    data[username]["history"][str(now.strftime("%D"))] = {
+                if str(now.strftime("%d/%m/%Y")) not in data[username]["history"]:
+                    data[username]["history"][str(now.strftime("%d/%m/%Y"))] = {
                         "easy": easy_completed, "medium": medium_completed, "hard": hard_completed}
 
                 logger.debug(data[username])
