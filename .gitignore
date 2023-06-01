@@ -175,5 +175,6 @@ pyrightconfig.json
 
 tempCodeRunnerFile.py
 *.json
+.vscode
 
 # End of https://www.toptal.com/developers/gitignore/api/python
