@@ -308,6 +308,7 @@ async def stats(interaction: discord.Interaction, username: str = None):
 
         embed.set_footer(
             text=f"Total: {total_questions_done} | Score: {total_score}")
+        
 
         embed.set_author(
             name=f"{username}'s LeetCode Stats",
@@ -694,6 +695,7 @@ async def send_message_at_midnight():
     while not client.is_closed():
         await asyncio.sleep(3600)  # sleep for a hour
         now = datetime.utcnow()
+
         logger.debug("%s %s", now.hour, now.minute)
         if now.hour == 0:
             # get the channel object
@@ -751,6 +753,7 @@ async def send_message_at_midnight():
 
         if now.hour == 0 or now.hour == 6 or now.hour == 12 or now.hour == 18:
             update_stats(now)
+
 
 
 def update_stats(now: datetime):
