@@ -13,7 +13,6 @@ from cogs.stats import update_stats
 
 load_dotenv()
 
-
 async def send_message_at_midnight():
     await client.wait_until_ready()
     while not client.is_closed():
