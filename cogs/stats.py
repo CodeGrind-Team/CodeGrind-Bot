@@ -10,7 +10,7 @@ from discord.ext import commands
 from bot_globals import DIFFICULTY_SCORE, logger
 
 
-def update_stats(client, now: datetime):
+def update_stats(client, now: datetime, weekly_reset: bool = False):
     # retrieve every server the bot is in
     server_ids = [guild.id for guild in client.guilds]
     logger.debug('Server IDs: %s', server_ids)
@@ -22,7 +22,12 @@ def update_stats(client, now: datetime):
         if os.path.exists(f"{server_id}_leetcode_stats.json"):
             with open(f'{server_id}_leetcode_stats.json', 'r', encoding="UTF-8") as f:
                 data = json.load(f)
-            for username in data.keys():
+
+            sorted_data = sorted(data.items(),
+                                 key=lambda x: x[1]["week_score"],
+                                 reverse=True)
+
+            for place, (username, _) in enumerate(sorted_data):
                 url = f"https://leetcode.com/{username}/"
                 logger.debug(url)
                 response = requests.get(url, timeout=10)
@@ -58,6 +63,13 @@ def update_stats(client, now: datetime):
 
                 if "week_score" not in data[username]:
                     data[username]["week_score"] = 0
+
+                if "weeklies_ranking" not in data[username]:
+                    data[username]["weeklies_ranking"] = {}
+
+                if weekly_reset:
+                    data[username]["weeklies_ranking"][str(now.strftime(
+                        "%d/%m/%Y"))] = place + 1
 
                 start_of_week = now - timedelta(days=now.weekday() % 7)
 

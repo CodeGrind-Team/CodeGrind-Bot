@@ -3,6 +3,7 @@ import os
 
 import discord
 from discord.ext import commands
+from functools import reduce
 
 from bot_globals import DIFFICULTY_SCORE, RANK_EMOJI, TIMEFRAME_TITLE, logger
 
@@ -104,15 +105,17 @@ async def create_leaderboard(interaction: discord.Interaction, timeframe: str = 
         ) in enumerate(sorted_data[i * users_per_page: i * users_per_page + users_per_page], start=i * users_per_page + 1):
             profile_link = f"https://leetcode.com/{username}"
             # Get the discord_username from the stats data in the JSON file
-            discord_username = stats.get("discord_username")
+            discord_username = stats["discord_username"]
             # Get the link_yes_no from the stats data in the JSON file
-            link_yes_no = stats.get("link_yes_no") == "yes"
+            link_yes_no = stats["link_yes_no"] == "yes"
 
             if discord_username:
                 number_rank = f"{j}\."
                 discord_username_with_link = f"[{discord_username}]({profile_link})"
+                if timeframe == "weekly":
+                    weeklies_won = f"    ({sum(rank == 1 for rank in stats['weeklies_ranking'].values())} weeklies won)"
                 leaderboard.append(
-                    f"**{RANK_EMOJI[j] if j in RANK_EMOJI else number_rank} {discord_username_with_link if link_yes_no else discord_username}**  {stats[TIMEFRAME_TITLE[timeframe]['field']]} points"
+                    f"**{RANK_EMOJI[j] if j in RANK_EMOJI else number_rank} {discord_username_with_link if link_yes_no else discord_username}**  {stats[TIMEFRAME_TITLE[timeframe]['field']]} points{weeklies_won if timeframe == 'weekly' and weeklies_won > 0 else ''}"
                 )
 
         embed = discord.Embed(title=f"{TIMEFRAME_TITLE[timeframe]['title']} Leaderboard",

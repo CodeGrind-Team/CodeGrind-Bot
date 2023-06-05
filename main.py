@@ -13,6 +13,7 @@ from cogs.stats import update_stats
 
 load_dotenv()
 
+
 async def send_message_at_midnight():
     await client.wait_until_ready()
     while not client.is_closed():
@@ -76,7 +77,8 @@ async def send_message_at_midnight():
                     await message.pin()
 
         if now.hour == 0 or now.hour == 6 or now.hour == 12 or now.hour == 18:
-            update_stats(client, now)
+            weekly_reset = now.weekday() == 0 and now.hour == 0
+            update_stats(client, weekly_reset)
 
 
 @client.event

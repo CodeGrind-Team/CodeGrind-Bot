@@ -10,7 +10,7 @@ from bs4 import BeautifulSoup
 from discord.ext import commands
 
 
-from bot_globals import client, logger
+from bot_globals import logger
 
 
 class Users(commands.Cog):
@@ -121,7 +121,8 @@ class Users(commands.Cog):
                 "discord_username": discord_username,
                 "link_yes_no": link,
                 "discord_id": interaction.user.id,
-                "history": {}
+                "history": {},
+                "weeklies_ranking": {}
             }
 
             with open(f"{interaction.guild.id}_leetcode_stats.json", "w", encoding="UTF-8") as file:
