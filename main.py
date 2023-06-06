@@ -89,9 +89,8 @@ async def on_ready():
     server_ids = [guild.id for guild in client.guilds]
     logger.info('Server IDs: %s', server_ids)
 
-    # ? updates stats on
     update_stats(client, datetime.now())
-    logger.debug("Stats updated")
+    logger.info("Stats updated")
 
     try:
         synced = await client.tree.sync()

@@ -5,7 +5,7 @@ import requests
 from discord.ext import commands
 
 logging.basicConfig(filename="logs.log",
-                    format='%(asctime)s %(message)s',
+                    format='%(asctime)s - %(levelname)s - %(message)s',
                     filemode='w')
 
 logger = logging.getLogger()

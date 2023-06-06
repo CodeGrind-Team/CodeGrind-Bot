@@ -4,10 +4,77 @@ from datetime import datetime, timedelta
 
 import discord
 import requests
-from bs4 import BeautifulSoup
 from discord.ext import commands
 
 from bot_globals import DIFFICULTY_SCORE, logger
+
+
+def get_problems_solved_and_rank(username: str):
+    url = 'https://leetcode.com/graphql'
+
+    headers = {
+        'Content-Type': 'application/json',
+    }
+
+    data = {
+        'operationName': 'getProblemsSolvedAndRank',
+        'query':
+        '''query getProblemsSolvedAndRank($username: String!) {
+            matchedUser(username: $username) {
+                profile {
+                    realName
+                    ranking
+                }
+                submitStatsGlobal {
+                    acSubmissionNum {
+                        difficulty
+                        count
+                    }
+                }
+            }
+        }
+        ''',
+        'variables': {'username': username}
+    }
+
+    # Example data:
+    # {
+    #     "data": {
+    #         "matchedUser": {
+    #             "profile": { "ranking": 552105 , "realName": "XYZ"},
+    #             "submitStatsGlobal": {
+    #                 "acSubmissionNum": [
+    #                 { "difficulty": "All", "count": 118 },
+    #                 { "difficulty": "Easy", "count": 43 },
+    #                 { "difficulty": "Medium", "count": 63 },
+    #                 { "difficulty": "Hard", "count": 12 }
+    #                 ]
+    #             }
+    #         }
+    #     }
+    # }
+
+    logger.debug("https://leetcode.com/%s data requesting", username)
+    response = requests.post(
+        url, json=data, headers=headers, timeout=5)
+    response_data = response.json()
+    if response_data["data"]["matchedUser"] is None:
+        logger.debug("%s not found", username)
+        return None
+
+    logger.info(
+        "https://leetcode.com/%s found and data requested successfully", username)
+
+    stats = response_data["data"]["matchedUser"]
+
+    questionsCompleted = {}
+
+    for dic in stats["submitStatsGlobal"]["acSubmissionNum"]:
+        questionsCompleted[dic["difficulty"]] = dic["count"]
+
+    stats["submitStatsGlobal"]["acSubmissionNum"] = questionsCompleted
+
+    return stats
 
 
 def update_stats(client, now: datetime, weekly_reset: bool = False):
@@ -28,28 +95,18 @@ def update_stats(client, now: datetime, weekly_reset: bool = False):
                                  reverse=True)
 
             for place, (username, _) in enumerate(sorted_data):
-                url = f"https://leetcode.com/{username}/"
-                logger.debug(url)
-                response = requests.get(url, timeout=10)
-                soup = BeautifulSoup(response.text, "html.parser")
+                stats = get_problems_solved_and_rank(username)
 
-                rank_element = soup.find(
-                    "span", class_="ttext-label-1 dark:text-dark-label-1 font-medium")
-                rank = rank_element.text.strip() if rank_element else "N/A"
+                if stats is None:
+                    continue
 
-                span_elements = soup.find_all(
-                    "span",
-                    class_="mr-[5px] text-base font-medium leading-[20px] text-label-1 dark:text-dark-label-1"
-                )
+                rank = stats["profile"]["ranking"]
 
-                numbers = [
-                    span_element.text for span_element in span_elements]
+                easy_completed = stats["submitStatsGlobal"]["acSubmissionNum"]["Easy"]
+                medium_completed = stats["submitStatsGlobal"]["acSubmissionNum"]["Medium"]
+                hard_completed = stats["submitStatsGlobal"]["acSubmissionNum"]["Hard"]
+                total_questions_done = stats["submitStatsGlobal"]["acSubmissionNum"]["All"]
 
-                easy_completed = int(numbers[0])
-                medium_completed = int(numbers[1])
-                hard_completed = int(numbers[2])
-
-                total_questions_done = easy_completed + medium_completed + hard_completed
                 total_score = easy_completed * \
                     DIFFICULTY_SCORE["easy"] + medium_completed * \
                     DIFFICULTY_SCORE["medium"] + \
@@ -138,36 +195,14 @@ class Stats(commands.Cog):
                 await interaction.response.send_message(embed=embed, ephemeral=True)
                 return
 
-        url = f"https://leetcode.com/{username}"
-        logger.debug(url)
-        response = requests.get(url, timeout=10)
+        stats = get_problems_solved_and_rank(username)
 
-        # Create a BeautifulSoup object to parse the HTML
-        soup = BeautifulSoup(response.text, "html.parser")
-
-        # Find the <span> element with the specified class for rank
-        rank_element = soup.find(
-            "span", class_="ttext-label-1 dark:text-dark-label-1 font-medium")
-        logger.debug(rank_element)
-
-        rank = rank_element.text.strip() if rank_element else "N/A"
-        logger.debug(rank)
-
-        # Find all the <span> elements with the specified class for question counts
-        span_elements = soup.find_all(
-            "span",
-            class_="mr-[5px] text-base font-medium leading-[20px] text-label-1 dark:text-dark-label-1"
-        )
-        logger.debug(span_elements)
-
-        # Extract the text from each <span> element and store it in an array
-        numbers = [span_element.text for span_element in span_elements]
-
-        if len(numbers) == 3:
-            easy_completed = int(numbers[0])
-            medium_completed = int(numbers[1])
-            hard_completed = int(numbers[2])
-            logger.debug(numbers)
+        if stats is not None:
+            rank = stats["profile"]["ranking"]
+            easy_completed = stats["submitStatsGlobal"]["acSubmissionNum"]["Easy"]
+            medium_completed = stats["submitStatsGlobal"]["acSubmissionNum"]["Medium"]
+            hard_completed = stats["submitStatsGlobal"]["acSubmissionNum"]["Hard"]
+            total_questions_done = stats["submitStatsGlobal"]["acSubmissionNum"]["All"]
 
             total_questions_done = easy_completed + medium_completed + hard_completed
             total_score = easy_completed * DIFFICULTY_SCORE['easy'] + medium_completed * \

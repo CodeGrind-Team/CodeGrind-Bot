@@ -20,8 +20,7 @@ class Questions(commands.Cog):
         }
 
         data = {
-            'operationName':
-            'daily',
+            'operationName': 'daily',
             'query':
             '''
             query daily {

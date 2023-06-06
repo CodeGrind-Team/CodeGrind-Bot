@@ -5,12 +5,10 @@ import random
 import string
 
 import discord
-import requests
-from bs4 import BeautifulSoup
 from discord.ext import commands
+from cogs.stats import get_problems_solved_and_rank
 
-
-from bot_globals import logger
+from bot_globals import DIFFICULTY_SCORE, logger
 
 
 class Users(commands.Cog):
@@ -58,21 +56,16 @@ class Users(commands.Cog):
             inline=False)
         await interaction.response.send_message(embed=embed, ephemeral=True)
 
+        profile_name = None
         for _ in range(12):
-            url = f"https://leetcode.com/{username}"
-            logger.debug(url)
-            response = requests.get(url, timeout=10)
-            soup = BeautifulSoup(response.text, "html.parser")
+            stats = get_problems_solved_and_rank(username)
 
-            rank_element = soup.find(
-                "span", class_="ttext-label-1 dark:text-dark-label-1 font-medium")
-            rank = rank_element.text.strip() if rank_element else "N/A"
+            if stats is None:
+                break
 
-            profile_name_element = soup.find(
-                "div",
-                class_="text-label-1 dark:text-dark-label-1 break-all text-base font-semibold")
-            profile_name = profile_name_element.text.strip(
-            ) if profile_name_element else ""
+            rank = stats["profile"]["realName"]
+
+            profile_name = stats["profile"]["realName"]
 
             if profile_name == generated_string:
                 break
@@ -80,34 +73,18 @@ class Users(commands.Cog):
             await asyncio.sleep(5)
 
         if profile_name == generated_string:
-            url = f"https://leetcode.com/{username}"
-            logger.debug(url)
-            response = requests.get(url, timeout=10)
-            soup = BeautifulSoup(response.text, "html.parser")
+            stats = get_problems_solved_and_rank(username)
 
-            rank_element = soup.find(
-                "span", class_="ttext-label-1 dark:text-dark-label-1 font-medium")
-            rank = rank_element.text.strip() if rank_element else "N/A"
+            rank = stats["profile"]["ranking"]
+            easy_completed = stats["submitStatsGlobal"]["acSubmissionNum"]["Easy"]
+            medium_completed = stats["submitStatsGlobal"]["acSubmissionNum"]["Medium"]
+            hard_completed = stats["submitStatsGlobal"]["acSubmissionNum"]["Hard"]
+            total_questions_done = stats["submitStatsGlobal"]["acSubmissionNum"]["All"]
 
-            profile_name_element = soup.find(
-                "div",
-                class_="text-label-1 dark:text-dark-label-1 break-all text-base font-semibold")
-            profile_name = profile_name_element.text.strip(
-            ) if profile_name_element else ""
+            total_score = easy_completed * DIFFICULTY_SCORE['easy'] + medium_completed * \
+                DIFFICULTY_SCORE['medium'] + \
+                hard_completed * DIFFICULTY_SCORE['hard']
 
-            span_elements = soup.find_all(
-                "span",
-                class_="mr-[5px] text-base font-medium leading-[20px] text-label-1 dark:text-dark-label-1"
-            )
-
-            numbers = [span_element.text for span_element in span_elements]
-
-            easy_completed = int(numbers[0])
-            medium_completed = int(numbers[1])
-            hard_completed = int(numbers[2])
-
-            total_questions_done = easy_completed + medium_completed + hard_completed
-            total_score = easy_completed * 1 + medium_completed * 3 + hard_completed * 5
             discord_username = interaction.user.name
 
             existing_data[username] = {

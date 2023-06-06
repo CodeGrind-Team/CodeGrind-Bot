@@ -1,5 +1,4 @@
 aiocron==1.8
-beautifulsoup4==4.12.2
 discord.py==2.2.3
 Flask==2.2.2
 numpy==1.23.5
