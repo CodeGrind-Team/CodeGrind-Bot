@@ -119,5 +119,5 @@ if __name__ == "__main__":
 
     token = os.environ['TOKEN']
 
-    keep_alive()
     asyncio.run(main(token))
+    keep_alive()

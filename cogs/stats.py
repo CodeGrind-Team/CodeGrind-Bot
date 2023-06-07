@@ -86,8 +86,8 @@ def update_stats(client, now: datetime, weekly_reset: bool = False):
     for server_id in server_ids:
         logger.debug(server_id)
         # retrieve the keys from the json file
-        if os.path.exists(f"{server_id}_leetcode_stats.json"):
-            with open(f'{server_id}_leetcode_stats.json', 'r', encoding="UTF-8") as f:
+        if os.path.exists(f"data/{server_id}_leetcode_stats.json"):
+            with open(f'data/{server_id}_leetcode_stats.json', 'r', encoding="UTF-8") as f:
                 data = json.load(f)
 
             sorted_data = sorted(data.items(),
@@ -166,7 +166,7 @@ def update_stats(client, now: datetime, weekly_reset: bool = False):
 
                 logger.debug(data[username])
                 # update the json file
-                with open(f"{server_id}_leetcode_stats.json", "w", encoding="UTF-8") as f:
+                with open(f"data/{server_id}_leetcode_stats.json", "w", encoding="UTF-8") as f:
                     json.dump(data, f, indent=4)
 
 
@@ -177,7 +177,7 @@ class Stats(commands.Cog):
     @discord.app_commands.command(name="stats", description="Prints the stats of a user")
     async def stats(self, interaction: discord.Interaction, username: str = None):
         if username is None:
-            with open(f"{interaction.guild.id}_leetcode_stats.json", "r", encoding="UTF-8") as file:
+            with open(f"data/{interaction.guild.id}_leetcode_stats.json", "r", encoding="UTF-8") as file:
                 data = json.load(file)
 
             for user, user_data in data.items():

@@ -77,7 +77,7 @@ async def create_leaderboard(interaction: discord.Interaction, timeframe: str = 
 
     users_per_page = 10
 
-    if not os.path.exists(f"{interaction.guild.id}_leetcode_stats.json"):
+    if not os.path.exists(f"data/{interaction.guild.id}_leetcode_stats.json"):
         embed = discord.Embed(
             title=f"{TIMEFRAME_TITLE[timeframe]['title']} Leaderboard",
             description="No one has added their LeetCode username yet.",
@@ -85,7 +85,7 @@ async def create_leaderboard(interaction: discord.Interaction, timeframe: str = 
         await interaction.response.send_message(embed=embed)
         return
 
-    with open(f"{interaction.guild.id}_leetcode_stats.json", "r", encoding="UTF-8") as file:
+    with open(f"data/{interaction.guild.id}_leetcode_stats.json", "r", encoding="UTF-8") as file:
         data = json.load(file)
 
     sorted_data = sorted(data.items(),

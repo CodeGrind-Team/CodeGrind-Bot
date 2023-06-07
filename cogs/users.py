@@ -20,8 +20,8 @@ class Users(commands.Cog):
         description="Adds a user to the leaderboard. Answer with 'yes' to link your LeetCode profile to the leaderboard."
     )
     async def add(self, interaction: discord.Interaction, username: str, link: str = "yes"):
-        if os.path.exists(f"{interaction.guild.id}_leetcode_stats.json"):
-            with open(f"{interaction.guild.id}_leetcode_stats.json", "r", encoding="UTF-8") as file:
+        if os.path.exists(f"data/{interaction.guild.id}_leetcode_stats.json"):
+            with open(f"data/{interaction.guild.id}_leetcode_stats.json", "r", encoding="UTF-8") as file:
                 existing_data = json.load(file)
             if username in existing_data:
                 embed = discord.Embed(
@@ -102,7 +102,7 @@ class Users(commands.Cog):
                 "weeklies_ranking": {}
             }
 
-            with open(f"{interaction.guild.id}_leetcode_stats.json", "w", encoding="UTF-8") as file:
+            with open(f"data/{interaction.guild.id}_leetcode_stats.json", "w", encoding="UTF-8") as file:
                 json.dump(existing_data, file)
             embed = discord.Embed(title="Profile Added",
                                   color=discord.Color.green())
@@ -122,10 +122,10 @@ class Users(commands.Cog):
     @discord.app_commands.command(name="delete", description="Delete your profile from the leaderboard.")
     async def delete(self, interaction: discord.Interaction):
         # Check if the file exists
-        if os.path.exists(f"{interaction.guild.id}_leetcode_stats.json"):
+        if os.path.exists(f"data/{interaction.guild.id}_leetcode_stats.json"):
             logger.debug("File exists")
             # Open the file
-            with open(f"{interaction.guild.id}_leetcode_stats.json", "r", encoding="UTF-8") as file:
+            with open(f"data/{interaction.guild.id}_leetcode_stats.json", "r", encoding="UTF-8") as file:
                 data = json.load(file)
 
                 # Iterate through the data points
@@ -135,7 +135,7 @@ class Users(commands.Cog):
                         # Delete the data point
                         del data[username]
                         # Save the updated data
-                        with open(f"{interaction.guild.id}_leetcode_stats.json", "w", encoding="UTF-8") as file:
+                        with open(f"data/{interaction.guild.id}_leetcode_stats.json", "w", encoding="UTF-8") as file:
                             json.dump(data, file)
                         # Send a message to the user
                         embed = discord.Embed(title="Profile Deleted",
