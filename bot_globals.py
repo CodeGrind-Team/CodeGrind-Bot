@@ -1,10 +1,16 @@
 import logging
+import os
 from datetime import datetime
 
 import discord
 import requests
 from discord.ext import commands
 
+if not os.path.exists('data'):
+    os.makedirs('data')
+
+if not os.path.exists('logs'):
+    os.makedirs('logs')
 
 logging.basicConfig(filename=f"logs/{datetime.utcnow().strftime('%Y%m%d-%H%M%S')}.log",
                     format='%(asctime)s - %(levelname)s - %(message)s',
