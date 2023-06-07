@@ -6,7 +6,7 @@ import discord
 import requests
 from discord.ext import commands
 
-from bot_globals import DIFFICULTY_SCORE, LAST_UPDATED, logger
+from bot_globals import DIFFICULTY_SCORE, logger
 
 
 def get_problems_solved_and_rank(username: str):
