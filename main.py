@@ -8,7 +8,6 @@ import requests
 from dotenv import load_dotenv
 
 from bot_globals import client, logger
-from keep_alive import keep_alive
 from cogs.stats import update_stats
 
 load_dotenv()
