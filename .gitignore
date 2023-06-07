@@ -178,5 +178,6 @@ tempCodeRunnerFile.py
 *.json
 .vscode
 data
+logs
 
 # End of https://www.toptal.com/developers/gitignore/api/python

@@ -1,10 +1,12 @@
 import logging
+from datetime import datetime
 
 import discord
 import requests
 from discord.ext import commands
 
-logging.basicConfig(filename="logs.log",
+
+logging.basicConfig(filename=f"logs/{datetime.utcnow().strftime('%Y%m%d-%H%M%S')}.log",
                     format='%(asctime)s - %(levelname)s - %(message)s',
                     filemode='w')
 
