@@ -87,7 +87,7 @@ class Users(commands.Cog):
 
             discord_username = interaction.user.name
 
-            existing_data[username] = {
+            existing_data["users"][username] = {
                 "rank": rank,
                 "easy": easy_completed,
                 "medium": medium_completed,
@@ -133,7 +133,7 @@ class Users(commands.Cog):
                     if stats["discord_id"] == interaction.user.id:
                         # Found the data point with matching discord_id
                         # Delete the data point
-                        del data[username]
+                        del data["users"][username]
                         # Save the updated data
                         with open(f"data/{interaction.guild.id}_leetcode_stats.json", "w", encoding="UTF-8") as file:
                             json.dump(data, file)

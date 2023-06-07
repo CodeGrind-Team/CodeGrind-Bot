@@ -6,7 +6,7 @@ import discord
 import requests
 from discord.ext import commands
 
-from bot_globals import DIFFICULTY_SCORE, logger
+from bot_globals import DIFFICULTY_SCORE, LAST_UPDATED, logger
 
 
 def get_problems_solved_and_rank(username: str):
@@ -90,7 +90,7 @@ def update_stats(client, now: datetime, weekly_reset: bool = False):
             with open(f'data/{server_id}_leetcode_stats.json', 'r', encoding="UTF-8") as f:
                 data = json.load(f)
 
-            sorted_data = sorted(data.items(),
+            sorted_data = sorted(data["users"].items(),
                                  key=lambda x: x[1]["week_score"],
                                  reverse=True)
 
@@ -115,32 +115,32 @@ def update_stats(client, now: datetime, weekly_reset: bool = False):
                 # Due to this field is added after some users have already been added,
                 # it needs to be created and set to an empty dictionary
                 # TODO: replace this with a function to automatically fill in missing fields
-                if "history" not in data[username]:
-                    data[username]["history"] = {}
+                if "history" not in data["users"][username]:
+                    data["users"][username]["history"] = {}
 
-                if "week_score" not in data[username]:
-                    data[username]["week_score"] = 0
+                if "week_score" not in data["users"][username]:
+                    data["users"][username]["week_score"] = 0
 
-                if "weeklies_ranking" not in data[username]:
-                    data[username]["weeklies_ranking"] = {}
+                if "weeklies_ranking" not in data["users"][username]:
+                    data["users"][username]["weeklies_ranking"] = {}
 
                 if weekly_reset:
-                    data[username]["weeklies_ranking"][str(now.strftime(
+                    data["users"][username]["weeklies_ranking"][str(now.strftime(
                         "%d/%m/%Y"))] = place + 1
 
                 start_of_week = now - timedelta(days=now.weekday() % 7)
 
                 while start_of_week <= now:
                     start_of_week_date = start_of_week.strftime("%d/%m/%Y")
-                    if str(start_of_week_date) not in data[username]["history"]:
+                    if str(start_of_week_date) not in data["users"][username]["history"]:
                         start_of_week += timedelta(days=1)
                         continue
 
-                    start_of_week_easy_completed = data[username]["history"][str(
+                    start_of_week_easy_completed = data["users"][username]["history"][str(
                         start_of_week_date)]['easy']
-                    start_of_week_medium_completed = data[username]["history"][str(
+                    start_of_week_medium_completed = data["users"][username]["history"][str(
                         start_of_week_date)]['medium']
-                    start_of_week_hard_completed = data[username]["history"][str(
+                    start_of_week_hard_completed = data["users"][username]["history"][str(
                         start_of_week_date)]['hard']
 
                     start_of_week_score = start_of_week_easy_completed * \
@@ -150,21 +150,23 @@ def update_stats(client, now: datetime, weekly_reset: bool = False):
                         DIFFICULTY_SCORE["hard"]
                     week_score = total_score - start_of_week_score
 
-                    data[username]["week_score"] = week_score
+                    data["users"][username]["week_score"] = week_score
                     break
 
-                data[username]["rank"] = rank
-                data[username]["easy"] = easy_completed
-                data[username]["medium"] = medium_completed
-                data[username]["hard"] = hard_completed
-                data[username]["total_questions_done"] = total_questions_done
-                data[username]["total_score"] = total_score
+                data["users"][username]["rank"] = rank
+                data["users"][username]["easy"] = easy_completed
+                data["users"][username]["medium"] = medium_completed
+                data["users"][username]["hard"] = hard_completed
+                data["users"][username]["total_questions_done"] = total_questions_done
+                data["users"][username]["total_score"] = total_score
 
-                if str(now.strftime("%d/%m/%Y")) not in data[username]["history"]:
-                    data[username]["history"][str(now.strftime("%d/%m/%Y"))] = {
+                if str(now.strftime("%d/%m/%Y")) not in data["users"][username]["history"]:
+                    data["users"][username]["history"][str(now.strftime("%d/%m/%Y"))] = {
                         "easy": easy_completed, "medium": medium_completed, "hard": hard_completed}
 
-                logger.debug(data[username])
+                data["last_updated"] = now.strftime("%d/%m/%Y %H:%M:%S")
+
+                logger.debug(data["users"][username])
                 # update the json file
                 with open(f"data/{server_id}_leetcode_stats.json", "w", encoding="UTF-8") as f:
                     json.dump(data, f, indent=4)

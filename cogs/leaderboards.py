@@ -88,7 +88,9 @@ async def create_leaderboard(interaction: discord.Interaction, timeframe: str = 
     with open(f"data/{interaction.guild.id}_leetcode_stats.json", "r", encoding="UTF-8") as file:
         data = json.load(file)
 
-    sorted_data = sorted(data.items(),
+    last_updated = data["last_updated"]
+
+    sorted_data = sorted(data["users"].items(),
                          key=lambda x: x[1][TIMEFRAME_TITLE[timeframe]['field']],
                          reverse=True)
 
@@ -124,7 +126,7 @@ async def create_leaderboard(interaction: discord.Interaction, timeframe: str = 
         embed.description = "\n".join(leaderboard)
         # Score Methodology: Easy: 1, Medium: 3, Hard: 7
         embed.set_footer(
-            text=f"Score Methodology: Easy: {DIFFICULTY_SCORE['easy']} point, Medium: {DIFFICULTY_SCORE['medium']} points, Hard: {DIFFICULTY_SCORE['hard']} points\n\nPage {i + 1}/{page_count}")
+            text=f"Score Methodology: Easy: {DIFFICULTY_SCORE['easy']} point, Medium: {DIFFICULTY_SCORE['medium']} points, Hard: {DIFFICULTY_SCORE['hard']} points\nUpdated on {last_updated}\nPage {i + 1}/{page_count}")
         # Score Equation: Easy * 1 + Medium * 3 + Hard * 7 = Total Score
         logger.debug(leaderboard)
         pages.append(embed)
