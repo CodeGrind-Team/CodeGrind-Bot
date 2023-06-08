@@ -7,6 +7,7 @@ import requests
 from discord.ext import commands
 
 from bot_globals import DIFFICULTY_SCORE, logger
+from utils.run_blocking import to_thread
 
 
 def get_problems_solved_and_rank(username: str):
@@ -83,6 +84,7 @@ def get_problems_solved_and_rank(username: str):
     return stats
 
 
+@to_thread
 def update_stats(client, now: datetime, weekly_reset: bool = False):
     logger.info("file: cogs/stats.py ~ update_stats ~ run ~ now: %s | weekly reset: %s",
                 weekly_reset, now.strftime("%d/%m/%Y, %H:%M:%S"))

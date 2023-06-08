@@ -18,7 +18,7 @@ async def send_message_at_midnight():
 
     await client.wait_until_ready()
     while not client.is_closed():
-        await asyncio.sleep(3600)  # sleep for a hour
+        await asyncio.sleep(60 * 60 * 1)  # sleep for a hour
         now = datetime.utcnow()
 
         logger.info(
@@ -83,7 +83,7 @@ async def send_message_at_midnight():
 
         # if now.hour == 0 or now.hour == 6 or now.hour == 12 or now.hour == 18:
         weekly_reset = now.weekday() == 0 and now.hour == 0
-        update_stats(client, now, weekly_reset)
+        await update_stats(client, now, weekly_reset)
 
 
 @client.event
@@ -95,7 +95,7 @@ async def on_ready():
     logger.info('file: main.py ~ server IDs: %s', server_ids)
 
     if os.environ["UPDATE_STATS_ON_START"] == "True":
-        update_stats(client, datetime.now())
+        await update_stats(client, datetime.now())
     try:
         synced = await client.tree.sync()
         logger.info("file: main.py ~ synced %s commands", len(synced))
