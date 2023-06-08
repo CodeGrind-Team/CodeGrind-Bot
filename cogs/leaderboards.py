@@ -70,6 +70,14 @@ class Pagination(discord.ui.View):
         logger.debug(self.page + 1)
 
         await interaction.response.edit_message(view=self)
+    
+    @discord.ui.button(label='🗑️', style=discord.ButtonStyle.red)
+    async def delete(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if interaction.user.id != self.user_id:
+            await interaction.response.defer()
+            return
+
+        await interaction.message.delete()
 
 
 async def create_leaderboard(interaction: discord.Interaction, timeframe: str = "alltime", page: int = 1):
