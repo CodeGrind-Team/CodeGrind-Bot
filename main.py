@@ -83,7 +83,7 @@ async def send_message_at_midnight():
 
         # if now.hour == 0 or now.hour == 6 or now.hour == 12 or now.hour == 18:
         weekly_reset = now.weekday() == 0 and now.hour == 0
-        update_stats(client, weekly_reset)
+        update_stats(client, now, weekly_reset)
 
 
 @client.event
