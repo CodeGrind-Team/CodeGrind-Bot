@@ -10,6 +10,8 @@ class General(commands.Cog):
 
     @discord.app_commands.command(name="help", description="Displays the help menu")
     async def help(self, interaction: discord.Interaction):
+        logger.info("file: cogs/help.py ~ help ~ run")
+
         embed = discord.Embed(title="LeetCode Bot Help",
                               color=discord.Color.blue())
         embed.add_field(

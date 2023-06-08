@@ -13,6 +13,8 @@ class Questions(commands.Cog):
 
     @discord.app_commands.command(name="daily", description="Returns the daily problem")
     async def daily(self, interaction: discord.Interaction):
+        logger.info("file: cogs/questions.py ~ daily ~ run")
+
         url = 'https://leetcode.com/graphql'
 
         headers = {
@@ -61,6 +63,8 @@ class Questions(commands.Cog):
         name="question",
         description="Request a question based on difficulty or at random")
     async def question(self, interaction: discord.Interaction, difficulty: str = "random"):
+        logger.info("file: cogs/questions.py ~ question ~ run")
+
         if difficulty == "easy":
             response = requests.get(
                 "https://leetcode.com/api/problems/all/", timeout=10)

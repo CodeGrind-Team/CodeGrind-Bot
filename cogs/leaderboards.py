@@ -46,8 +46,6 @@ class Pagination(discord.ui.View):
         self.next.style = discord.ButtonStyle.blurple
         self.next.disabled = False
 
-        logger.debug(self.page + 1)
-
         await interaction.response.edit_message(view=self)
 
     @discord.ui.button(label='>', style=discord.ButtonStyle.blurple)
@@ -67,8 +65,6 @@ class Pagination(discord.ui.View):
         self.previous.style = discord.ButtonStyle.blurple
         self.previous.disabled = False
 
-        logger.debug(self.page + 1)
-
         await interaction.response.edit_message(view=self)
     
     @discord.ui.button(label='🗑️', style=discord.ButtonStyle.red)
@@ -81,7 +77,7 @@ class Pagination(discord.ui.View):
 
 
 async def create_leaderboard(interaction: discord.Interaction, timeframe: str = "alltime", page: int = 1):
-    logger.debug(interaction.guild.id)
+    logger.info("file: cogs/leaderboards.py ~ create_leaderboard ~ run ~ guild id: %s", interaction.guild.id)
 
     users_per_page = 10
 
@@ -136,7 +132,6 @@ async def create_leaderboard(interaction: discord.Interaction, timeframe: str = 
         embed.set_footer(
             text=f"Score Methodology: Easy: {DIFFICULTY_SCORE['easy']} point, Medium: {DIFFICULTY_SCORE['medium']} points, Hard: {DIFFICULTY_SCORE['hard']} points\nUpdated on {last_updated}\nPage {i + 1}/{page_count}")
         # Score Equation: Easy * 1 + Medium * 3 + Hard * 7 = Total Score
-        logger.debug(leaderboard)
         pages.append(embed)
 
     page = page - 1 if page > 0 else 0
@@ -149,6 +144,8 @@ class Leaderboards(commands.Cog):
 
     @discord.app_commands.command(name="leaderboard", description="View the All-Time leaderboard")
     async def leaderboard(self, interaction: discord.Interaction, timeframe: str = "alltime", page: int = 1):
+        logger.info("file: cogs/leaderboards.py ~ leaderboard ~ run")
+
         timeframe = timeframe.lower()
 
         if timeframe not in TIMEFRAME_TITLE:
@@ -159,6 +156,8 @@ class Leaderboards(commands.Cog):
 
     @discord.app_commands.command(name="weekly", description="View the Weekly leaderboard")
     async def weekly(self, interaction: discord.Interaction, page: int = 1):
+        logger.info("file: cogs/leaderboards.py ~ weekly ~ run")
+        
         await create_leaderboard(interaction, "weekly", page)
 
 

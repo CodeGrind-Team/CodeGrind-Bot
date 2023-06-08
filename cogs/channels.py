@@ -10,6 +10,8 @@ class Channels(commands.Cog):
 
     @discord.app_commands.command(name="setdailychannel", description="Set where the daily problem will be sent")
     async def setdailychannel(self, interaction: discord.Interaction, channel: discord.TextChannel = None):
+        logger.info("file: cogs/channels.py ~ setdailychannel ~ run")
+
         if channel is None:
             channel = interaction.channel
         # only allow this command to be used by users with the administrator permission
@@ -18,8 +20,9 @@ class Channels(commands.Cog):
             # check if the channel is already in the file
             with open("dailychannels.txt", "r", encoding="UTF-8") as file:
                 channels = file.readlines()
-                logger.debug(channels)
-                logger.debug(channel.id)
+                logger.info(
+                    "file: cogs/channels.py ~ setdailychannel ~ channel id: %s", channel.id)
+
                 if str(channel.id) + "\n" in channels or channel.id in channels:
                     embed = discord.Embed(
                         title="Error!",
@@ -46,6 +49,7 @@ class Channels(commands.Cog):
 
     @discord.app_commands.command(name="removedailychannel", description="Remove a daily channel")
     async def removedailychannel(self, interaction: discord.Interaction, channel: discord.TextChannel = None):
+        logger.info("file: cogs/channels.py ~ removedailychannel ~ run")
         if channel is None:
             channel = interaction.channel
         # only allow this command to be used by users with the administrator permission
@@ -54,8 +58,8 @@ class Channels(commands.Cog):
             # check if the channel is already in the file
             with open("dailychannels.txt", "r", encoding="UTF-8") as file:
                 channels = file.readlines()
-                logger.debug(channels)
-                logger.debug(channel.id)
+                logger.info(
+                    "file: cogs/channels.py ~ removedailychannel ~ channel id: %s", channel.id)
                 if str(channel.id) + "\n" in channels or channel.id in channels:
                     with open("dailychannels.txt", "w", encoding="UTF-8") as file:
                         for line in channels:

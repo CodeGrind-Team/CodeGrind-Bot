@@ -14,12 +14,16 @@ load_dotenv()
 
 
 async def send_message_at_midnight():
+    logger.info("file: main.py ~ send_message_at_midnight ~ run")
+
     await client.wait_until_ready()
     while not client.is_closed():
         await asyncio.sleep(3600)  # sleep for a hour
         now = datetime.utcnow()
 
-        logger.debug("%s %s", now.hour, now.minute)
+        logger.info(
+            "file: main.py ~ send_message_at_midnight ~ %s:%s", now.minute, now.hour)
+
         if now.hour == 0:
             # get the channel object
             # send the message
@@ -75,6 +79,8 @@ async def send_message_at_midnight():
                 async for message in channel.history(limit=1):
                     await message.pin()
 
+            logger.info("file: main.py ~ daily retrieved and pinned")
+
         # if now.hour == 0 or now.hour == 6 or now.hour == 12 or now.hour == 18:
         weekly_reset = now.weekday() == 0 and now.hour == 0
         update_stats(client, weekly_reset)
@@ -82,19 +88,17 @@ async def send_message_at_midnight():
 
 @client.event
 async def on_ready():
-    logger.info("%s %s", datetime.utcnow().hour,
-                datetime.utcnow().time)
-    logger.info("Logged in as a bot %s", client.user)
+    logger.info("file: main.py ~ on_ready ~ %s",
+                datetime.utcnow().strftime("%d/%m/%Y %H:%M:%S"))
+    logger.info("file: main.py ~ logged in as a bot %s", client.user)
     server_ids = [guild.id for guild in client.guilds]
-    logger.info('Server IDs: %s', server_ids)
+    logger.info('file: main.py ~ server IDs: %s', server_ids)
 
     if os.environ["UPDATE_STATS_ON_START"] == "True":
         update_stats(client, datetime.now())
-        logger.info("Stats updated")
-
     try:
         synced = await client.tree.sync()
-        logger.info("Synced %s commands", len(synced))
+        logger.info("file: main.py ~ synced %s commands", len(synced))
     except Exception as e:
         logger.exception(e)
     await send_message_at_midnight()

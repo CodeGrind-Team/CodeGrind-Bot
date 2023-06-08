@@ -20,6 +20,9 @@ class Users(commands.Cog):
         description="Adds a user to the leaderboard. Answer with 'yes' to link your LeetCode profile to the leaderboard."
     )
     async def add(self, interaction: discord.Interaction, username: str, link: str = "yes"):
+        logger.info(
+            'file: cogs/users.py ~ add ~ run ~ username: %s', username)
+
         if os.path.exists(f"data/{interaction.guild.id}_leetcode_stats.json"):
             with open(f"data/{interaction.guild.id}_leetcode_stats.json", "r", encoding="UTF-8") as file:
                 existing_data = json.load(file)
@@ -121,9 +124,11 @@ class Users(commands.Cog):
 
     @discord.app_commands.command(name="delete", description="Delete your profile from the leaderboard.")
     async def delete(self, interaction: discord.Interaction):
+        logger.info(
+            'file: cogs/users.py ~ delete ~ run')
+
         # Check if the file exists
         if os.path.exists(f"data/{interaction.guild.id}_leetcode_stats.json"):
-            logger.debug("File exists")
             # Open the file
             with open(f"data/{interaction.guild.id}_leetcode_stats.json", "r", encoding="UTF-8") as file:
                 data = json.load(file)
@@ -151,6 +156,9 @@ class Users(commands.Cog):
                     await interaction.response.send_message(embed=embed, ephemeral=True)
 
         else:
+            logger.info(
+                "file: cogs/users.py ~ delete ~ file not found: data/%s_leetcode_stats.json", interaction.guild.id)
+
             # File does not exist
             embed = discord.Embed(title="Profile Not Found",
                                   color=discord.Color.red())

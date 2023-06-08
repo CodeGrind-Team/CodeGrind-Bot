@@ -10,6 +10,9 @@ from bot_globals import DIFFICULTY_SCORE, logger
 
 
 def get_problems_solved_and_rank(username: str):
+    logger.info(
+        "file: cogs/stats.py ~ get_problems_solved_and_rank ~ run ~ username: %s", username)
+
     url = 'https://leetcode.com/graphql'
 
     headers = {
@@ -54,16 +57,19 @@ def get_problems_solved_and_rank(username: str):
     #     }
     # }
 
-    logger.debug("https://leetcode.com/%s data requesting", username)
+    logger.info(
+        "file: cogs/stats.py ~ get_problems_solved_and_rank ~ data requesting ~ https://leetcode.com/%s", username)
+
     response = requests.post(
         url, json=data, headers=headers, timeout=5)
     response_data = response.json()
     if response_data["data"]["matchedUser"] is None:
-        logger.debug("%s not found", username)
+        logger.warning(
+            "file: cogs/stats.py ~ get_problems_solved_and_rank ~ user not found ~ https://leetcode.com/%s", username)
         return None
 
     logger.info(
-        "https://leetcode.com/%s found and data requested successfully", username)
+        "file: cogs/stats.py ~ get_problems_solved_and_rank ~ data requested successfully ~ https://leetcode.com/%s", username)
 
     stats = response_data["data"]["matchedUser"]
 
@@ -78,13 +84,17 @@ def get_problems_solved_and_rank(username: str):
 
 
 def update_stats(client, now: datetime, weekly_reset: bool = False):
+    logger.info("file: cogs/stats.py ~ update_stats ~ run ~ now: %s | weekly reset: %s",
+                weekly_reset, now.strftime("%d/%m/%Y, %H:%M:%S"))
     # retrieve every server the bot is in
     server_ids = [guild.id for guild in client.guilds]
-    logger.debug('Server IDs: %s', server_ids)
+    logger.info(
+        'file: cogs/stats.py ~ update_stats ~ server IDs: %s', server_ids)
 
     # for each server, retrieve the leaderboard
     for server_id in server_ids:
-        logger.debug(server_id)
+        logger.info(
+            'file: cogs/stats.py ~ update_stats ~ current server ID: %s', server_ids)
         # retrieve the keys from the json file
         if os.path.exists(f"data/{server_id}_leetcode_stats.json"):
             with open(f'data/{server_id}_leetcode_stats.json', 'r', encoding="UTF-8") as f:
@@ -166,10 +176,11 @@ def update_stats(client, now: datetime, weekly_reset: bool = False):
 
                 data["last_updated"] = now.strftime("%d/%m/%Y %H:%M:%S")
 
-                logger.debug(data["users"][username])
                 # update the json file
                 with open(f"data/{server_id}_leetcode_stats.json", "w", encoding="UTF-8") as f:
                     json.dump(data, f, indent=4)
+                    logger.info(
+                        'file: cogs/stats.py ~ update_stats ~ user stats updated successfully: %s', username)
 
 
 class Stats(commands.Cog):
@@ -178,6 +189,9 @@ class Stats(commands.Cog):
 
     @discord.app_commands.command(name="stats", description="Prints the stats of a user")
     async def stats(self, interaction: discord.Interaction, username: str = None):
+        logger.info(
+            'file: cogs/stats.py ~ stats ~ run ~ username: %s', username)
+
         if username is None:
             with open(f"data/{interaction.guild.id}_leetcode_stats.json", "r", encoding="UTF-8") as file:
                 data = json.load(file)
@@ -188,6 +202,9 @@ class Stats(commands.Cog):
                     break
 
             if username is None:
+                logger.info(
+                    'file: cogs/stats.py ~ stats ~ user not found: %s', username)
+
                 embed = discord.Embed(
                     title="Error!",
                     description="You have not added your LeetCode username yet!",
