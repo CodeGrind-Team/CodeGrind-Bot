@@ -7,7 +7,7 @@ import discord
 import requests
 from dotenv import load_dotenv
 
-from bot_globals import client, logger
+from bot_globals import client, logger, TIMEZONE
 from cogs.stats import update_stats
 
 load_dotenv()
@@ -19,7 +19,8 @@ async def send_message_at_midnight():
     await client.wait_until_ready()
     while not client.is_closed():
         await asyncio.sleep(60 * 60 * 1)  # sleep for a hour
-        now = datetime.utcnow()
+        # TODO change to
+        now = datetime.now(TIMEZONE)
 
         logger.info(
             "file: main.py ~ send_message_at_midnight ~ %s:%s", now.minute, now.hour)
@@ -95,7 +96,7 @@ async def on_ready():
     logger.info('file: main.py ~ server IDs: %s', server_ids)
 
     if os.environ["UPDATE_STATS_ON_START"] == "True":
-        await update_stats(client, datetime.now())
+        await update_stats(client, datetime.now(TIMEZONE))
     try:
         synced = await client.tree.sync()
         logger.info("file: main.py ~ synced %s commands", len(synced))

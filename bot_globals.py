@@ -3,6 +3,7 @@ import os
 from datetime import datetime
 
 import discord
+import pytz
 import requests
 from discord.ext import commands
 
@@ -12,7 +13,9 @@ if not os.path.exists('data'):
 if not os.path.exists('logs'):
     os.makedirs('logs')
 
-logging.basicConfig(filename=f"logs/{datetime.utcnow().strftime('%Y%m%d-%H%M%S')}.log",
+TIMEZONE = pytz.timezone('Europe/London')
+
+logging.basicConfig(filename=f"logs/{datetime.now(TIMEZONE).strftime('%Y%m%d-%H%M%S')}.log",
                     format='%(asctime)s - %(levelname)s - %(message)s',
                     filemode='w')
 
