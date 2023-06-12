@@ -27,7 +27,7 @@ async def send_message_at_midnight():
     await client.wait_until_ready()
     while not client.is_closed():
         await wait_until_next_hour()
-        # TODO change to
+
         now = datetime.now(TIMEZONE)
 
         logger.info(
@@ -61,7 +61,7 @@ async def send_message_at_midnight():
             }
 
             response = requests.post(
-                url, json=data, headers=headers, timeout=5)
+                url, json=data, headers=headers, timeout=10)
             response_data = response.json()
 
             # Extract and print the link

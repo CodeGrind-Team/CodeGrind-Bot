@@ -66,7 +66,7 @@ class Pagination(discord.ui.View):
         self.previous.disabled = False
 
         await interaction.response.edit_message(view=self)
-    
+
     @discord.ui.button(label='🗑️', style=discord.ButtonStyle.red)
     async def delete(self, interaction: discord.Interaction, button: discord.ui.Button):
         if interaction.user.id != self.user_id:
@@ -105,10 +105,12 @@ async def create_leaderboard(interaction: discord.Interaction, timeframe: str = 
         leaderboard = []
 
         for j, (
-            username,
+            _,
             stats,
         ) in enumerate(sorted_data[i * users_per_page: i * users_per_page + users_per_page], start=i * users_per_page + 1):
-            profile_link = f"https://leetcode.com/{username}"
+            leetcode_username = stats["leetcode_username"]
+
+            profile_link = f"https://leetcode.com/{leetcode_username}"
             # Get the discord_username from the stats data in the JSON file
             discord_username = stats["discord_username"]
             # Get the link_yes_no from the stats data in the JSON file
@@ -157,7 +159,7 @@ class Leaderboards(commands.Cog):
     @discord.app_commands.command(name="weekly", description="View the Weekly leaderboard")
     async def weekly(self, interaction: discord.Interaction, page: int = 1):
         logger.info("file: cogs/leaderboards.py ~ weekly ~ run")
-        
+
         await create_leaderboard(interaction, "weekly", page)
 
     @discord.app_commands.command(name="daily", description="View the Daily leaderboard")
