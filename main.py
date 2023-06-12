@@ -1,7 +1,7 @@
 import asyncio
 import logging
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import discord
 import requests
@@ -13,12 +13,20 @@ from cogs.stats import update_stats
 load_dotenv()
 
 
+async def wait_until_next_hour():
+    now = datetime.now(TIMEZONE)
+    next_hour = (now + timedelta(hours=1)).replace(minute=0,
+                                                   second=0, microsecond=0)
+    seconds_to_wait = (next_hour - now).total_seconds()
+    await asyncio.sleep(seconds_to_wait)
+
+
 async def send_message_at_midnight():
     logger.info("file: main.py ~ send_message_at_midnight ~ run")
 
     await client.wait_until_ready()
     while not client.is_closed():
-        await asyncio.sleep(60 * 60 * 1)  # sleep for a hour
+        await wait_until_next_hour()
         # TODO change to
         now = datetime.now(TIMEZONE)
 
