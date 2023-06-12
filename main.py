@@ -127,7 +127,7 @@ async def main(token: str):
 
 
 if __name__ == "__main__":
-    logger.setLevel(logging.DEBUG)
+    logger.setLevel(logging.INFO)
     logger.info("Logger is in DEBUG mode")
 
     token = os.environ['TOKEN']
