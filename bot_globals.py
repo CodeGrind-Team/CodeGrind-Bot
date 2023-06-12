@@ -29,4 +29,4 @@ DIFFICULTY_SCORE = {"easy": 1, "medium": 3, "hard": 7}
 RANK_EMOJI = {1: "🥇", 2: "🥈", 3: "🥉"}
 
 TIMEFRAME_TITLE = {"alltime": {"field": "total_score",
-                               "title": "All-Time"}, "weekly": {"field": "week_score", "title": "Weekly"}}
+                               "title": "All-Time"}, "weekly": {"field": "week_score", "title": "Weekly"}, "daily": {"field": "today_score", "title": "Daily"}}

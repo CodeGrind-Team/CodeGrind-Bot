@@ -11,9 +11,9 @@ class Questions(commands.Cog):
     def __init__(self, client):
         self.client = client
 
-    @discord.app_commands.command(name="daily", description="Returns the daily problem")
-    async def daily(self, interaction: discord.Interaction):
-        logger.info("file: cogs/questions.py ~ daily ~ run")
+    @discord.app_commands.command(name="getdaily", description="Returns the daily problem")
+    async def get_daily(self, interaction: discord.Interaction):
+        logger.info("file: cogs/questions.py ~ get_daily ~ run")
 
         url = 'https://leetcode.com/graphql'
 

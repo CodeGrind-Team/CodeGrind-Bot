@@ -160,6 +160,12 @@ class Leaderboards(commands.Cog):
         
         await create_leaderboard(interaction, "weekly", page)
 
+    @discord.app_commands.command(name="daily", description="View the Daily leaderboard")
+    async def daily(self, interaction: discord.Interaction, page: int = 1):
+        logger.info("file: cogs/leaderboards.py ~ daily ~ run")
+        
+        await create_leaderboard(interaction, "daily", page)
+
 
 async def setup(client):
     await client.add_cog(Leaderboards(client))

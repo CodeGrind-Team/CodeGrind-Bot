@@ -165,12 +165,33 @@ def update_stats(client, now: datetime, weekly_reset: bool = False):
                     data["users"][username]["week_score"] = week_score
                     break
 
+                today = now.strftime("%d/%m/%Y")
+
+                if str(today) in data["users"][username]["history"]:
+                    today_easy_completed = data["users"][username]["history"][str(
+                        today)]['easy']
+                    today_medium_completed = data["users"][username]["history"][str(
+                        today)]['medium']
+                    today_hard_completed = data["users"][username]["history"][str(
+                        today)]['hard']
+
+                    start_of_day_points = today_easy_completed * \
+                        DIFFICULTY_SCORE["easy"] + today_medium_completed * \
+                        DIFFICULTY_SCORE["medium"] + \
+                        today_hard_completed * \
+                        DIFFICULTY_SCORE["hard"]
+
+                    today_score = total_score - start_of_day_points
+                else:
+                    today_score = 0
+
                 data["users"][username]["rank"] = rank
                 data["users"][username]["easy"] = easy_completed
                 data["users"][username]["medium"] = medium_completed
                 data["users"][username]["hard"] = hard_completed
                 data["users"][username]["total_questions_done"] = total_questions_done
                 data["users"][username]["total_score"] = total_score
+                data["users"][username]["today_score"] = today_score
 
                 if str(now.strftime("%d/%m/%Y")) not in data["users"][username]["history"]:
                     data["users"][username]["history"][str(now.strftime("%d/%m/%Y"))] = {
