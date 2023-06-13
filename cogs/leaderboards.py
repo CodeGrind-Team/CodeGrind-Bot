@@ -140,21 +140,16 @@ async def create_leaderboard(interaction: discord.Interaction, timeframe: str = 
     await interaction.response.send_message(embed=pages[page], view=Pagination(interaction.user.id, pages, page))
 
 
-class Leaderboards(commands.Cog):
+class Leaderboards(commands.GroupCog, name="leaderboard"):
     def __init__(self, client):
         self.client = client
+        super().__init__()
 
-    @discord.app_commands.command(name="leaderboard", description="View the All-Time leaderboard")
-    async def leaderboard(self, interaction: discord.Interaction, timeframe: str = "alltime", page: int = 1):
-        logger.info("file: cogs/leaderboards.py ~ leaderboard ~ run")
+    @discord.app_commands.command(name="alltime", description="View the All-Time leaderboard")
+    async def alltime(self, interaction: discord.Interaction, page: int = 1):
+        logger.info("file: cogs/leaderboards.py ~ alltime ~ run")
 
-        timeframe = timeframe.lower()
-
-        if timeframe not in TIMEFRAME_TITLE:
-            await interaction.response.defer()
-            return
-
-        await create_leaderboard(interaction, timeframe, page)
+        await create_leaderboard(interaction, "alltime", page)
 
     @discord.app_commands.command(name="weekly", description="View the Weekly leaderboard")
     async def weekly(self, interaction: discord.Interaction, page: int = 1):
