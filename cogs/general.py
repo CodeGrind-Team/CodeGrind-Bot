@@ -19,12 +19,16 @@ class General(commands.Cog):
             value="Use `/add {username}` to add your account to the leaderboard. Say 'yes' to link your LeetCode account to the leaderboard and 'no' to not link your LeetCode account to the leaderboard.",
             inline=False)
         embed.add_field(
+            name="Deleting Your Account from the Leaderboard",
+            value="Use `/delete` to remove your account from the leaderboard.",
+            inline=False)
+        embed.add_field(
             name="Getting Your Stats",
             value="Use `/stats` to get your LeetCode statistics, *or* use `/stats {username}` to get the LeetCode statistics of another user.",
             inline=False)
         embed.add_field(
             name="Server Leaderboard",
-            value="Use `/leaderboard {page}` to see the leaderboard of this server.",
+            value="Use `/leaderboard {timeframe} {page}` to see the leaderboard of this server. \n Timeframes: alltime, weekly, daily. \n Page: the page of the leaderboard you want to see. \n Example: `/leaderboard weekly 1` will show the weekly leaderboard of this server on page 1.",
             inline=False)
         embed.add_field(
             name="Random Questions",
@@ -34,6 +38,12 @@ class General(commands.Cog):
             name="Score Calculation",
             value=f"The score is calculated based on the amount of questions you have solved. Easy questions are worth {DIFFICULTY_SCORE['easy']} point, medium questions are worth {DIFFICULTY_SCORE['medium']} points, and hard questions are worth {DIFFICULTY_SCORE['hard']} points.",
             inline=False)
+        embed.add_field(
+            name="Daily LeetCode Question",
+            value="Use `/daily` to get the daily LeetCode question.",
+            inline=False)
+
+
         # for adminstrators
         if interaction.user.guild_permissions.administrator:
             embed.add_field(
