@@ -7,7 +7,7 @@ import discord
 import requests
 from dotenv import load_dotenv
 
-from bot_globals import client, logger, TIMEZONE
+from bot_globals import TIMEZONE, client, logger
 from cogs.stats import update_stats
 
 load_dotenv()
@@ -21,15 +21,15 @@ async def wait_until_next_hour():
     await asyncio.sleep(seconds_to_wait)
 
 
-async def send_message_at_midnight():
-    logger.info("file: main.py ~ send_message_at_midnight ~ run")
+async def send_daily_question_and_update_stats():
+    logger.info("file: main.py ~ send_daily_question_and_update_stats ~ run")
 
     await client.wait_until_ready()
     while not client.is_closed():
         now = datetime.now(TIMEZONE)
 
         logger.info(
-            "file: main.py ~ send_message_at_midnight ~ %s:%s", now.minute, now.hour)
+            "file: main.py ~ send_daily_question_and_update_stats ~ %s:%s", now.minute, now.hour)
 
         # daily changes at midnight UTC rather than BST
         if datetime.utcnow().hour == 0:
@@ -85,7 +85,11 @@ async def send_message_at_midnight():
                 await channel.send(embed=embed)
                 # Pin the message
                 async for message in channel.history(limit=1):
-                    await message.pin()
+                    try:
+                        await message.pin()
+                    except discord.errors.Forbidden as e:
+                        logger.exception(
+                            "file: main.py ~ message not pinned due to missing permissions ~ exception: %s", e)
 
             logger.info("file: main.py ~ daily retrieved and pinned")
 
@@ -105,12 +109,12 @@ async def on_ready():
 
     if os.environ["UPDATE_STATS_ON_START"] == "True":
         await update_stats(client, datetime.now(TIMEZONE))
+
     try:
         synced = await client.tree.sync()
         logger.info("file: main.py ~ synced %s commands", len(synced))
     except Exception as e:
-        logger.exception(e)
-    await send_message_at_midnight()
+        logger.exception("file: main.py ~ on_ready ~ exception: %s", e)
 
 
 async def load_extensions():
@@ -124,6 +128,7 @@ async def main(token: str):
     async with client:
         await load_extensions()
         await client.start(token)
+        await send_daily_question_and_update_stats()
 
 
 if __name__ == "__main__":

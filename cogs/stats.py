@@ -87,7 +87,7 @@ def get_problems_solved_and_rank(leetcode_username: str):
 @to_thread
 def update_stats(client, now: datetime, weekly_reset: bool = False):
     logger.info("file: cogs/stats.py ~ update_stats ~ run ~ now: %s | weekly reset: %s",
-                weekly_reset, now.strftime("%d/%m/%Y, %H:%M:%S"))
+                now.strftime("%d/%m/%Y, %H:%M:%S"), weekly_reset)
     # retrieve every server the bot is in
     server_ids = [guild.id for guild in client.guilds]
     logger.info(
