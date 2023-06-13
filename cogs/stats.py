@@ -85,7 +85,7 @@ def get_problems_solved_and_rank(leetcode_username: str):
 
 
 @to_thread
-def update_stats(client, now: datetime, weekly_reset: bool = False):
+def update_stats(client, now: datetime, daily_reset: bool = False, weekly_reset: bool = False):
     logger.info("file: cogs/stats.py ~ update_stats ~ run ~ now: %s | weekly reset: %s",
                 now.strftime("%d/%m/%Y, %H:%M:%S"), weekly_reset)
     # retrieve every server the bot is in
@@ -102,11 +102,31 @@ def update_stats(client, now: datetime, weekly_reset: bool = False):
             with open(f'data/{server_id}_leetcode_stats.json', 'r', encoding="UTF-8") as f:
                 data = json.load(f)
 
-            sorted_data = sorted(data["users"].items(),
-                                 key=lambda x: x[1]["week_score"],
-                                 reverse=True)
+            places = {}
 
-            for place, (discord_id, stats) in enumerate(sorted_data):
+            if weekly_reset:
+                week_score_sorted = sorted(data["users"].items(),
+                                           key=lambda x: x[1]["week_score"],
+                                           reverse=True)
+
+                for place, (discord_id, stats) in enumerate(week_score_sorted):
+                    if discord_id not in places:
+                        places[discord_id] = {}
+
+                    places[discord_id]["weekly_ranking"] = place + 1
+
+            if daily_reset:
+                today_score_sorted = sorted(data["users"].items(),
+                                            key=lambda x: x[1]["today_score"],
+                                            reverse=True)
+
+                for place, (discord_id, stats) in enumerate(today_score_sorted):
+                    if discord_id not in places:
+                        places[discord_id] = {}
+
+                    places[discord_id]["daily_ranking"] = place + 1
+
+            for (discord_id, stats) in data["users"].items():
                 leetcode_username = stats["leetcode_username"]
 
                 submissions_and_rank = get_problems_solved_and_rank(
@@ -136,12 +156,19 @@ def update_stats(client, now: datetime, weekly_reset: bool = False):
                 if "week_score" not in stats:
                     data["users"][discord_id]["week_score"] = 0
 
-                if "weeklies_ranking" not in stats:
-                    data["users"][discord_id]["weeklies_ranking"] = {}
+                if "daily_rankings" not in stats:
+                    data["users"][discord_id]["daily_rankings"] = {}
+
+                if "weekly_rankings" not in stats:
+                    data["users"][discord_id]["weekly_rankings"] = {}
+
+                if daily_reset:
+                    data["users"][discord_id]["daily_rankings"][str(now.strftime(
+                        "%d/%m/%Y"))] = places[discord_id]["daily_ranking"]
 
                 if weekly_reset:
-                    data["users"][discord_id]["weeklies_ranking"][str(now.strftime(
-                        "%d/%m/%Y"))] = place + 1
+                    data["users"][discord_id]["weekly_rankings"][str(now.strftime(
+                        "%d/%m/%Y"))] = places[discord_id]["weekly_ranking"]
 
                 start_of_week = now - timedelta(days=now.weekday() % 7)
 

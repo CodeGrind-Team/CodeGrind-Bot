@@ -104,7 +104,8 @@ class Users(commands.Cog):
                 "leetcode_username": leetcode_username,
                 "link_yes_no": link,
                 "history": {},
-                "weeklies_ranking": {}
+                "weekly_rankings": {},
+                "daily_rankings": {}
             }
 
             with open(f"data/{interaction.guild.id}_leetcode_stats.json", "w", encoding="UTF-8") as file:

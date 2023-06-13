@@ -119,12 +119,19 @@ async def create_leaderboard(interaction: discord.Interaction, timeframe: str = 
             if discord_username:
                 number_rank = f"{j}\."
                 discord_username_with_link = f"[{discord_username}]({profile_link})"
+                
                 if timeframe == "weekly":
-                    weeklies_won = sum(
-                        rank == 1 for rank in stats['weeklies_ranking'].values())
-                    weeklies_won_text = f"    ({weeklies_won} weeklies won)"
+                    wins = sum(
+                        rank == 1 for rank in stats['weekly_rankings'].values())
+                    wins_text = f"    -    {wins} weeks won"
+
+                if timeframe == "daily":
+                    wins = sum(
+                        rank == 1 for rank in stats['daily_rankings'].values())
+                    wins_text = f"    -    {wins} days won"
+
                 leaderboard.append(
-                    f"**{RANK_EMOJI[j] if j in RANK_EMOJI else number_rank} {discord_username_with_link if link_yes_no else discord_username}**  {stats[TIMEFRAME_TITLE[timeframe]['field']]} points{weeklies_won_text if timeframe == 'weekly' and weeklies_won > 0 else ''}"
+                    f"**{RANK_EMOJI[j] if j in RANK_EMOJI else number_rank} {discord_username_with_link if link_yes_no else discord_username}**  {stats[TIMEFRAME_TITLE[timeframe]['field']]} points{wins_text if timeframe in ['weekly', 'daily'] and wins > 0 else ''}"
                 )
 
         embed = discord.Embed(title=f"{TIMEFRAME_TITLE[timeframe]['title']} Leaderboard",
