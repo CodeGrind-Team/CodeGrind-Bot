@@ -15,7 +15,7 @@ load_dotenv()
 
 async def wait_until_next_hour():
     now = datetime.now(TIMEZONE)
-    next_hour = (now + timedelta(hours=0)).replace(minute=0,
+    next_hour = (now + timedelta(hours=1)).replace(minute=0,
                                                    second=0, microsecond=30)
 
     logger.info(
@@ -28,10 +28,7 @@ async def wait_until_next_hour():
 async def send_daily_question_and_update_stats():
     logger.info("file: main.py ~ send_daily_question_and_update_stats ~ run")
 
-    client_ready = await client.wait_until_ready()
-    logger.info("%s %s %s", client_ready,
-                client.is_ready(), client.is_closed())
-    while client_ready and not client.is_closed():
+    while not client.is_closed():
         now = datetime.now(TIMEZONE)
 
         logger.info(
