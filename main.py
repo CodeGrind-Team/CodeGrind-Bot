@@ -16,7 +16,7 @@ load_dotenv()
 async def wait_until_next_hour():
     now = datetime.now(TIMEZONE)
     next_hour = (now + timedelta(hours=1)).replace(minute=0,
-                                                   second=0, microsecond=0)
+                                                   second=0, microsecond=30)
     seconds_to_wait = (next_hour - now).total_seconds()
     await asyncio.sleep(seconds_to_wait)
 
@@ -26,14 +26,13 @@ async def send_message_at_midnight():
 
     await client.wait_until_ready()
     while not client.is_closed():
-        await wait_until_next_hour()
-
         now = datetime.now(TIMEZONE)
 
         logger.info(
             "file: main.py ~ send_message_at_midnight ~ %s:%s", now.minute, now.hour)
 
-        if now.hour == 0:
+        # daily changes at midnight UTC rather than BST
+        if datetime.utcnow().hour == 0:
             # get the channel object
             # send the message
             url = 'https://leetcode.com/graphql'
@@ -93,6 +92,7 @@ async def send_message_at_midnight():
         # if now.hour == 0 or now.hour == 6 or now.hour == 12 or now.hour == 18:
         weekly_reset = now.weekday() == 0 and now.hour == 0
         await update_stats(client, now, weekly_reset)
+        await wait_until_next_hour()
 
 
 @client.event

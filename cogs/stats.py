@@ -198,7 +198,7 @@ def update_stats(client, now: datetime, weekly_reset: bool = False):
                     data["users"][discord_id]["history"][str(now.strftime("%d/%m/%Y"))] = {
                         "easy": easy_completed, "medium": medium_completed, "hard": hard_completed}
 
-                data["last_updated"] = now.strftime("%d/%m/%Y %H:%M:%S")
+                data["last_updated"] = now.strftime("%d/%m/%Y %H:%M")
 
                 # update the json file
                 with open(f"data/{server_id}_leetcode_stats.json", "w", encoding="UTF-8") as f:
@@ -223,7 +223,8 @@ class Stats(commands.Cog):
                 data = json.load(file)
 
             if str(discord_user.id) in data["users"]:
-                leetcode_username = data["users"][str(discord_user.id)]["leetcode_username"]
+                leetcode_username = data["users"][str(
+                    discord_user.id)]["leetcode_username"]
             else:
                 logger.info(
                     'file: cogs/stats.py ~ stats ~ user not found: %s', leetcode_username)
