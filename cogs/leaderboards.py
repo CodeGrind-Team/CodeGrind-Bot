@@ -1,14 +1,16 @@
 import json
 import os
+from datetime import datetime, timedelta
 
 import discord
 from discord.ext import commands
 
-from bot_globals import DIFFICULTY_SCORE, RANK_EMOJI, TIMEFRAME_TITLE, logger
+from bot_globals import (DIFFICULTY_SCORE, RANK_EMOJI, TIMEFRAME_TITLE,
+                         TIMEZONE, logger)
 
 
 class Pagination(discord.ui.View):
-    def __init__(self, user_id, pages=None, page=0):
+    def __init__(self, user_id=None, pages=None, page=0):
         super().__init__()
         self.page = page
         self.user_id = user_id
@@ -30,7 +32,7 @@ class Pagination(discord.ui.View):
 
     @discord.ui.button(label='<', style=discord.ButtonStyle.blurple)
     async def previous(self, interaction: discord.Interaction, button: discord.ui.Button):
-        if interaction.user.id != self.user_id:
+        if self.user_id is None or interaction.user.id != self.user_id:
             await interaction.response.defer()
             return
 
@@ -50,7 +52,7 @@ class Pagination(discord.ui.View):
 
     @discord.ui.button(label='>', style=discord.ButtonStyle.blurple)
     async def next(self, interaction: discord.Interaction, button: discord.ui.Button):
-        if interaction.user.id != self.user_id:
+        if self.user_id is None or interaction.user.id != self.user_id:
             await interaction.response.defer()
             return
 
@@ -76,20 +78,18 @@ class Pagination(discord.ui.View):
         await interaction.message.delete()
 
 
-async def create_leaderboard(interaction: discord.Interaction, timeframe: str = "alltime", page: int = 1):
-    logger.info("file: cogs/leaderboards.py ~ create_leaderboard ~ run ~ guild id: %s", interaction.guild.id)
+async def create_leaderboard(send_message, guild_id, user_id = None, timeframe: str = "alltime", page: int = 1, winners_only: bool = False, users_per_page: int = 10):
+    logger.info("file: cogs/leaderboards.py ~ create_leaderboard ~ run ~ guild id: %s", guild_id)
 
-    users_per_page = 10
-
-    if not os.path.exists(f"data/{interaction.guild.id}_leetcode_stats.json"):
+    if not os.path.exists(f"data/{guild_id}_leetcode_stats.json"):
         embed = discord.Embed(
             title=f"{TIMEFRAME_TITLE[timeframe]['title']} Leaderboard",
             description="No one has added their LeetCode username yet.",
             color=discord.Color.red())
-        await interaction.response.send_message(embed=embed)
+        await send_message(embed=embed)
         return
 
-    with open(f"data/{interaction.guild.id}_leetcode_stats.json", "r", encoding="UTF-8") as file:
+    with open(f"data/{guild_id}_leetcode_stats.json", "r", encoding="UTF-8") as file:
         data = json.load(file)
 
     last_updated = data["last_updated"]
@@ -97,6 +97,9 @@ async def create_leaderboard(interaction: discord.Interaction, timeframe: str = 
     sorted_data = sorted(data["users"].items(),
                          key=lambda x: x[1][TIMEFRAME_TITLE[timeframe]['field']],
                          reverse=True)
+    
+    if winners_only:
+        sorted_data = sorted_data[:3]
 
     pages = []
     page_count = -(-len(sorted_data)//users_per_page)
@@ -123,28 +126,33 @@ async def create_leaderboard(interaction: discord.Interaction, timeframe: str = 
                 if timeframe == "weekly":
                     wins = sum(
                         rank == 1 for rank in stats['weekly_rankings'].values())
-                    wins_text = f"    -    {wins} weeks won"
+                    wins_text = f"    ({wins} weeks won)"
 
                 if timeframe == "daily":
                     wins = sum(
                         rank == 1 for rank in stats['daily_rankings'].values())
-                    wins_text = f"    -    {wins} days won"
+                    wins_text = f"    ({wins} days won)"
 
                 leaderboard.append(
                     f"**{RANK_EMOJI[j] if j in RANK_EMOJI else number_rank} {discord_username_with_link if link_yes_no else discord_username}**  {stats[TIMEFRAME_TITLE[timeframe]['field']]} points{wins_text if timeframe in ['weekly', 'daily'] and wins > 0 else ''}"
                 )
 
-        embed = discord.Embed(title=f"{TIMEFRAME_TITLE[timeframe]['title']} Leaderboard",
+        title = f"{TIMEFRAME_TITLE[timeframe]['title']} Leaderboard"
+        if winners_only:
+            title = f"{TIMEFRAME_TITLE[timeframe]['title']} Winners - {(datetime.now(TIMEZONE) - timedelta(days=1)).strftime('%d/%m/%Y')}"
+
+        embed = discord.Embed(title=title,
                               color=discord.Color.yellow())
         embed.description = "\n".join(leaderboard)
         # Score Methodology: Easy: 1, Medium: 3, Hard: 7
         embed.set_footer(
-            text=f"Score Methodology: Easy: {DIFFICULTY_SCORE['easy']} point, Medium: {DIFFICULTY_SCORE['medium']} points, Hard: {DIFFICULTY_SCORE['hard']} points\nUpdated on {last_updated}\nPage {i + 1}/{page_count}")
+            text=f"Easy: {DIFFICULTY_SCORE['easy']} point, Medium: {DIFFICULTY_SCORE['medium']} points, Hard: {DIFFICULTY_SCORE['hard']} points\nUpdated on {last_updated}\nPage {i + 1}/{page_count}")
         # Score Equation: Easy * 1 + Medium * 3 + Hard * 7 = Total Score
         pages.append(embed)
 
     page = page - 1 if page > 0 else 0
-    await interaction.response.send_message(embed=pages[page], view=Pagination(interaction.user.id, pages, page))
+    view = None if winners_only else Pagination(user_id, pages, page)
+    await send_message(embed=pages[page], view=view)
 
 
 class Leaderboards(commands.GroupCog, name="leaderboard"):
@@ -156,19 +164,19 @@ class Leaderboards(commands.GroupCog, name="leaderboard"):
     async def alltime(self, interaction: discord.Interaction, page: int = 1):
         logger.info("file: cogs/leaderboards.py ~ alltime ~ run")
 
-        await create_leaderboard(interaction, "alltime", page)
+        await create_leaderboard(interaction.response.send_message, interaction.guild.id, interaction.user.id, "alltime", page)
 
     @discord.app_commands.command(name="weekly", description="View the Weekly leaderboard")
     async def weekly(self, interaction: discord.Interaction, page: int = 1):
         logger.info("file: cogs/leaderboards.py ~ weekly ~ run")
 
-        await create_leaderboard(interaction, "weekly", page)
+        await create_leaderboard(interaction.response.send_message, interaction.guild.id, interaction.user.id, "weekly", page)
 
     @discord.app_commands.command(name="daily", description="View the Daily leaderboard")
     async def daily(self, interaction: discord.Interaction, page: int = 1):
         logger.info("file: cogs/leaderboards.py ~ daily ~ run")
         
-        await create_leaderboard(interaction, "daily", page)
+        await create_leaderboard(interaction.response.send_message, interaction.guild.id, interaction.user.id, "daily", page)
 
 
 async def setup(client):

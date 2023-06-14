@@ -7,6 +7,7 @@ import requests
 from discord.ext import commands
 
 from bot_globals import DIFFICULTY_SCORE, logger
+from utils.leaderboards import send_leaderboard_winners
 from utils.run_blocking import to_thread
 
 
@@ -84,8 +85,8 @@ def get_problems_solved_and_rank(leetcode_username: str):
     return stats
 
 
-@to_thread
-def update_stats(client, now: datetime, daily_reset: bool = False, weekly_reset: bool = False):
+# @to_thread
+async def update_stats(client, now: datetime, daily_reset: bool = False, weekly_reset: bool = False):
     logger.info("file: cogs/stats.py ~ update_stats ~ run ~ now: %s | weekly reset: %s",
                 now.strftime("%d/%m/%Y, %H:%M:%S"), weekly_reset)
     # retrieve every server the bot is in
@@ -104,18 +105,9 @@ def update_stats(client, now: datetime, daily_reset: bool = False, weekly_reset:
 
             places = {}
 
-            if weekly_reset:
-                week_score_sorted = sorted(data["users"].items(),
-                                           key=lambda x: x[1]["week_score"],
-                                           reverse=True)
-
-                for place, (discord_id, stats) in enumerate(week_score_sorted):
-                    if discord_id not in places:
-                        places[discord_id] = {}
-
-                    places[discord_id]["weekly_ranking"] = place + 1
-
             if daily_reset:
+                await send_leaderboard_winners("daily", server_id)
+
                 today_score_sorted = sorted(data["users"].items(),
                                             key=lambda x: x[1]["today_score"],
                                             reverse=True)
@@ -125,6 +117,19 @@ def update_stats(client, now: datetime, daily_reset: bool = False, weekly_reset:
                         places[discord_id] = {}
 
                     places[discord_id]["daily_ranking"] = place + 1
+
+            if weekly_reset:
+                await send_leaderboard_winners("weekly", server_id)
+
+                week_score_sorted = sorted(data["users"].items(),
+                                           key=lambda x: x[1]["week_score"],
+                                           reverse=True)
+
+                for place, (discord_id, stats) in enumerate(week_score_sorted):
+                    if discord_id not in places:
+                        places[discord_id] = {}
+
+                    places[discord_id]["weekly_ranking"] = place + 1
 
             for (discord_id, stats) in data["users"].items():
                 leetcode_username = stats["leetcode_username"]

@@ -29,11 +29,6 @@ async def send_daily_question_and_update_stats():
     logger.info("file: main.py ~ send_daily_question_and_update_stats ~ run")
 
     while not client.is_closed():
-        now = datetime.now(TIMEZONE)
-
-        logger.info(
-            "file: main.py ~ send_daily_question_and_update_stats ~ %s:%s", now.minute, now.hour)
-
         # daily changes at midnight UTC rather than BST
         if datetime.utcnow().hour == 0:
             # get the channel object
@@ -96,11 +91,12 @@ async def send_daily_question_and_update_stats():
 
             logger.info("file: main.py ~ daily retrieved and pinned")
 
+        await wait_until_next_hour()
+
+        now = datetime.now(TIMEZONE)
         daily_reset = now.hour == 0
         weekly_reset = now.weekday() == 0 and now.hour == 0
         await update_stats(client, now, daily_reset, weekly_reset)
-
-        await wait_until_next_hour()
 
 
 @client.event
