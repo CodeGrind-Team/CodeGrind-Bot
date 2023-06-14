@@ -13,15 +13,19 @@ from cogs.stats import update_stats
 load_dotenv()
 
 
-async def wait_until_next_hour():
+async def wait_until_next_half_hour():
     now = datetime.now(TIMEZONE)
-    next_hour = (now + timedelta(hours=1)).replace(minute=0,
-                                                   second=0, microsecond=30)
+
+    if now.minute < 30:
+        next_half_hour = now.replace(minute=30, second=0, microsecond=30)
+    else:
+        next_half_hour = (now + timedelta(hours=1)).replace(minute=0,
+                                                            second=0, microsecond=30)
 
     logger.info(
-        "file: main.py ~ wait_until_next_hour ~ next_hour: %s", next_hour)
+        "file: main.py ~ wait_until_next_half_hour ~ next_half_hour: %s", next_half_hour)
 
-    seconds_to_wait = (next_hour - now).total_seconds()
+    seconds_to_wait = (next_half_hour - now).total_seconds()
     await asyncio.sleep(seconds_to_wait)
 
 
@@ -30,7 +34,7 @@ async def send_daily_question_and_update_stats():
 
     while not client.is_closed():
         # daily changes at midnight UTC rather than BST
-        if datetime.utcnow().hour == 0:
+        if datetime.utcnow().hour == 0 and datetime.utcnow().minute == 0:
             # get the channel object
             # send the message
             url = 'https://leetcode.com/graphql'
@@ -91,11 +95,11 @@ async def send_daily_question_and_update_stats():
 
             logger.info("file: main.py ~ daily retrieved and pinned")
 
-        await wait_until_next_hour()
+        await wait_until_next_half_hour()
 
         now = datetime.now(TIMEZONE)
-        daily_reset = now.hour == 0
-        weekly_reset = now.weekday() == 0 and now.hour == 0
+        daily_reset = now.hour == 0 and now.minute == 0
+        weekly_reset = now.weekday() == 0 and now.hour == 0 and now.minute == 0
         await update_stats(client, now, daily_reset, weekly_reset)
 
 
@@ -133,7 +137,7 @@ async def main(token: str):
 
 if __name__ == "__main__":
     logger.setLevel(logging.INFO)
-    logger.info("Logger is in DEBUG mode")
+    logger.info("Logger is in INFO mode")
 
     token = os.environ['TOKEN']
 
