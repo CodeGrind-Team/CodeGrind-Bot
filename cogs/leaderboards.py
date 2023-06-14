@@ -139,7 +139,7 @@ async def create_leaderboard(send_message, guild_id, user_id = None, timeframe: 
                 leaderboard["points"].append(f"{stats[TIMEFRAME_TITLE[timeframe]['field']]}")
                 
                 if timeframe in ["daily", "weekly"]:
-                    leaderboard[TIMEFRAME_TITLE[timeframe]["win_title"]].append(str(wins) if wins > 0 else "")
+                    leaderboard[TIMEFRAME_TITLE[timeframe]["win_title"]].append(str(wins) if wins > 0 else "‎ ")
 
         title = f"{TIMEFRAME_TITLE[timeframe]['title']} Leaderboard"
         if winners_only:
