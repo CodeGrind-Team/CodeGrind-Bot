@@ -126,11 +126,15 @@ async def create_leaderboard(send_message, guild_id, user_id = None, timeframe: 
                 if timeframe == "daily":
                     wins = sum(
                         rank == 1 for rank in stats['daily_rankings'].values())
+                    if j == 1:
+                        wins += 1
                     wins_text = f"    ({wins} days won)"
                 
                 elif timeframe == "weekly":
                     wins = sum(
                         rank == 1 for rank in stats['weekly_rankings'].values())
+                    if j == 1:
+                        wins += 1
                     wins_text = f"    ({wins} weeks won)"
 
                 leaderboard.append(

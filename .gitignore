@@ -180,5 +180,6 @@ tempCodeRunnerFile.py
 data
 logs
 dailychannels.txt
+/temp
 
 # End of https://www.toptal.com/developers/gitignore/api/python
