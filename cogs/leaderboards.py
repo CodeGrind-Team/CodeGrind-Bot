@@ -1,5 +1,6 @@
 import json
 import os
+from collections import defaultdict
 from datetime import datetime, timedelta
 
 import discord
@@ -105,7 +106,7 @@ async def create_leaderboard(send_message, guild_id, user_id = None, timeframe: 
     page_count = -(-len(sorted_data)//users_per_page)
 
     for i in range(page_count):
-        leaderboard = []
+        leaderboard = defaultdict(list)
 
         for j, (
             _,
@@ -122,24 +123,23 @@ async def create_leaderboard(send_message, guild_id, user_id = None, timeframe: 
                 number_rank = f"{j}\."
                 discord_username_with_link = f"[{discord_username}]({profile_link})"
                 
-                logger.info("%s %s", discord_username, stats)
                 if timeframe == "daily":
                     wins = sum(
                         rank == 1 for rank in stats['daily_rankings'].values())
                     if winners_only and j == 1:
                         wins += 1
-                    wins_text = f"    ({wins} days won)"
                 
                 elif timeframe == "weekly":
                     wins = sum(
                         rank == 1 for rank in stats['weekly_rankings'].values())
                     if winners_only and j == 1:
                         wins += 1
-                    wins_text = f"    ({wins} weeks won)"
 
-                leaderboard.append(
-                    f"**{RANK_EMOJI[j] if j in RANK_EMOJI else number_rank} {discord_username_with_link if link_yes_no else discord_username}**  {stats[TIMEFRAME_TITLE[timeframe]['field']]} points{wins_text if timeframe in ['weekly', 'daily'] and wins > 0 else ''}"
-                )
+                leaderboard["username"].append(f"**{RANK_EMOJI[j] if j in RANK_EMOJI else number_rank} {discord_username_with_link if link_yes_no else discord_username}**")
+                leaderboard["points"].append(f"{stats[TIMEFRAME_TITLE[timeframe]['field']]}")
+                
+                if timeframe in ["daily", "weekly"]:
+                    leaderboard[TIMEFRAME_TITLE[timeframe]["win_title"]].append(str(wins) if wins > 0 else "")
 
         title = f"{TIMEFRAME_TITLE[timeframe]['title']} Leaderboard"
         if winners_only:
@@ -151,7 +151,10 @@ async def create_leaderboard(send_message, guild_id, user_id = None, timeframe: 
 
         embed = discord.Embed(title=title,
                               color=discord.Color.yellow())
-        embed.description = "\n".join(leaderboard)
+
+        for field, value in leaderboard.items():
+            embed.add_field(name=field.title(), value="\n".join(value), inline=True)
+
         # Score Methodology: Easy: 1, Medium: 3, Hard: 7
         embed.set_footer(
             text=f"Easy: {DIFFICULTY_SCORE['easy']} point, Medium: {DIFFICULTY_SCORE['medium']} points, Hard: {DIFFICULTY_SCORE['hard']} points\nUpdated on {last_updated}\nPage {i + 1}/{page_count}")
