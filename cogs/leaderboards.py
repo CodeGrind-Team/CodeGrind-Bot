@@ -123,15 +123,15 @@ async def create_leaderboard(send_message, guild_id, user_id = None, timeframe: 
                 number_rank = f"{j}\."
                 discord_username_with_link = f"[{discord_username}]({profile_link})"
                 
-                if timeframe == "weekly":
-                    wins = sum(
-                        rank == 1 for rank in stats['weekly_rankings'].values())
-                    wins_text = f"    ({wins} weeks won)"
-
                 if timeframe == "daily":
                     wins = sum(
                         rank == 1 for rank in stats['daily_rankings'].values())
                     wins_text = f"    ({wins} days won)"
+                
+                elif timeframe == "weekly":
+                    wins = sum(
+                        rank == 1 for rank in stats['weekly_rankings'].values())
+                    wins_text = f"    ({wins} weeks won)"
 
                 leaderboard.append(
                     f"**{RANK_EMOJI[j] if j in RANK_EMOJI else number_rank} {discord_username_with_link if link_yes_no else discord_username}**  {stats[TIMEFRAME_TITLE[timeframe]['field']]} points{wins_text if timeframe in ['weekly', 'daily'] and wins > 0 else ''}"
@@ -139,7 +139,11 @@ async def create_leaderboard(send_message, guild_id, user_id = None, timeframe: 
 
         title = f"{TIMEFRAME_TITLE[timeframe]['title']} Leaderboard"
         if winners_only:
-            title = f"{TIMEFRAME_TITLE[timeframe]['title']} Winners - {(datetime.now(TIMEZONE) - timedelta(days=1)).strftime('%d/%m/%Y')}"
+            if timeframe == "daily":
+                title = f"{TIMEFRAME_TITLE[timeframe]['title']} Winners: {(datetime.now(TIMEZONE) - timedelta(days=1)).strftime('%d/%m/%Y')}"
+            
+            elif timeframe == "weekly":
+                title = f"{TIMEFRAME_TITLE[timeframe]['title']} Winners: {(datetime.now(TIMEZONE) - timedelta(days=7)).strftime('%d/%m/%Y')} - {(datetime.now(TIMEZONE) - timedelta(days=1)).strftime('%d/%m/%Y')}"
 
         embed = discord.Embed(title=title,
                               color=discord.Color.yellow())

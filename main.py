@@ -108,7 +108,7 @@ async def on_ready():
     logger.info('file: main.py ~ server IDs: %s', server_ids)
 
     if os.environ["UPDATE_STATS_ON_START"] == "True":
-        await update_stats(client, datetime.now(TIMEZONE))
+        await update_stats(client, datetime.now(TIMEZONE), True, True)
 
     try:
         synced = await client.tree.sync()
