@@ -118,22 +118,22 @@ async def create_leaderboard(send_message, guild_id, user_id = None, timeframe: 
             discord_username = stats["discord_username"]
             # Get the link_yes_no from the stats data in the JSON file
             link_yes_no = stats["link_yes_no"] == "yes"
-
             if discord_username:
                 number_rank = f"{j}\."
                 discord_username_with_link = f"[{discord_username}]({profile_link})"
                 
+                logger.info("%s %s", discord_username, stats)
                 if timeframe == "daily":
                     wins = sum(
                         rank == 1 for rank in stats['daily_rankings'].values())
-                    if j == 1:
+                    if winners_only and j == 1:
                         wins += 1
                     wins_text = f"    ({wins} days won)"
                 
                 elif timeframe == "weekly":
                     wins = sum(
                         rank == 1 for rank in stats['weekly_rankings'].values())
-                    if j == 1:
+                    if winners_only and j == 1:
                         wins += 1
                     wins_text = f"    ({wins} weeks won)"
 
