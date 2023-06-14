@@ -1,3 +1,4 @@
+import asyncio
 import json
 import os
 from datetime import datetime, timedelta
@@ -85,8 +86,8 @@ def get_problems_solved_and_rank(leetcode_username: str):
     return stats
 
 
-# @to_thread
-async def update_stats(client, now: datetime, daily_reset: bool = False, weekly_reset: bool = False):
+@to_thread
+def update_stats(client, now: datetime, daily_reset: bool = False, weekly_reset: bool = False):
     logger.info("file: cogs/stats.py ~ update_stats ~ run ~ now: %s | weekly reset: %s",
                 now.strftime("%d/%m/%Y, %H:%M:%S"), weekly_reset)
     # retrieve every server the bot is in
@@ -106,7 +107,7 @@ async def update_stats(client, now: datetime, daily_reset: bool = False, weekly_
             places = {}
 
             if daily_reset:
-                await send_leaderboard_winners("daily", server_id)
+                asyncio.run(send_leaderboard_winners("daily", server_id))
 
                 today_score_sorted = sorted(data["users"].items(),
                                             key=lambda x: x[1]["today_score"],
@@ -119,7 +120,7 @@ async def update_stats(client, now: datetime, daily_reset: bool = False, weekly_
                     places[discord_id]["daily_ranking"] = place + 1
 
             if weekly_reset:
-                await send_leaderboard_winners("weekly", server_id)
+                asyncio.run(send_leaderboard_winners("weekly", server_id))
 
                 week_score_sorted = sorted(data["users"].items(),
                                            key=lambda x: x[1]["week_score"],

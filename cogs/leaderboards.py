@@ -136,10 +136,12 @@ async def create_leaderboard(send_message, guild_id, user_id = None, timeframe: 
                         wins += 1
 
                 leaderboard["username"].append(f"**{RANK_EMOJI[j] if j in RANK_EMOJI else number_rank} {discord_username_with_link if link_yes_no else discord_username}**")
-                leaderboard["points"].append(f"{stats[TIMEFRAME_TITLE[timeframe]['field']]}")
                 
                 if timeframe in ["daily", "weekly"]:
-                    leaderboard[TIMEFRAME_TITLE[timeframe]["win_title"]].append(str(wins) if wins > 0 else "‎ ")
+                    leaderboard[TIMEFRAME_TITLE[timeframe]["win_title"]].append(f" ({str(wins)} wins) - " if wins > 0 else " - ")
+                
+                leaderboard["points"].append(f"**{stats[TIMEFRAME_TITLE[timeframe]['field']]}** pts")
+                
 
         title = f"{TIMEFRAME_TITLE[timeframe]['title']} Leaderboard"
         if winners_only:
@@ -152,9 +154,10 @@ async def create_leaderboard(send_message, guild_id, user_id = None, timeframe: 
         embed = discord.Embed(title=title,
                               color=discord.Color.yellow())
 
-        for field, value in leaderboard.items():
-            embed.add_field(name=field.title(), value="\n".join(value), inline=True)
+        # for field, value in leaderboard.items():
+        #     embed.add_field(name=field.title(), value="\n".join(value), inline=True)
 
+        embed.description = "\n".join("".join(vals) for vals in list(zip(*leaderboard.values())))
         # Score Methodology: Easy: 1, Medium: 3, Hard: 7
         embed.set_footer(
             text=f"Easy: {DIFFICULTY_SCORE['easy']} point, Medium: {DIFFICULTY_SCORE['medium']} points, Hard: {DIFFICULTY_SCORE['hard']} points\nUpdated on {last_updated}\nPage {i + 1}/{page_count}")
