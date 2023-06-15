@@ -1,22 +1,21 @@
-# LeetCode Bot
+# LeetCode-Bot
 
-LeetCode Bot is a Discord bot designed to enhance your LeetCode experience. It provides various features such as sending questions, keeping track of a leaderboard, and more.
+Get ready for an epic coding showdown with the LeetCode Bot! Compare daily, weekly and all-time stats and conquer LeetCode together in the ultimate quest for coding glory.
 
-## Current Features
+[⚔️ Invite me to your server!](https://discord.com/api/oauth2/authorize?client_id=1059122559066570885&permissions=397284604928&scope=bot%20applications.commands)
 
-- `/help` - List of available commands.
-- `/question` - Receive a random LeetCode question.
-- `/add` - Add your account to the leaderboard.
-- `/stats` - Retrieve statistics of a user's LeetCode account.
-- `/remove` - Remove your account from the leaderboard.
-- `/daily` - Retrieve the daily LeetCode problem.
+## Commands
 
-## Administrators
+[Full list of commands here](https://github.com/Kevin-Roman/LeetCode-Discord-Bot/wiki/Commands)
 
-The following commands are exclusively available for administrators:
 
-- `/setdailychannel` - Set the channel where daily problems will be sent.
-- `/removedailychannel` - Remove a channel that receives daily problems.
+## Tools
 
-## Invite Link
-https://discord.com/api/oauth2/authorize?client_id=1059122559066570885&permissions=397284604928&scope=bot%20applications.commands
+- discord.py
+- [LeetCode API](https://leetcode.com/graphql)
+
+\*_Not affiliated with LeetCode. LeetCode API is only used as a tool for this bot._
+
+## Contributions
+
+Contributions are welcomed and encouraged!
