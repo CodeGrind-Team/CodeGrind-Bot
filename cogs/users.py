@@ -6,9 +6,10 @@ import string
 
 import discord
 from discord.ext import commands
-from cogs.stats import get_problems_solved_and_rank
 
 from bot_globals import DIFFICULTY_SCORE, logger
+from cogs.stats import get_problems_solved_and_rank
+from utils.io_handling import read_file, write_file
 
 
 class Users(commands.Cog):
@@ -26,8 +27,8 @@ class Users(commands.Cog):
         discord_user = interaction.user
 
         if os.path.exists(f"data/{interaction.guild.id}_leetcode_stats.json"):
-            with open(f"data/{interaction.guild.id}_leetcode_stats.json", "r", encoding="UTF-8") as file:
-                existing_data = json.load(file)
+            existing_data = await read_file(f"data/{interaction.guild.id}_leetcode_stats.json")
+
             if leetcode_username in existing_data:
                 embed = discord.Embed(
                     title="Error!",
@@ -108,8 +109,8 @@ class Users(commands.Cog):
                 "daily_rankings": {}
             }
 
-            with open(f"data/{interaction.guild.id}_leetcode_stats.json", "w", encoding="UTF-8") as file:
-                json.dump(existing_data, file)
+            await write_file(f"data/{interaction.guild.id}_leetcode_stats.json", existing_data)
+
             embed = discord.Embed(title="Profile Added",
                                   color=discord.Color.green())
             embed.add_field(name="Username:",
@@ -135,8 +136,7 @@ class Users(commands.Cog):
         # Check if the file exists
         if os.path.exists(f"data/{interaction.guild.id}_leetcode_stats.json"):
             # Open the file
-            with open(f"data/{interaction.guild.id}_leetcode_stats.json", "r", encoding="UTF-8") as file:
-                data = json.load(file)
+            data = await read_file(f"data/{interaction.guild.id}_leetcode_stats.json")
 
             logger.info(
                 'file: cogs/users.py ~ delete ~ discord_user.id: %s', discord_user.id)
@@ -149,8 +149,8 @@ class Users(commands.Cog):
                 # Delete the data point
                 del data["users"][str(discord_user.id)]
                 # Save the updated data
-                with open(f"data/{interaction.guild.id}_leetcode_stats.json", "w", encoding="UTF-8") as file:
-                    json.dump(data, file)
+                await write_file(f"data/{interaction.guild.id}_leetcode_stats.json", data)
+
                 # Send a message to the user
                 embed = discord.Embed(title="Profile Deleted",
                                       color=discord.Color.green())

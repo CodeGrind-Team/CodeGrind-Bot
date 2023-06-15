@@ -1,4 +1,3 @@
-import asyncio
 import json
 import os
 from datetime import datetime, timedelta
@@ -8,8 +7,8 @@ import requests
 from discord.ext import commands
 
 from bot_globals import DIFFICULTY_SCORE, logger
+from utils.io_handling import read_file, write_file
 from utils.leaderboards import send_leaderboard_winners
-from utils.run_blocking import to_thread
 
 
 def get_problems_solved_and_rank(leetcode_username: str):
@@ -86,10 +85,10 @@ def get_problems_solved_and_rank(leetcode_username: str):
     return stats
 
 
-@to_thread
-def update_stats(client, now: datetime, daily_reset: bool = False, weekly_reset: bool = False):
+async def update_stats(client, now: datetime, daily_reset: bool = False, weekly_reset: bool = False):
     logger.info("file: cogs/stats.py ~ update_stats ~ run ~ now: %s | weekly reset: %s",
                 now.strftime("%d/%m/%Y, %H:%M:%S"), weekly_reset)
+
     # retrieve every server the bot is in
     server_ids = [guild.id for guild in client.guilds]
     logger.info(
@@ -101,13 +100,12 @@ def update_stats(client, now: datetime, daily_reset: bool = False, weekly_reset:
             'file: cogs/stats.py ~ update_stats ~ current server ID: %s', server_ids)
         # retrieve the keys from the json file
         if os.path.exists(f"data/{server_id}_leetcode_stats.json"):
-            with open(f'data/{server_id}_leetcode_stats.json', 'r', encoding="UTF-8") as f:
-                data = json.load(f)
+            data = await read_file(f"data/{server_id}_leetcode_stats.json")
 
             places = {}
 
             if daily_reset:
-                asyncio.run(send_leaderboard_winners("daily", server_id))
+                await send_leaderboard_winners("daily", server_id)
 
                 today_score_sorted = sorted(data["users"].items(),
                                             key=lambda x: x[1]["today_score"],
@@ -120,7 +118,7 @@ def update_stats(client, now: datetime, daily_reset: bool = False, weekly_reset:
                     places[discord_id]["daily_ranking"] = place + 1
 
             if weekly_reset:
-                asyncio.run(send_leaderboard_winners("weekly", server_id))
+                await send_leaderboard_winners("weekly", server_id)
 
                 week_score_sorted = sorted(data["users"].items(),
                                            key=lambda x: x[1]["week_score"],
@@ -234,10 +232,10 @@ def update_stats(client, now: datetime, daily_reset: bool = False, weekly_reset:
                 data["last_updated"] = now.strftime("%d/%m/%Y %H:%M")
 
                 # update the json file
-                with open(f"data/{server_id}_leetcode_stats.json", "w", encoding="UTF-8") as f:
-                    json.dump(data, f, indent=4)
-                    logger.info(
-                        'file: cogs/stats.py ~ update_stats ~ user stats updated successfully: %s', leetcode_username)
+                await write_file(f"data/{server_id}_leetcode_stats.json", data)
+
+                logger.info(
+                    'file: cogs/stats.py ~ update_stats ~ user stats updated successfully: %s', leetcode_username)
 
 
 class Stats(commands.Cog):
@@ -252,8 +250,7 @@ class Stats(commands.Cog):
         discord_user = interaction.user
 
         if leetcode_username is None:
-            with open(f"data/{interaction.guild.id}_leetcode_stats.json", "r", encoding="UTF-8") as file:
-                data = json.load(file)
+            data = await read_file(f"data/{interaction.guild.id}_leetcode_stats.json")
 
             if str(discord_user.id) in data["users"]:
                 leetcode_username = data["users"][str(

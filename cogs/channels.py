@@ -60,24 +60,25 @@ class Channels(commands.Cog):
                 channels = file.readlines()
                 logger.info(
                     "file: cogs/channels.py ~ removedailychannel ~ channel id: %s", channel.id)
-                if str(channel.id) + "\n" in channels or channel.id in channels:
-                    with open("dailychannels.txt", "w", encoding="UTF-8") as file:
-                        for line in channels:
-                            if line.strip("\n") != str(channel.id):
-                                file.write(line)
-                    embed = discord.Embed(
-                        title="Success!",
-                        description="This channel has been removed as the daily channel!",
-                        color=discord.Color.green())
-                    await interaction.response.send_message(embed=embed, ephemeral=True)
-                    return
-                else:
-                    embed = discord.Embed(
-                        title="Error!",
-                        description="This channel is not set as the daily channel!",
-                        color=discord.Color.red())
-                    await interaction.response.send_message(embed=embed, ephemeral=True)
-                    return
+
+            if str(channel.id) + "\n" in channels or channel.id in channels:
+                with open("dailychannels.txt", "w", encoding="UTF-8") as file:
+                    for line in channels:
+                        if line.strip("\n") != str(channel.id):
+                            file.write(line)
+                embed = discord.Embed(
+                    title="Success!",
+                    description="This channel has been removed as the daily channel!",
+                    color=discord.Color.green())
+                await interaction.response.send_message(embed=embed, ephemeral=True)
+                return
+            else:
+                embed = discord.Embed(
+                    title="Error!",
+                    description="This channel is not set as the daily channel!",
+                    color=discord.Color.red())
+                await interaction.response.send_message(embed=embed, ephemeral=True)
+                return
         else:
             embed = discord.Embed(
                 title="Error!",
