@@ -1,21 +1,21 @@
-
-from typing import List
+import os
 
 from bot_globals import client, logger
-from cogs.leaderboards import create_leaderboard
+from cogs.leaderboards import display_leaderboard
+from utils.io_handling import read_file
 
 
-async def send_leaderboard_winners(timeframe: str, guild_id: int, specific_channels: List[int] = None):
-    channels = []
-    if specific_channels is not None:
-        channels = specific_channels
-    else:
-        with open('dailychannels.txt', 'r', encoding="UTF-8") as f:
-            channels = [channel.strip() for channel in f.readlines()]
+async def send_leaderboard_winners(timeframe: str):
+    for filename in os.listdir("./data"):
+        if filename.endswith(".json"):
+            server_id = int(filename.split("_")[0])
 
-    for channel_id in channels:
-        channel = client.get_channel(int(channel_id))
-        await create_leaderboard(channel.send, guild_id, timeframe=timeframe, winners_only=True, users_per_page=3)
+            data = await read_file(f"data/{server_id}_leetcode_stats.json")
+
+            if "channels" in data:
+                for channel_id in data["channels"]:
+                    channel = client.get_channel(channel_id)
+                    await display_leaderboard(channel.send, server_id, timeframe=timeframe, winners_only=True, users_per_page=3)
 
     logger.info(
         "file: utils/leaderboards.py ~ send_leaderboard_winners ~ %s winners leaderboard sent to channels", timeframe)

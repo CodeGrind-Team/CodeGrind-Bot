@@ -8,7 +8,6 @@ from discord.ext import commands
 
 from bot_globals import DIFFICULTY_SCORE, logger
 from utils.io_handling import read_file, write_file
-from utils.leaderboards import send_leaderboard_winners
 
 
 def get_problems_solved_and_rank(leetcode_username: str):
@@ -86,8 +85,8 @@ def get_problems_solved_and_rank(leetcode_username: str):
 
 
 async def update_stats(client, now: datetime, daily_reset: bool = False, weekly_reset: bool = False):
-    logger.info("file: cogs/stats.py ~ update_stats ~ run ~ now: %s | weekly reset: %s",
-                now.strftime("%d/%m/%Y, %H:%M:%S"), weekly_reset)
+    logger.info("file: cogs/stats.py ~ update_stats ~ run ~ now: %s | daily reset: %s | weekly reset: %s",
+                now.strftime("%d/%m/%Y, %H:%M:%S"), daily_reset, weekly_reset)
 
     # retrieve every server the bot is in
     server_ids = [guild.id for guild in client.guilds]
@@ -105,8 +104,6 @@ async def update_stats(client, now: datetime, daily_reset: bool = False, weekly_
             places = {}
 
             if daily_reset:
-                await send_leaderboard_winners("daily", server_id)
-
                 today_score_sorted = sorted(data["users"].items(),
                                             key=lambda x: x[1]["today_score"],
                                             reverse=True)
@@ -118,8 +115,6 @@ async def update_stats(client, now: datetime, daily_reset: bool = False, weekly_
                     places[discord_id]["daily_ranking"] = place + 1
 
             if weekly_reset:
-                await send_leaderboard_winners("weekly", server_id)
-
                 week_score_sorted = sorted(data["users"].items(),
                                            key=lambda x: x[1]["week_score"],
                                            reverse=True)

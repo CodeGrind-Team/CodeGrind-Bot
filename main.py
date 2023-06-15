@@ -8,6 +8,7 @@ import requests
 from dotenv import load_dotenv
 
 from bot_globals import TIMEZONE, client, logger
+from utils.leaderboards import send_leaderboard_winners
 from cogs.stats import update_stats
 
 load_dotenv()
@@ -31,6 +32,8 @@ async def wait_until_next_half_hour():
 
 async def send_daily_question_and_update_stats():
     logger.info("file: main.py ~ send_daily_question_and_update_stats ~ run")
+
+    lock = asyncio.Lock()
 
     while not client.is_closed():
         # daily changes at midnight UTC rather than BST
@@ -100,7 +103,16 @@ async def send_daily_question_and_update_stats():
         now = datetime.now(TIMEZONE)
         daily_reset = now.hour == 0 and now.minute == 0
         weekly_reset = now.weekday() == 0 and now.hour == 0 and now.minute == 0
-        await update_stats(client, now, daily_reset, weekly_reset)
+
+        async with lock:
+            if daily_reset:
+                await send_leaderboard_winners("daily")
+
+            if weekly_reset:
+                await send_leaderboard_winners("weekly")
+
+        async with lock:
+            await update_stats(client, now, daily_reset, weekly_reset)
 
 
 @client.event
@@ -111,10 +123,21 @@ async def on_ready():
     server_ids = [guild.id for guild in client.guilds]
     logger.info('file: main.py ~ server IDs: %s', server_ids)
 
-    if os.environ["UPDATE_STATS_ON_START"] == "True":
-        daily_reset = os.environ["DAILY_RESET"] == "True"
-        weekly_reset = os.environ["WEEKLY_RESET"] == "True"
-        await update_stats(client, datetime.now(TIMEZONE), daily_reset, weekly_reset)
+    lock = asyncio.Lock()
+
+    daily_reset = os.environ["DAILY_RESET"] == "True"
+    weekly_reset = os.environ["WEEKLY_RESET"] == "True"
+
+    async with lock:
+        if daily_reset:
+            await send_leaderboard_winners("daily")
+
+        if weekly_reset:
+            await send_leaderboard_winners("weekly")
+
+    async with lock:
+        if os.environ["UPDATE_STATS_ON_START"] == "True":
+            await update_stats(client, datetime.now(TIMEZONE), daily_reset, weekly_reset)
 
     try:
         synced = await client.tree.sync()

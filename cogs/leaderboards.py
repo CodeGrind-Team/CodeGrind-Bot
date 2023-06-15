@@ -78,10 +78,10 @@ class Pagination(discord.ui.View):
         await interaction.message.delete()
 
 
-async def create_leaderboard(send_message, guild_id, user_id = None, timeframe: str = "alltime", page: int = 1, winners_only: bool = False, users_per_page: int = 10):
-    logger.info("file: cogs/leaderboards.py ~ create_leaderboard ~ run ~ guild id: %s", guild_id)
+async def display_leaderboard(send_message, server_id, user_id = None, timeframe: str = "alltime", page: int = 1, winners_only: bool = False, users_per_page: int = 10):
+    logger.info("file: cogs/leaderboards.py ~ display_leaderboard ~ run ~ guild id: %s", server_id)
 
-    if not os.path.exists(f"data/{guild_id}_leetcode_stats.json"):
+    if not os.path.exists(f"data/{server_id}_leetcode_stats.json"):
         embed = discord.Embed(
             title=f"{TIMEFRAME_TITLE[timeframe]['title']} Leaderboard",
             description="No one has added their LeetCode username yet.",
@@ -89,7 +89,7 @@ async def create_leaderboard(send_message, guild_id, user_id = None, timeframe: 
         await send_message(embed=embed)
         return
 
-    data = await read_file(f"data/{guild_id}_leetcode_stats.json")
+    data = await read_file(f"data/{server_id}_leetcode_stats.json")
 
     last_updated = data["last_updated"]
 
@@ -136,10 +136,10 @@ async def create_leaderboard(send_message, guild_id, user_id = None, timeframe: 
                     if winners_only and j == 1:
                         wins += 1
                     
-                wins_text = f" ({str(wins)} wins) "
+                wins_text = f"({str(wins)} wins) "
                 # wins won't be displayed for alltime timeframe as wins !> 0
                 leaderboard.append(
-                    f"**{RANK_EMOJI[j] if j in RANK_EMOJI else number_rank} {discord_username_with_link if link_yes_no else discord_username}**{wins_text if  wins > 0 else ''}- **{stats[TIMEFRAME_TITLE[timeframe]['field']]}** pts"
+                    f"**{RANK_EMOJI[j] if j in RANK_EMOJI else number_rank} {discord_username_with_link if link_yes_no else discord_username}** {wins_text if  wins > 0 else ''}- **{stats[TIMEFRAME_TITLE[timeframe]['field']]}** pts"
                 )
                 
 
@@ -176,19 +176,19 @@ class Leaderboards(commands.GroupCog, name="leaderboard"):
     async def alltime(self, interaction: discord.Interaction, page: int = 1):
         logger.info("file: cogs/leaderboards.py ~ alltime ~ run")
 
-        await create_leaderboard(interaction.response.send_message, interaction.guild.id, interaction.user.id, "alltime", page)
+        await display_leaderboard(interaction.response.send_message, interaction.guild.id, interaction.user.id, "alltime", page)
 
     @discord.app_commands.command(name="weekly", description="View the Weekly leaderboard")
     async def weekly(self, interaction: discord.Interaction, page: int = 1):
         logger.info("file: cogs/leaderboards.py ~ weekly ~ run")
 
-        await create_leaderboard(interaction.response.send_message, interaction.guild.id, interaction.user.id, "weekly", page)
+        await display_leaderboard(interaction.response.send_message, interaction.guild.id, interaction.user.id, "weekly", page)
 
     @discord.app_commands.command(name="daily", description="View the Daily leaderboard")
     async def daily(self, interaction: discord.Interaction, page: int = 1):
         logger.info("file: cogs/leaderboards.py ~ daily ~ run")
         
-        await create_leaderboard(interaction.response.send_message, interaction.guild.id, interaction.user.id, "daily", page)
+        await display_leaderboard(interaction.response.send_message, interaction.guild.id, interaction.user.id, "daily", page)
 
 
 async def setup(client):

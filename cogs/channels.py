@@ -2,6 +2,7 @@ import discord
 from discord.ext import commands
 
 from bot_globals import logger
+from utils.io_handling import read_file, write_file
 
 
 class Channels(commands.Cog):
@@ -14,31 +15,37 @@ class Channels(commands.Cog):
 
         if channel is None:
             channel = interaction.channel
+
+        server_id = interaction.guild.id
+
+        logger.info(
+            "file: cogs/channels.py ~ setdailychannel ~ channel id: %s", channel.id)
+
         # only allow this command to be used by users with the administrator permission
         if interaction.user.guild_permissions.administrator:
-            # open the dailychannels.txt file in append mode
-            # check if the channel is already in the file
-            with open("dailychannels.txt", "r", encoding="UTF-8") as file:
-                channels = file.readlines()
-                logger.info(
-                    "file: cogs/channels.py ~ setdailychannel ~ channel id: %s", channel.id)
+            data = await read_file(f"data/{server_id}_leetcode_stats.json")
 
-                if str(channel.id) + "\n" in channels or channel.id in channels:
-                    embed = discord.Embed(
-                        title="Error!",
-                        description="This channel is already set as the daily channel!",
-                        color=discord.Color.red())
-                    await interaction.response.send_message(embed=embed, ephemeral=True)
-                    return
-                else:
-                    with open("dailychannels.txt", "a", encoding="UTF-8") as file:
-                        file.write(f"{channel.id}\n")
-                    embed = discord.Embed(
-                        title="Success!",
-                        description="This channel has been set as the daily channel!",
-                        color=discord.Color.green())
-                    await interaction.response.send_message(embed=embed, ephemeral=True)
-                    return
+            if "channels" not in data:
+                data["channels"] = []
+
+            if channel.id in data["channels"]:
+                embed = discord.Embed(
+                    title="Error!",
+                    description="This channel has already been added!",
+                    color=discord.Color.red())
+                await interaction.response.send_message(embed=embed, ephemeral=True)
+                return
+            else:
+                data["channels"].append(channel.id)
+
+                await write_file(f"data/{server_id}_leetcode_stats.json", data)
+
+                embed = discord.Embed(
+                    title="Success!",
+                    description="This channel has now been added!",
+                    color=discord.Color.green())
+                await interaction.response.send_message(embed=embed, ephemeral=True)
+                return
         else:
             embed = discord.Embed(
                 title="Error!",
@@ -50,32 +57,34 @@ class Channels(commands.Cog):
     @discord.app_commands.command(name="removedailychannel", description="Remove a daily channel")
     async def removedailychannel(self, interaction: discord.Interaction, channel: discord.TextChannel = None):
         logger.info("file: cogs/channels.py ~ removedailychannel ~ run")
+
         if channel is None:
             channel = interaction.channel
+
+        server_id = interaction.guild.id
+
+        logger.info(
+            "file: cogs/channels.py ~ removedailychannel ~ channel id: %s", channel.id)
+
         # only allow this command to be used by users with the administrator permission
         if interaction.user.guild_permissions.administrator:
-            # open the dailychannels.txt file in append mode
-            # check if the channel is already in the file
-            with open("dailychannels.txt", "r", encoding="UTF-8") as file:
-                channels = file.readlines()
-                logger.info(
-                    "file: cogs/channels.py ~ removedailychannel ~ channel id: %s", channel.id)
+            data = await read_file(f"data/{server_id}_leetcode_stats.json")
 
-            if str(channel.id) + "\n" in channels or channel.id in channels:
-                with open("dailychannels.txt", "w", encoding="UTF-8") as file:
-                    for line in channels:
-                        if line.strip("\n") != str(channel.id):
-                            file.write(line)
+            if "channels" in data and channel.id in data["channels"]:
+                data["channels"].remove(channel.id)
+
+                await write_file(f"data/{server_id}_leetcode_stats.json", data)
+
                 embed = discord.Embed(
                     title="Success!",
-                    description="This channel has been removed as the daily channel!",
+                    description="This channel has been removed!",
                     color=discord.Color.green())
                 await interaction.response.send_message(embed=embed, ephemeral=True)
                 return
             else:
                 embed = discord.Embed(
                     title="Error!",
-                    description="This channel is not set as the daily channel!",
+                    description="This channel was not added!",
                     color=discord.Color.red())
                 await interaction.response.send_message(embed=embed, ephemeral=True)
                 return

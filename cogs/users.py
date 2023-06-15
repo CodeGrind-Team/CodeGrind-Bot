@@ -25,9 +25,10 @@ class Users(commands.Cog):
             'file: cogs/users.py ~ add ~ run ~ leetcode_username: %s', leetcode_username)
 
         discord_user = interaction.user
+        server_id = interaction.guild.id
 
-        if os.path.exists(f"data/{interaction.guild.id}_leetcode_stats.json"):
-            existing_data = await read_file(f"data/{interaction.guild.id}_leetcode_stats.json")
+        if os.path.exists(f"data/{server_id}_leetcode_stats.json"):
+            existing_data = await read_file(f"data/{server_id}_leetcode_stats.json")
 
             if leetcode_username in existing_data:
                 embed = discord.Embed(
@@ -109,7 +110,7 @@ class Users(commands.Cog):
                 "daily_rankings": {}
             }
 
-            await write_file(f"data/{interaction.guild.id}_leetcode_stats.json", existing_data)
+            await write_file(f"data/{server_id}_leetcode_stats.json", existing_data)
 
             embed = discord.Embed(title="Profile Added",
                                   color=discord.Color.green())
@@ -132,11 +133,12 @@ class Users(commands.Cog):
             'file: cogs/users.py ~ delete ~ run')
 
         discord_user = interaction.user
+        server_id = interaction.guild.id
 
         # Check if the file exists
-        if os.path.exists(f"data/{interaction.guild.id}_leetcode_stats.json"):
+        if os.path.exists(f"data/{server_id}_leetcode_stats.json"):
             # Open the file
-            data = await read_file(f"data/{interaction.guild.id}_leetcode_stats.json")
+            data = await read_file(f"data/{server_id}_leetcode_stats.json")
 
             logger.info(
                 'file: cogs/users.py ~ delete ~ discord_user.id: %s', discord_user.id)
@@ -149,7 +151,7 @@ class Users(commands.Cog):
                 # Delete the data point
                 del data["users"][str(discord_user.id)]
                 # Save the updated data
-                await write_file(f"data/{interaction.guild.id}_leetcode_stats.json", data)
+                await write_file(f"data/{server_id}_leetcode_stats.json", data)
 
                 # Send a message to the user
                 embed = discord.Embed(title="Profile Deleted",
