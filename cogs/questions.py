@@ -7,54 +7,60 @@ from discord.ext import commands
 from bot_globals import session, logger
 
 
+def daily_question_embed() -> discord.Embed:
+    url = 'https://leetcode.com/graphql'
+
+    headers = {
+        'Content-Type': 'application/json',
+    }
+
+    data = {
+        'operationName': 'daily',
+        'query':
+        '''
+        query daily {
+            challenge: activeDailyCodingChallengeQuestion {
+                date
+                link
+                question {
+                    difficulty
+                    title
+                }
+            }
+        }
+    '''
+    }
+
+    response = requests.post(url, json=data, headers=headers, timeout=10)
+    response_data = response.json()
+
+    # Extract and print the link
+    link = response_data['data']['challenge']['link']
+    # Extract and print the title
+    title = response_data['data']['challenge']['question']['title']
+    # Extract and print the difficulty
+    difficulty = response_data['data']['challenge']['question']['difficulty']
+    # Extract and print the date
+    # date = response_data['data']['challenge']['date']
+    link = f"https://leetcode.com{link}"
+    embed = discord.Embed(title=f"Daily Problem: {title}",
+                          color=discord.Color.blue())
+    embed.add_field(name="**Difficulty**",
+                    value=f"{difficulty}", inline=True)
+    embed.add_field(name="**Link**", value=f"{link}", inline=False)
+
+    return embed
+
+
 class Questions(commands.Cog):
-    def __init__(self, client):
+    def __init__(self, client: commands.Bot):
         self.client = client
 
     @discord.app_commands.command(name="daily", description="Returns the daily problem")
-    async def daily(self, interaction: discord.Interaction):
+    async def daily(self, interaction: discord.Interaction) -> None:
         logger.info("file: cogs/questions.py ~ get_daily ~ run")
 
-        url = 'https://leetcode.com/graphql'
-
-        headers = {
-            'Content-Type': 'application/json',
-        }
-
-        data = {
-            'operationName': 'daily',
-            'query':
-            '''
-            query daily {
-                challenge: activeDailyCodingChallengeQuestion {
-                    date
-                    link
-                    question {
-                        difficulty
-                        title
-                    }
-                }
-            }
-        '''
-        }
-
-        response = requests.post(url, json=data, headers=headers, timeout=10)
-        response_data = response.json()
-
-        # Extract and print the link
-        link = response_data['data']['challenge']['link']
-        # Extract and print the title
-        title = response_data['data']['challenge']['question']['title']
-        # Extract and print the difficulty
-        difficulty = response_data['data']['challenge']['question']['difficulty']
-        # Extract and print the date
-        # date = response_data['data']['challenge']['date']
-        link = f"https://leetcode.com{link}"
-        embed = discord.Embed(title=f"Daily Problem: {title}",
-                              color=discord.Color.blue())
-        embed.add_field(name="**Difficulty**",
-                        value=f"{difficulty}", inline=True)
-        embed.add_field(name="**Link**", value=f"{link}", inline=False)
+        embed = daily_question_embed()
 
         await interaction.response.send_message(embed=embed)
         return
@@ -62,7 +68,7 @@ class Questions(commands.Cog):
     @discord.app_commands.command(
         name="question",
         description="Request a question based on difficulty or at random")
-    async def question(self, interaction: discord.Interaction, difficulty: str = "random"):
+    async def question(self, interaction: discord.Interaction, difficulty: str = "random") -> None:
         logger.info("file: cogs/questions.py ~ question ~ run")
 
         if difficulty == "easy":
@@ -176,5 +182,5 @@ class Questions(commands.Cog):
             return
 
 
-async def setup(client):
+async def setup(client: commands.Bot):
     await client.add_cog(Questions(client))

@@ -5,11 +5,11 @@ from bot_globals import logger, DIFFICULTY_SCORE
 
 
 class General(commands.Cog):
-    def __init__(self, client):
+    def __init__(self, client: commands.Bot):
         self.client = client
 
     @discord.app_commands.command(name="help", description="Displays the help menu")
-    async def help(self, interaction: discord.Interaction):
+    async def help(self, interaction: discord.Interaction) -> None:
         logger.info("file: cogs/help.py ~ help ~ run")
 
         embed = discord.Embed(title="LeetCode Bot Help",
@@ -43,20 +43,20 @@ class General(commands.Cog):
             value="Use `/daily` to get the daily LeetCode question.",
             inline=False)
 
-
         # for adminstrators
-        if interaction.user.guild_permissions.administrator:
-            embed.add_field(
-                name="Set Daily LeetCode Channel",
-                value="Use `/setdailychannel` to set the channel where the daily LeetCode question will be sent.",
-                inline=False)
-            embed.add_field(
-                name="Remove Daily LeetCode Channel",
-                value="Use `/removedailychannel` to remove the channel where the daily LeetCode question will be sent.",
-                inline=False)
+        if isinstance(interaction.user, discord.Member):
+            if interaction.user.guild_permissions.administrator:
+                embed.add_field(
+                    name="Set Daily LeetCode Channel",
+                    value="Use `/setdailychannel` to set the channel where the daily LeetCode question will be sent.",
+                    inline=False)
+                embed.add_field(
+                    name="Remove Daily LeetCode Channel",
+                    value="Use `/removedailychannel` to remove the channel where the daily LeetCode question will be sent.",
+                    inline=False)
 
         await interaction.response.send_message(embed=embed, ephemeral=True)
 
 
-async def setup(client):
+async def setup(client: commands.Bot):
     await client.add_cog(General(client))

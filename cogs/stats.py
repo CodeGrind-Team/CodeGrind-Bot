@@ -1,6 +1,6 @@
-import json
 import os
 from datetime import datetime, timedelta
+from typing import Any
 
 import discord
 import requests
@@ -10,7 +10,7 @@ from bot_globals import DIFFICULTY_SCORE, logger
 from utils.io_handling import read_file, write_file
 
 
-def get_problems_solved_and_rank(leetcode_username: str):
+def get_problems_solved_and_rank(leetcode_username: str) -> dict[str, Any] | None:
     logger.info(
         "file: cogs/stats.py ~ get_problems_solved_and_rank ~ run ~ leetcode_username: %s", leetcode_username)
 
@@ -84,7 +84,7 @@ def get_problems_solved_and_rank(leetcode_username: str):
     return stats
 
 
-async def update_stats(client, now: datetime, daily_reset: bool = False, weekly_reset: bool = False):
+async def update_stats(client, now: datetime, daily_reset: bool = False, weekly_reset: bool = False) -> None:
     logger.info("file: cogs/stats.py ~ update_stats ~ run ~ now: %s | daily reset: %s | weekly reset: %s",
                 now.strftime("%d/%m/%Y, %H:%M:%S"), daily_reset, weekly_reset)
 
@@ -238,11 +238,14 @@ class Stats(commands.Cog):
         self.client = client
 
     @discord.app_commands.command(name="stats", description="Prints the stats of a user")
-    async def stats(self, interaction: discord.Interaction, leetcode_username: str = None):
+    async def stats(self, interaction: discord.Interaction, leetcode_username: str | None = None) -> None:
         logger.info(
             'file: cogs/stats.py ~ stats ~ run ~ leetcode_username: %s', leetcode_username)
 
         discord_user = interaction.user
+
+        if not interaction.guild:
+            return
 
         if leetcode_username is None:
             data = await read_file(f"data/{interaction.guild.id}_leetcode_stats.json")
@@ -262,6 +265,10 @@ class Stats(commands.Cog):
                                 value="Use the `/add <username>` command to add your LeetCode username.")
                 await interaction.response.send_message(embed=embed, ephemeral=True)
                 return
+
+        if leetcode_username is None:
+            await interaction.response.defer()
+            return
 
         stats = get_problems_solved_and_rank(leetcode_username)
 
@@ -302,5 +309,5 @@ class Stats(commands.Cog):
             await interaction.response.send_message(embed=embed, ephemeral=True)
 
 
-async def setup(client):
+async def setup(client: commands.Bot):
     await client.add_cog(Stats(client))

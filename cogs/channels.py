@@ -6,12 +6,16 @@ from utils.io_handling import read_file, write_file
 
 
 class Channels(commands.Cog):
-    def __init__(self, client):
+    def __init__(self, client: commands.Bot):
         self.client = client
 
     @discord.app_commands.command(name="setdailychannel", description="Set where the daily problem will be sent")
-    async def setdailychannel(self, interaction: discord.Interaction, channel: discord.TextChannel = None):
+    async def setdailychannel(self, interaction: discord.Interaction, channel: discord.TextChannel | None = None) -> None:
         logger.info("file: cogs/channels.py ~ setdailychannel ~ run")
+
+        if not interaction.guild or not isinstance(interaction.channel, discord.TextChannel) or not isinstance(interaction.user, discord.Member):
+            await interaction.response.defer()
+            return
 
         if channel is None:
             channel = interaction.channel
@@ -55,8 +59,12 @@ class Channels(commands.Cog):
             return
 
     @discord.app_commands.command(name="removedailychannel", description="Remove a daily channel")
-    async def removedailychannel(self, interaction: discord.Interaction, channel: discord.TextChannel = None):
+    async def removedailychannel(self, interaction: discord.Interaction, channel: discord.TextChannel | None = None) -> None:
         logger.info("file: cogs/channels.py ~ removedailychannel ~ run")
+
+        if not interaction.guild or not isinstance(interaction.channel, discord.TextChannel) or not isinstance(interaction.user, discord.Member):
+            await interaction.response.defer()
+            return
 
         if channel is None:
             channel = interaction.channel
@@ -97,5 +105,5 @@ class Channels(commands.Cog):
             return
 
 
-async def setup(client):
+async def setup(client: commands.Bot):
     await client.add_cog(Channels(client))

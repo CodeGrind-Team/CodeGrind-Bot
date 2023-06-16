@@ -1,11 +1,13 @@
 import os
 
+import discord
+
 from bot_globals import client, logger
 from cogs.leaderboards import display_leaderboard
 from utils.io_handling import read_file
 
 
-async def send_leaderboard_winners(timeframe: str):
+async def send_leaderboard_winners(timeframe: str) -> None:
     for filename in os.listdir("./data"):
         if filename.endswith(".json"):
             server_id = int(filename.split("_")[0])
@@ -15,6 +17,10 @@ async def send_leaderboard_winners(timeframe: str):
             if "channels" in data:
                 for channel_id in data["channels"]:
                     channel = client.get_channel(channel_id)
+
+                    if not isinstance(channel, discord.TextChannel):
+                        continue
+
                     await display_leaderboard(channel.send, server_id, timeframe=timeframe, winners_only=True, users_per_page=3)
 
     logger.info(

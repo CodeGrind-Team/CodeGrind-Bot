@@ -10,7 +10,7 @@ from utils.io_handling import read_file
 
 
 class Pagination(discord.ui.View):
-    def __init__(self, user_id=None, pages=None, page=0):
+    def __init__(self, user_id: int | None = None, pages: list[discord.Embed] | None = None, page: int = 0):
         super().__init__()
         self.page = page
         self.user_id = user_id
@@ -31,8 +31,8 @@ class Pagination(discord.ui.View):
             self.next.disabled = True
 
     @discord.ui.button(label='<', style=discord.ButtonStyle.blurple)
-    async def previous(self, interaction: discord.Interaction, button: discord.ui.Button):
-        if self.user_id is None or interaction.user.id != self.user_id:
+    async def previous(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
+        if self.user_id is None or interaction.user.id != self.user_id or interaction.message is None:
             await interaction.response.defer()
             return
 
@@ -51,8 +51,8 @@ class Pagination(discord.ui.View):
         await interaction.response.edit_message(view=self)
 
     @discord.ui.button(label='>', style=discord.ButtonStyle.blurple)
-    async def next(self, interaction: discord.Interaction, button: discord.ui.Button):
-        if self.user_id is None or interaction.user.id != self.user_id:
+    async def next(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
+        if self.user_id is None or interaction.user.id != self.user_id or interaction.message is None:
             await interaction.response.defer()
             return
 
@@ -71,7 +71,7 @@ class Pagination(discord.ui.View):
 
     @discord.ui.button(label='🗑️', style=discord.ButtonStyle.red)
     async def delete(self, interaction: discord.Interaction, button: discord.ui.Button):
-        if interaction.user.id != self.user_id:
+        if interaction.user.id != self.user_id or interaction.message is None:
             await interaction.response.defer()
             return
 
@@ -168,28 +168,40 @@ async def display_leaderboard(send_message, server_id, user_id = None, timeframe
 
 
 class Leaderboards(commands.GroupCog, name="leaderboard"):
-    def __init__(self, client):
+    def __init__(self, client: commands.Bot):
         self.client = client
         super().__init__()
 
     @discord.app_commands.command(name="alltime", description="View the All-Time leaderboard")
-    async def alltime(self, interaction: discord.Interaction, page: int = 1):
+    async def alltime(self, interaction: discord.Interaction, page: int = 1) -> None:
         logger.info("file: cogs/leaderboards.py ~ alltime ~ run")
+
+        if not interaction.guild:
+            await interaction.response.defer()
+            return
 
         await display_leaderboard(interaction.response.send_message, interaction.guild.id, interaction.user.id, "alltime", page)
 
     @discord.app_commands.command(name="weekly", description="View the Weekly leaderboard")
-    async def weekly(self, interaction: discord.Interaction, page: int = 1):
+    async def weekly(self, interaction: discord.Interaction, page: int = 1) -> None:
         logger.info("file: cogs/leaderboards.py ~ weekly ~ run")
+
+        if not interaction.guild:
+            await interaction.response.defer()
+            return
 
         await display_leaderboard(interaction.response.send_message, interaction.guild.id, interaction.user.id, "weekly", page)
 
     @discord.app_commands.command(name="daily", description="View the Daily leaderboard")
-    async def daily(self, interaction: discord.Interaction, page: int = 1):
+    async def daily(self, interaction: discord.Interaction, page: int = 1) -> None:
         logger.info("file: cogs/leaderboards.py ~ daily ~ run")
+
+        if not interaction.guild:
+            await interaction.response.defer()
+            return
         
         await display_leaderboard(interaction.response.send_message, interaction.guild.id, interaction.user.id, "daily", page)
 
 
-async def setup(client):
+async def setup(client: commands.Bot):
     await client.add_cog(Leaderboards(client))

@@ -1,5 +1,4 @@
 import asyncio
-import json
 import os
 import random
 import string
@@ -13,18 +12,22 @@ from utils.io_handling import read_file, write_file
 
 
 class Users(commands.Cog):
-    def __init__(self, client):
+    def __init__(self, client: commands.Bot):
         self.client = client
 
     @discord.app_commands.command(
         name="add",
         description="Adds a user to the leaderboard. Answer with 'yes' to link your LeetCode profile to the leaderboard."
     )
-    async def add(self, interaction: discord.Interaction, leetcode_username: str, link: str = "yes"):
+    async def add(self, interaction: discord.Interaction, leetcode_username: str, link: str = "yes") -> None:
         logger.info(
             'file: cogs/users.py ~ add ~ run ~ leetcode_username: %s', leetcode_username)
 
         discord_user = interaction.user
+
+        if not interaction.guild:
+            return
+
         server_id = interaction.guild.id
 
         if os.path.exists(f"data/{server_id}_leetcode_stats.json"):
@@ -83,6 +86,9 @@ class Users(commands.Cog):
         if profile_name == generated_string:
             stats = get_problems_solved_and_rank(leetcode_username)
 
+            if stats is None:
+                return
+
             rank = stats["profile"]["ranking"]
             easy_completed = stats["submitStatsGlobal"]["acSubmissionNum"]["Easy"]
             medium_completed = stats["submitStatsGlobal"]["acSubmissionNum"]["Medium"]
@@ -128,9 +134,23 @@ class Users(commands.Cog):
             return
 
     @discord.app_commands.command(name="delete", description="Delete your profile from the leaderboard.")
-    async def delete(self, interaction: discord.Interaction):
+    async def delete(self, interaction: discord.Interaction) -> None:
+        """
+        Command to delete the user's profile from the leaderboard.
+
+        Args:
+            interaction (discord.Interaction): The interaction object representing the user command.
+
+        Returns:
+            None
+        """
+
         logger.info(
             'file: cogs/users.py ~ delete ~ run')
+
+        if not interaction.guild:
+            await interaction.response.defer()
+            return
 
         discord_user = interaction.user
         server_id = interaction.guild.id
@@ -180,5 +200,5 @@ class Users(commands.Cog):
             await interaction.response.send_message(embed=embed, ephemeral=True)
 
 
-async def setup(client):
+async def setup(client: commands.Bot):
     await client.add_cog(Users(client))

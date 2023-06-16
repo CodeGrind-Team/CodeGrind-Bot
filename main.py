@@ -14,7 +14,7 @@ load_dotenv()
 
 
 @client.event
-async def on_ready():
+async def on_ready() -> None:
     logger.info("file: main.py ~ on_ready ~ %s",
                 datetime.utcnow().strftime("%d/%m/%Y %H:%M:%S"))
     logger.info("file: main.py ~ logged in as a bot %s", client.user)
@@ -40,19 +40,21 @@ async def on_ready():
     try:
         synced = await client.tree.sync()
         logger.info("file: main.py ~ synced %s commands", len(synced))
+
         await send_daily_question_and_update_stats()
+
     except Exception as e:
         logger.exception("file: main.py ~ on_ready ~ exception: %s", e)
 
 
-async def load_extensions():
+async def load_extensions() -> None:
     for filename in os.listdir("./cogs"):
         if filename.endswith(".py"):
             # cut off the .py from the file name
             await client.load_extension(f"cogs.{filename[:-3]}")
 
 
-async def main(token: str):
+async def main(token: str) -> None:
     async with client:
         await load_extensions()
         await client.start(token)
