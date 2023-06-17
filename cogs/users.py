@@ -18,11 +18,11 @@ class Users(commands.Cog):
         name="add",
         description="Adds a user to the leaderboard. Answer with 'yes' to link your LeetCode profile to the leaderboard."
     )
-    async def add(self, interaction: discord.Interaction, leetcode_username: str, link: str = "yes") -> None:
+    async def add(self, interaction: discord.Interaction, leetcode_username: str, hyperlink: str = "yes") -> None:
         logger.info(
             'file: cogs/users.py ~ add ~ run ~ leetcode_username: %s', leetcode_username)
 
-        link_bool = link.lower() in ("yes", "true", "t", "1")
+        hyperlink_bool = hyperlink.lower() in ("yes", "true", "t", "1")
 
         discord_user = interaction.user
 
@@ -113,7 +113,7 @@ class Users(commands.Cog):
                 "today_score": 0,
                 "discord_username": discord_user.name,
                 "leetcode_username": leetcode_username,
-                "link_yes_no": link_bool,
+                "hyperlink": hyperlink_bool,
                 "history": {},
                 "weekly_rankings": {},
                 "daily_rankings": {}

@@ -114,8 +114,8 @@ async def display_leaderboard(send_message, server_id, user_id=None, timeframe: 
             profile_link = f"https://leetcode.com/{leetcode_username}"
             # Get the discord_username from the stats data in the JSON file
             discord_username = stats["discord_username"]
-            # Get the link_yes_no from the stats data in the JSON file
-            link_yes_no = stats["link_yes_no"]
+            # Get the hyperlink from the stats data in the JSON file
+            hyperlink = stats["hyperlink"]
             if discord_username:
                 number_rank = f"{j}\."
                 discord_username_with_link = f"[{discord_username}]({profile_link})"
@@ -137,7 +137,7 @@ async def display_leaderboard(send_message, server_id, user_id=None, timeframe: 
                 wins_text = f"({str(wins)} wins) "
                 # wins won't be displayed for alltime timeframe as wins !> 0
                 leaderboard.append(
-                    f"**{RANK_EMOJI[j] if j in RANK_EMOJI else number_rank} {discord_username_with_link if link_yes_no else discord_username}** {wins_text if  wins > 0 else ''}- **{stats[TIMEFRAME_TITLE[timeframe]['field']]}** pts"
+                    f"**{RANK_EMOJI[j] if j in RANK_EMOJI else number_rank} {discord_username_with_link if hyperlink else discord_username}** {wins_text if  wins > 0 else ''}- **{stats[TIMEFRAME_TITLE[timeframe]['field']]}** pts"
                 )
 
         title = f"{TIMEFRAME_TITLE[timeframe]['title']} Leaderboard"
