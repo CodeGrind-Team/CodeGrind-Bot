@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 from bot_globals import TIMEZONE, client, logger
 from utils.leaderboards import send_leaderboard_winners
 from utils.message_scheduler import send_daily_question_and_update_stats
-from cogs.stats import update_stats
+from cogs.stats import update_stats_and_rankings
 
 load_dotenv()
 
@@ -27,15 +27,15 @@ async def on_ready() -> None:
     weekly_reset = os.environ["WEEKLY_RESET"] == "True"
 
     async with lock:
+        if os.environ["UPDATE_STATS_ON_START"] == "True":
+            await update_stats_and_rankings(client, datetime.now(TIMEZONE), daily_reset, weekly_reset)
+
+    async with lock:
         if daily_reset:
             await send_leaderboard_winners("daily")
 
         if weekly_reset:
             await send_leaderboard_winners("weekly")
-
-    async with lock:
-        if os.environ["UPDATE_STATS_ON_START"] == "True":
-            await update_stats(client, datetime.now(TIMEZONE), daily_reset, weekly_reset)
 
     try:
         synced = await client.tree.sync()

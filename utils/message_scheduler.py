@@ -6,7 +6,7 @@ import discord
 
 from bot_globals import TIMEZONE, client, logger
 from cogs.questions import daily_question_embed
-from cogs.stats import update_stats
+from cogs.stats import update_stats_and_rankings
 from utils.leaderboards import send_leaderboard_winners
 from utils.io_handling import read_file
 
@@ -76,6 +76,9 @@ async def send_daily_question_and_update_stats() -> None:
         weekly_reset = now.weekday() == 0 and now.hour == 0 and now.minute == 0
 
         async with lock:
+            await update_stats_and_rankings(client, now, daily_reset, weekly_reset)
+
+        async with lock:
             if daily_question_reset:
                 await send_daily_question()
 
@@ -84,6 +87,3 @@ async def send_daily_question_and_update_stats() -> None:
 
             if weekly_reset:
                 await send_leaderboard_winners("weekly")
-
-        async with lock:
-            await update_stats(client, now, daily_reset, weekly_reset)

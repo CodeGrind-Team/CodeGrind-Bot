@@ -30,9 +30,9 @@ class Users(commands.Cog):
 
         server_id = interaction.guild.id
 
-        if os.path.exists(f"data/{server_id}_leetcode_stats.json"):
-            existing_data = await read_file(f"data/{server_id}_leetcode_stats.json")
+        existing_data = await read_file(f"data/{server_id}_leetcode_stats.json")
 
+        if existing_data is not None:
             if leetcode_username in existing_data:
                 embed = discord.Embed(
                     title="Error!",
@@ -106,6 +106,8 @@ class Users(commands.Cog):
                 "hard": hard_completed,
                 "total_questions_done": total_questions_done,
                 "total_score": total_score,
+                "last_week_score": 0,
+                "yesterday_score": 0,
                 "week_score": 0,
                 "today_score": 0,
                 "discord_username": discord_user.name,
@@ -155,11 +157,9 @@ class Users(commands.Cog):
         discord_user = interaction.user
         server_id = interaction.guild.id
 
-        # Check if the file exists
-        if os.path.exists(f"data/{server_id}_leetcode_stats.json"):
-            # Open the file
-            data = await read_file(f"data/{server_id}_leetcode_stats.json")
+        data = await read_file(f"data/{server_id}_leetcode_stats.json")
 
+        if data is not None:
             logger.info(
                 'file: cogs/users.py ~ delete ~ discord_user.id: %s', discord_user.id)
 
