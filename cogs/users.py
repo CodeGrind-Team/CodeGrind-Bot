@@ -22,6 +22,8 @@ class Users(commands.Cog):
         logger.info(
             'file: cogs/users.py ~ add ~ run ~ leetcode_username: %s', leetcode_username)
 
+        link_bool = link.lower() in ("yes", "true", "t", "1")
+
         discord_user = interaction.user
 
         if not interaction.guild:
@@ -111,7 +113,7 @@ class Users(commands.Cog):
                 "today_score": 0,
                 "discord_username": discord_user.name,
                 "leetcode_username": leetcode_username,
-                "link_yes_no": link,
+                "link_yes_no": link_bool,
                 "history": {},
                 "weekly_rankings": {},
                 "daily_rankings": {}

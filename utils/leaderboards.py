@@ -115,7 +115,7 @@ async def display_leaderboard(send_message, server_id, user_id=None, timeframe: 
             # Get the discord_username from the stats data in the JSON file
             discord_username = stats["discord_username"]
             # Get the link_yes_no from the stats data in the JSON file
-            link_yes_no = stats["link_yes_no"] == "yes"
+            link_yes_no = stats["link_yes_no"]
             if discord_username:
                 number_rank = f"{j}\."
                 discord_username_with_link = f"[{discord_username}]({profile_link})"
