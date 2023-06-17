@@ -1,5 +1,4 @@
 import asyncio
-import os
 import random
 import string
 
@@ -7,8 +6,8 @@ import discord
 from discord.ext import commands
 
 from bot_globals import DIFFICULTY_SCORE, logger
-from cogs.stats import get_problems_solved_and_rank
 from utils.io_handling import read_file, write_file
+from utils.questions import get_problems_solved_and_rank
 
 
 class Users(commands.Cog):

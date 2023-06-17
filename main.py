@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 from bot_globals import TIMEZONE, client, logger
 from utils.leaderboards import send_leaderboard_winners
 from utils.message_scheduler import send_daily_question_and_update_stats
-from cogs.stats import update_stats_and_rankings
+from utils.stats import update_stats_and_rankings
 
 load_dotenv()
 

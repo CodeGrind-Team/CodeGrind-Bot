@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 
-from bot_globals import logger, DIFFICULTY_SCORE
+from bot_globals import DIFFICULTY_SCORE, logger
 
 
 class General(commands.Cog):

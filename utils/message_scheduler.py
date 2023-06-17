@@ -5,10 +5,10 @@ from datetime import datetime, timedelta
 import discord
 
 from bot_globals import TIMEZONE, client, logger
-from cogs.questions import daily_question_embed
-from cogs.stats import update_stats_and_rankings
-from utils.leaderboards import send_leaderboard_winners
 from utils.io_handling import read_file
+from utils.leaderboards import send_leaderboard_winners
+from utils.questions import daily_question_embed
+from utils.stats import update_stats_and_rankings
 
 
 async def wait_until_next_half_hour() -> None:

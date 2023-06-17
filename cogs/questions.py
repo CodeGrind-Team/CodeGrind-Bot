@@ -4,52 +4,8 @@ import discord
 import requests
 from discord.ext import commands
 
-from bot_globals import session, logger
-
-
-def daily_question_embed() -> discord.Embed:
-    url = 'https://leetcode.com/graphql'
-
-    headers = {
-        'Content-Type': 'application/json',
-    }
-
-    data = {
-        'operationName': 'daily',
-        'query':
-        '''
-        query daily {
-            challenge: activeDailyCodingChallengeQuestion {
-                date
-                link
-                question {
-                    difficulty
-                    title
-                }
-            }
-        }
-    '''
-    }
-
-    response = requests.post(url, json=data, headers=headers, timeout=10)
-    response_data = response.json()
-
-    # Extract and print the link
-    link = response_data['data']['challenge']['link']
-    # Extract and print the title
-    title = response_data['data']['challenge']['question']['title']
-    # Extract and print the difficulty
-    difficulty = response_data['data']['challenge']['question']['difficulty']
-    # Extract and print the date
-    # date = response_data['data']['challenge']['date']
-    link = f"https://leetcode.com{link}"
-    embed = discord.Embed(title=f"Daily Problem: {title}",
-                          color=discord.Color.blue())
-    embed.add_field(name="**Difficulty**",
-                    value=f"{difficulty}", inline=True)
-    embed.add_field(name="**Link**", value=f"{link}", inline=False)
-
-    return embed
+from bot_globals import logger, session
+from utils.questions import daily_question_embed
 
 
 class Questions(commands.Cog):
