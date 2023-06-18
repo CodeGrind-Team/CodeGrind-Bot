@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import os
 from datetime import datetime
@@ -21,6 +22,8 @@ logging.basicConfig(filename=f"logs/{datetime.now(TIMEZONE).strftime('%Y%m%d-%H%
 
 logger = logging.getLogger()
 
+file_lock = asyncio.Lock()
+
 session = requests.Session()
 intents = discord.Intents().all()
 client = commands.Bot(command_prefix=',', intents=intents)
@@ -28,5 +31,8 @@ client = commands.Bot(command_prefix=',', intents=intents)
 DIFFICULTY_SCORE = {"easy": 1, "medium": 3, "hard": 7}
 RANK_EMOJI = {1: "🥇", 2: "🥈", 3: "🥉"}
 
-TIMEFRAME_TITLE = {"alltime": {"field": "total_score",
-                               "title": "All-Time"}, "weekly": {"field": "week_score", "title": "Weekly"}, "daily": {"field": "today_score", "title": "Daily"}}
+TIMEFRAME_TITLE = {"alltime": {"field": "total_score", "title": "All-Time"},
+                   "weekly": {"field": "week_score", "title": "Weekly"},
+                   "daily": {"field": "today_score", "title": "Daily"},
+                   "yesterday": {"field": "yesterday_score", "title": "Today's"},
+                   "last_week": {"field": "last_week_score", "title": "Last Week's"}}

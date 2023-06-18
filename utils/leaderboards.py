@@ -125,14 +125,10 @@ async def display_leaderboard(send_message, server_id, user_id=None, timeframe: 
                 if timeframe == "daily":
                     wins = sum(
                         rank == 1 for rank in stats['daily_rankings'].values())
-                    if winners_only and j == 1:
-                        wins += 1
 
                 elif timeframe == "weekly":
                     wins = sum(
                         rank == 1 for rank in stats['weekly_rankings'].values())
-                    if winners_only and j == 1:
-                        wins += 1
 
                 wins_text = f"({str(wins)} wins) "
                 # wins won't be displayed for alltime timeframe as wins !> 0
@@ -142,11 +138,11 @@ async def display_leaderboard(send_message, server_id, user_id=None, timeframe: 
 
         title = f"{TIMEFRAME_TITLE[timeframe]['title']} Leaderboard"
         if winners_only:
-            if timeframe == "daily":
-                title = f"{TIMEFRAME_TITLE[timeframe]['title']} Winners: {(datetime.now(TIMEZONE) - timedelta(days=1)).strftime('%d/%m/%Y')}"
+            if timeframe == "yesterday":
+                title = f"{TIMEFRAME_TITLE[timeframe]['title']} Winners ({(datetime.now(TIMEZONE) - timedelta(days=1)).strftime('%d/%m/%Y')})"
 
-            elif timeframe == "weekly":
-                title = f"{TIMEFRAME_TITLE[timeframe]['title']} Winners: {(datetime.now(TIMEZONE) - timedelta(days=7)).strftime('%d/%m/%Y')} - {(datetime.now(TIMEZONE) - timedelta(days=1)).strftime('%d/%m/%Y')}"
+            elif timeframe == "last_week":
+                title = f"{TIMEFRAME_TITLE[timeframe]['title']} Winners ({(datetime.now(TIMEZONE) - timedelta(days=7)).strftime('%d/%m/%Y')} - {(datetime.now(TIMEZONE) - timedelta(days=1)).strftime('%d/%m/%Y')})"
 
         embed = discord.Embed(title=title,
                               color=discord.Color.yellow())

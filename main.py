@@ -32,10 +32,10 @@ async def on_ready() -> None:
 
     async with lock:
         if daily_reset:
-            await send_leaderboard_winners("daily")
+            await send_leaderboard_winners("yesterday")
 
         if weekly_reset:
-            await send_leaderboard_winners("weekly")
+            await send_leaderboard_winners("last_week")
 
     try:
         synced = await client.tree.sync()

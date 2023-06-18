@@ -83,7 +83,7 @@ async def send_daily_question_and_update_stats() -> None:
                 await send_daily_question()
 
             if daily_reset:
-                await send_leaderboard_winners("daily")
+                await send_leaderboard_winners("yesterday")
 
             if weekly_reset:
-                await send_leaderboard_winners("weekly")
+                await send_leaderboard_winners("last_week")
