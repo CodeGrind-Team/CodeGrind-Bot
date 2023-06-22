@@ -154,6 +154,13 @@ async def display_leaderboard(send_message, server_id, user_id=None, timeframe: 
         # Score Equation: Easy * 1 + Medium * 3 + Hard * 7 = Total Score
         pages.append(embed)
 
+    if len(pages) == 0:
+        title = f"{TIMEFRAME_TITLE[timeframe]['title']} Leaderboard"
+        embed = discord.Embed(title=title,
+                              color=discord.Color.yellow())
+        embed.description = "No accounts have been added to the leaderboard"
+        pages.append(embed)
+
     page = page - 1 if page > 0 else 0
     view = None if winners_only else Pagination(user_id, pages, page)
     await send_message(embed=pages[page], view=view)
