@@ -15,44 +15,44 @@ class General(commands.Cog):
         embed = discord.Embed(title="LeetCode Bot Help",
                               color=discord.Color.blue())
         embed.add_field(
-            name="Adding Your Account to the Leaderboard",
-            value="Use `/add {username}` to add your account to the leaderboard. Say 'yes' to link your LeetCode account to the leaderboard and 'no' to not link your LeetCode account to the leaderboard.",
+            name="Add your account to the Leaderboard",
+            value="Use `/add <leetcode_username> <include_hyperlink>` - provide your LeetCode username and write 'yes' or 'no' if you want a hyperlink to your LeetCode account to be included on the leaderboard.",
             inline=False)
         embed.add_field(
-            name="Deleting Your Account from the Leaderboard",
-            value="Use `/delete` to remove your account from the leaderboard.",
+            name="Delete your account from the Leaderboard",
+            value="Use `/delete`",
             inline=False)
         embed.add_field(
-            name="Getting Your Stats",
-            value="Use `/stats` to get your LeetCode statistics, *or* use `/stats {username}` to get the LeetCode statistics of another user.",
+            name="Display your stats",
+            value="Use `/stats` to display your LeetCode statistics. \nUse `/stats <leetcode_username>` to display the LeetCode statistics of another user.",
             inline=False)
         embed.add_field(
-            name="Server Leaderboard",
-            value="Use `/leaderboard {timeframe} {page}` to see the leaderboard of this server. \n Timeframes: alltime, weekly, daily. \n Page: the page of the leaderboard you want to see. \n Example: `/leaderboard weekly 1` will show the weekly leaderboard of this server on page 1.",
+            name="Display the Leaderboard",
+            value="Use `/leaderboard [timeframe]` - available timeframes: `alltime`, `weekly`, or `daily`. \nNote: the user's daily and weekly scores will only start being calculated after an account is created.",
             inline=False)
         embed.add_field(
-            name="Random Questions",
-            value="Use `/question {difficulty}` to get a random question of that level, or random if you want a random question of any level.",
+            name="Get the daily LeetCode question",
+            value="Use `/daily`",
             inline=False)
         embed.add_field(
-            name="Score Calculation",
+            name="Get a random LeetCode question",
+            value="Use `/question <difficulty>` - specify the difficulty level of the question such as `easy`, `medium`, or `hard`. Use `random` for a question of any level.",
+            inline=False)
+        embed.add_field(
+            name="Score calculation",
             value=f"The score is calculated based on the amount of questions you have solved. Easy questions are worth {DIFFICULTY_SCORE['easy']} point, medium questions are worth {DIFFICULTY_SCORE['medium']} points, and hard questions are worth {DIFFICULTY_SCORE['hard']} points.",
-            inline=False)
-        embed.add_field(
-            name="Daily LeetCode Question",
-            value="Use `/daily` to get the daily LeetCode question.",
             inline=False)
 
         # for adminstrators
         if isinstance(interaction.user, discord.Member):
             if interaction.user.guild_permissions.administrator:
                 embed.add_field(
-                    name="Set Daily LeetCode Channel",
-                    value="Use `/setdailychannel` to set the channel where the daily LeetCode question will be sent.",
+                    name="Admins only: Set daily LeetCode channel",
+                    value="Use `/setdailychannel <channel>` to set the channel where the daily question and the daily and weekly leaderboard will be sent to. If no channel is specified, the channel where the command was written in will be used.",
                     inline=False)
                 embed.add_field(
-                    name="Remove Daily LeetCode Channel",
-                    value="Use `/removedailychannel` to remove the channel where the daily LeetCode question will be sent.",
+                    name="Admins only: Remove daily LeetCode channel",
+                    value="Use `/removedailychannel <channel>` to stop daily questions and the daily and weekly leaderboards being sent to the channel. If no channel is specified, the channel where the command was written in will be used.",
                     inline=False)
 
         await interaction.response.send_message(embed=embed, ephemeral=True)
