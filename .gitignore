@@ -181,5 +181,6 @@ data
 logs
 dailychannels.txt
 /temp
+.pylintrc
 
 # End of https://www.toptal.com/developers/gitignore/api/python
