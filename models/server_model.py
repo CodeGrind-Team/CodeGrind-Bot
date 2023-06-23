@@ -15,7 +15,7 @@ class Rankings(BaseModel):
 
 
 class Server(Document):
-    id: int  # = Field(None, alias="_id")
+    id: int
     users: Optional[List[Link[User]]] = []
     last_updated: datetime = Field(default_factory=datetime.utcnow)
     timezone: Optional[str] = None

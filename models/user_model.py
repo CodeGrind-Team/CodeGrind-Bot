@@ -2,15 +2,15 @@ from datetime import datetime
 from typing import List, Optional
 
 from beanie import Document
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 
 class Scores(BaseModel):
     timestamp: datetime
-    today_score: int
-    week_score: int
-    yesterday_score: int
-    last_week_score: int
+    today_score: Optional[int] = 0
+    week_score: Optional[int] = 0
+    yesterday_score: Optional[int] = 0
+    last_week_score: Optional[int] = 0
 
 
 class Submissions(BaseModel):
@@ -29,7 +29,7 @@ class User(Document):
     id: int
     display_username: str
     leetcode_username: str
-    hyperlink: bool
+    hyperlink: Optional[bool] = True
     rank: int
     submissions: Submissions
     history: History

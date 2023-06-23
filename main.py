@@ -6,6 +6,7 @@ from datetime import datetime
 from dotenv import load_dotenv
 
 from bot_globals import TIMEZONE, client, logger
+from database import init_mongodb_conn
 from utils.leaderboards import send_leaderboard_winners
 from utils.message_scheduler import send_daily_question_and_update_stats
 from utils.stats import update_stats_and_rankings
@@ -56,6 +57,7 @@ async def load_extensions() -> None:
 
 async def main(token: str) -> None:
     async with client:
+        await init_mongodb_conn()
         await load_extensions()
         await client.start(token)
 
