@@ -57,6 +57,14 @@ class General(commands.Cog):
 
         await interaction.response.send_message(embed=embed, ephemeral=True)
 
+    # command for voting
+    @discord.app_commands.command(name="vote", description="Vote for the bot on top.gg")
+    async def vote(self, interaction: discord.Interaction) -> None:
+        embed = discord.Embed(title="Vote for the bot on top.gg: ",
+                              description="https://top.gg/bot/1059122559066570885/votes",
+                              color=discord.Color.blue())
+        await interaction.response.send_message(embed=embed, ephemeral=True)
+
 
 async def setup(client: commands.Bot):
     await client.add_cog(General(client))
