@@ -42,6 +42,10 @@ class General(commands.Cog):
             name="Score calculation",
             value=f"The score is calculated based on the amount of questions you have solved. Easy questions are worth {DIFFICULTY_SCORE['easy']} point, medium questions are worth {DIFFICULTY_SCORE['medium']} points, and hard questions are worth {DIFFICULTY_SCORE['hard']} points.",
             inline=False)
+        embed.add_field(
+            name="Vote for the bot on top.gg",
+            value="Love the bot? Vote for it on top.gg: https://top.gg/bot/1059122559066570885/votes",
+            inline=False)
 
         # for adminstrators
         if isinstance(interaction.user, discord.Member):
@@ -55,6 +59,14 @@ class General(commands.Cog):
                     value="Use `/removedailychannel <channel>` to stop daily questions and the daily and weekly leaderboards being sent to the channel. If no channel is specified, the channel where the command was written in will be used.",
                     inline=False)
 
+        await interaction.response.send_message(embed=embed, ephemeral=True)
+
+    # command for voting
+    @discord.app_commands.command(name="vote", description="Vote for the bot on top.gg")
+    async def vote(self, interaction: discord.Interaction) -> None:
+        embed = discord.Embed(title="Vote for the bot on top.gg: ",
+                              description="https://top.gg/bot/1059122559066570885/votes",
+                              color=discord.Color.blue())
         await interaction.response.send_message(embed=embed, ephemeral=True)
 
 
