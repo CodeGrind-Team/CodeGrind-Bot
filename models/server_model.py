@@ -7,6 +7,12 @@ from pydantic import BaseModel, Field
 from models.user_model import User
 
 
+class Channel(BaseModel):
+    maintenance: Optional[List[int]] = []
+    daily_question: Optional[List[int]] = []
+    winners: Optional[List[int]] = []
+
+
 class Rankings(BaseModel):
     date: datetime = Field(default_factory=datetime.utcnow)
     winner: Optional[Link[User]] = None
@@ -20,5 +26,5 @@ class Server(Document):
     last_updated: datetime = Field(default_factory=datetime.utcnow)
     timezone: Optional[str] = None
     setup_completed: Optional[bool] = False
-    channels: Optional[List[int]] = []
-    rankings: Optional[List[Link[Rankings]]] = []
+    channels: Optional[Channel] = Field(default_factory=Channel)
+    rankings: Optional[List[Rankings]] = []

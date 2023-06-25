@@ -25,12 +25,17 @@ class History(BaseModel):
     submissions: Submissions
 
 
+class DisplayInformation(BaseModel):
+    server_id: int
+    display_username: str
+    hyperlink: Optional[bool] = True
+
+
 class User(Document):
     id: int
-    display_username: str
     leetcode_username: str
-    hyperlink: Optional[bool] = True
     rank: int
+    display_information: List[DisplayInformation]
     submissions: Submissions
-    history: History
+    history: Optional[List[History]] = []
     scores: Optional[List[Scores]] = []
