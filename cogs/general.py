@@ -44,7 +44,7 @@ class General(commands.Cog):
             inline=False)
         embed.add_field(
             name="Vote for the bot on top.gg",
-            value="Love the bot? Vote for it on top.gg: https://top.gg/bot/1059122559066570885/votes",
+            value="Love the bot? Vote for it on top.gg: https://top.gg/bot/1059122559066570885/vote",
             inline=False)
 
         # for adminstrators
@@ -65,7 +65,7 @@ class General(commands.Cog):
     @discord.app_commands.command(name="vote", description="Vote for the bot on top.gg")
     async def vote(self, interaction: discord.Interaction) -> None:
         embed = discord.Embed(title="Vote for the bot on top.gg: ",
-                              description="https://top.gg/bot/1059122559066570885/votes",
+                              description="https://top.gg/bot/1059122559066570885/vote",
                               color=discord.Color.blue())
         await interaction.response.send_message(embed=embed, ephemeral=True)
 
