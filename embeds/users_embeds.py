@@ -61,9 +61,10 @@ def account_removed_embed() -> discord.Embed:
 
 
 def account_not_found_embed() -> discord.Embed:
-    embed = discord.Embed(title="Account not found",
-                          color=discord.Color.red())
+    embed = discord.Embed(
+        title="Account not found",
+        color=discord.Color.red())
 
-    embed.description = "You haven't added your LeetCode account to this server"
+    embed.description = "You haven't added your LeetCode account to this server!\nUse `/add <leetcode_username>`"
 
     return embed
