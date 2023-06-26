@@ -5,9 +5,16 @@ import string
 import discord
 from discord.ext import commands
 
-from bot_globals import DIFFICULTY_SCORE, logger
+from bot_globals import calculate_scores, logger
+from embeds.users_embeds import (connect_account_instructions, profile_added,
+                                 synced_existing_user, user_already_added_in_server)
+from models.projections import IdProjection
+from models.server_model import Server
+from models.user_model import DisplayInformation, Submissions, User
 from utils.io_handling import read_file, write_file
+from utils.middleware import ensure_server_document
 from utils.questions import get_problems_solved_and_rank
+from beanie.odm.operators.update.array import Push
 
 
 class Users(commands.Cog):
@@ -18,123 +25,111 @@ class Users(commands.Cog):
         name="add",
         description="Adds a user to the leaderboard. Answer with 'yes' to link your LeetCode profile to the leaderboard."
     )
-    async def add(self, interaction: discord.Interaction, leetcode_username: str, include_hyperlink: str = "yes") -> None:
+    @ensure_server_document
+    async def add(self, interaction: discord.Interaction, leetcode_username: str, include_hyperlink: str = "yes", displayed_name: str | None = None) -> None:
         logger.info(
-            'file: cogs/users.py ~ add ~ run ~ leetcode_username: %s', leetcode_username)
-
-        hyperlink_bool = include_hyperlink.lower() in ("yes", "true", "t", "1")
-
-        discord_user = interaction.user
+            'file: cogs/users.py ~ add ~ run ~ leetcode_username: %s, include_hyperlink: %s, displayed_name: %s', leetcode_username, include_hyperlink, displayed_name)
 
         if not interaction.guild:
             return
 
+        hyperlink_bool = include_hyperlink.lower() in ("yes", "true", "t", "1")
+        if displayed_name is None:
+            displayed_name = interaction.user.name
+
         server_id = interaction.guild.id
+        user_id = interaction.user.id
 
-        existing_data = await read_file(f"data/{server_id}_leetcode_stats.json")
+        server = await Server.get(server_id)
 
-        if existing_data is not None:
-            if leetcode_username in existing_data:
-                embed = discord.Embed(
-                    title="Error!",
-                    description="You have already added your LeetCode account!",
-                    color=discord.Color.red())
-                embed.add_field(name="Remove your LeetCode username",
-                                value="Use the `/remove` command to remove your LeetCode username.")
+        if not server:
+            await interaction.response.defer()
+
+        display_information = DisplayInformation(
+            server_id=server_id, name=displayed_name, hyperlink=hyperlink_bool)
+
+        user_exists = await User.find_one(User.id == user_id).project(IdProjection)
+
+        if user_exists:
+            display_information_exists = await User.find_one(User.id == user_id, User.display_information.server_id == server_id)
+
+            if display_information_exists:
+                logger.info(
+                    'file: cogs/users.py ~ add ~ user has already been added in the server ~ leetcode_username: %s', leetcode_username)
+
+                # User has already been added in the server
+                embed = user_already_added_in_server()
                 await interaction.response.send_message(embed=embed, ephemeral=True)
-                return
+
+            else:
+                logger.info(
+                    'file: cogs/users.py ~ add ~ add user\' display information for this server ~ leetcode_username: %s', leetcode_username)
+
+                # Add user's display information for this server
+                await User.find_one(User.id == user_id).update(Push({User.display_information: display_information}))
+
+                embed = synced_existing_user()
+                await interaction.response.send_message(embed=embed, ephemeral=True)
+
         else:
-            existing_data = {}
+            # Generate a random string for account linking
+            generated_string = ''.join(
+                random.choices(string.ascii_letters, k=8))
 
-        generated_string = ''.join(random.choices(string.ascii_letters, k=8))
-        embed = discord.Embed(title="Profile Update Required",
-                              color=discord.Color.red())
-        embed.add_field(name="Generated Sequence",
-                        value=f"{generated_string}",
-                        inline=False)
-        embed.add_field(name="Username",
-                        value=f"{leetcode_username}", inline=False)
-        embed.add_field(
-            name="Instructions",
-            value="Please change your LeetCode Profile Name to the generated sequence.",
-            inline=False)
-        embed.add_field(
-            name="Profile Name Change",
-            value="You can do this by clicking [here](https://leetcode.com/profile/) and changing your Name.",
-            inline=False)
-        embed.add_field(
-            name="Time Limit",
-            value="You have 60 seconds to change your name, otherwise, you will have to restart the process.",
-            inline=False)
-        await interaction.response.send_message(embed=embed, ephemeral=True)
+            embed = connect_account_instructions(
+                generated_string, leetcode_username)
+            await interaction.response.send_message(embed=embed, ephemeral=True)
 
-        profile_name = None
-        for _ in range(12):
-            stats = get_problems_solved_and_rank(leetcode_username)
+            profile_name = None
+            check_interval = 5  # seconds
 
-            if stats is None:
-                break
+            # Check if the profile name matches the generated string
+            for _ in range(60 // check_interval):
+                stats = get_problems_solved_and_rank(leetcode_username)
 
-            rank = stats["profile"]["realName"]
+                if not stats:
+                    break
 
-            profile_name = stats["profile"]["realName"]
+                rank = stats["profile"]["realName"]
+                profile_name = stats["profile"]["realName"]
+
+                if profile_name == generated_string:
+                    break
+
+                await asyncio.sleep(check_interval)
 
             if profile_name == generated_string:
-                break
+                stats = get_problems_solved_and_rank(leetcode_username)
 
-            await asyncio.sleep(5)
+                if not stats:
+                    return
 
-        if profile_name == generated_string:
-            stats = get_problems_solved_and_rank(leetcode_username)
+                rank = stats["profile"]["ranking"]
+                easy = stats["submitStatsGlobal"]["acSubmissionNum"]["Easy"]
+                medium = stats["submitStatsGlobal"]["acSubmissionNum"]["Medium"]
+                hard = stats["submitStatsGlobal"]["acSubmissionNum"]["Hard"]
 
-            if stats is None:
-                return
+                total_score = calculate_scores(easy, medium, hard)
 
-            rank = stats["profile"]["ranking"]
-            easy_completed = stats["submitStatsGlobal"]["acSubmissionNum"]["Easy"]
-            medium_completed = stats["submitStatsGlobal"]["acSubmissionNum"]["Medium"]
-            hard_completed = stats["submitStatsGlobal"]["acSubmissionNum"]["Hard"]
-            total_questions_done = stats["submitStatsGlobal"]["acSubmissionNum"]["All"]
+                submissions = Submissions(
+                    easy=easy, medium=medium, hard=hard, total_score=total_score)
 
-            total_score = easy_completed * DIFFICULTY_SCORE['easy'] + medium_completed * \
-                DIFFICULTY_SCORE['medium'] + \
-                hard_completed * DIFFICULTY_SCORE['hard']
+                user = User(id=user_id, leetcode_username=leetcode_username,
+                            rank=rank, display_information=[display_information], submissions=submissions)
 
-            existing_data["users"][str(discord_user.id)] = {
-                "rank": rank,
-                "easy": easy_completed,
-                "medium": medium_completed,
-                "hard": hard_completed,
-                "total_questions_done": total_questions_done,
-                "total_score": total_score,
-                "last_week_score": 0,
-                "yesterday_score": 0,
-                "week_score": 0,
-                "today_score": 0,
-                "discord_username": discord_user.name,
-                "leetcode_username": leetcode_username,
-                "hyperlink": hyperlink_bool,
-                "history": {},
-                "weekly_rankings": {},
-                "daily_rankings": {}
-            }
+                await user.create()
 
-            await write_file(f"data/{server_id}_leetcode_stats.json", existing_data)
+                logger.info(
+                    'file: cogs/users.py ~ add ~ user has been added successfully ~ leetcode_username: %s', leetcode_username)
 
-            embed = discord.Embed(title="Profile Added",
-                                  color=discord.Color.green())
-            embed.add_field(name="Username:",
-                            value=f"{leetcode_username}", inline=False)
-            await interaction.edit_original_response(embed=embed)
+                embed = profile_added(leetcode_username)
+                await interaction.edit_original_response(embed=embed)
+            else:
+                logger.info(
+                    'file: cogs/users.py ~ add ~ user has not been added ~ leetcode_username: %s', leetcode_username)
 
-            return
-        else:
-            embed = discord.Embed(title="Profile Not Added",
-                                  color=discord.Color.red())
-            embed.add_field(name="Username:",
-                            value=f"{leetcode_username}", inline=False)
-            await interaction.edit_original_response(embed=embed)
-            return
+                embed = profile_added(leetcode_username, added=False)
+                await interaction.edit_original_response(embed=embed)
 
     @discord.app_commands.command(name="delete", description="Delete your profile from the leaderboard.")
     async def delete(self, interaction: discord.Interaction) -> None:

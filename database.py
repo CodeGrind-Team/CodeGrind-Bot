@@ -11,4 +11,4 @@ async def init_mongodb_conn() -> None:
     mongodb_client = AsyncIOMotorClient(os.environ["MONGODB_URI"])
 
     await init_beanie(database=mongodb_client.bot,
-                      document_models=[Server, User])  # type: ignore
+                      document_models=[Server, User])

@@ -1,8 +1,15 @@
 from datetime import datetime
 from typing import List, Optional
 
-from beanie import Document
+from beanie import Document, Indexed
 from pydantic import BaseModel
+# from pymongo import IndexModel
+
+
+class DisplayInformation(BaseModel):
+    server_id: Indexed(int)
+    name: str
+    hyperlink: Optional[bool] = True
 
 
 class Scores(BaseModel):
@@ -25,12 +32,6 @@ class History(BaseModel):
     submissions: Submissions
 
 
-class DisplayInformation(BaseModel):
-    server_id: int
-    display_username: str
-    hyperlink: Optional[bool] = True
-
-
 class User(Document):
     id: int
     leetcode_username: str
@@ -39,3 +40,6 @@ class User(Document):
     submissions: Submissions
     history: Optional[List[History]] = []
     scores: Optional[List[Scores]] = []
+
+    class Settings:
+        name = "users"
