@@ -25,6 +25,8 @@ class Server(Document):
     users: Optional[List[Link[User]]] = []
     last_updated: datetime = Field(default_factory=datetime.utcnow)
     timezone: Optional[str] = "UCT"
-    setup_completed: Optional[bool] = False
     channels: Optional[Channel] = Field(default_factory=Channel)
     rankings: Optional[List[Rankings]] = []
+
+    class Settings:
+        name = "servers"

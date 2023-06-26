@@ -15,6 +15,7 @@ from utils.io_handling import read_file, write_file
 from utils.middleware import ensure_server_document
 from utils.questions import get_problems_solved_and_rank
 from beanie.odm.operators.update.array import Push
+from beanie.odm.fields import WriteRules
 
 
 class Users(commands.Cog):
@@ -23,7 +24,7 @@ class Users(commands.Cog):
 
     @discord.app_commands.command(
         name="add",
-        description="Adds a user to the leaderboard. Answer with 'yes' to link your LeetCode profile to the leaderboard."
+        description="Adds a user to the leaderboard. Answer with 'yes' to link your LeetCode profile to the leaderboard"
     )
     @ensure_server_document
     async def add(self, interaction: discord.Interaction, leetcode_username: str, include_hyperlink: str = "yes", displayed_name: str | None = None) -> None:
@@ -40,10 +41,11 @@ class Users(commands.Cog):
         server_id = interaction.guild.id
         user_id = interaction.user.id
 
-        server = await Server.get(server_id)
+        server_exists = await Server.find_one(Server.id == server_id).project(IdProjection)
 
-        if not server:
+        if not server_exists:
             await interaction.response.defer()
+            return
 
         display_information = DisplayInformation(
             server_id=server_id, name=displayed_name, hyperlink=hyperlink_bool)
@@ -67,6 +69,12 @@ class Users(commands.Cog):
 
                 # Add user's display information for this server
                 await User.find_one(User.id == user_id).update(Push({User.display_information: display_information}))
+
+                await Server.find_one(Server.id == server_id).update(Push({Server.users: user_id}))
+                # Have to fetch and save document in order to convert user_id to a reference
+                # TODO: ask on beanie repo for the correct method of doing this
+                server = await Server.get(server_id)
+                await server.save()
 
                 embed = synced_existing_user()
                 await interaction.response.send_message(embed=embed, ephemeral=True)
@@ -117,7 +125,10 @@ class Users(commands.Cog):
                 user = User(id=user_id, leetcode_username=leetcode_username,
                             rank=rank, display_information=[display_information], submissions=submissions)
 
-                await user.create()
+                await Server.find_one(Server.id == server_id).update(Push({Server.users: user}))
+                server = await Server.get(server_id)
+                # link rule for create a new document for the new link
+                await server.save(link_rule=WriteRules.WRITE)
 
                 logger.info(
                     'file: cogs/users.py ~ add ~ user has been added successfully ~ leetcode_username: %s', leetcode_username)
@@ -131,18 +142,8 @@ class Users(commands.Cog):
                 embed = profile_added(leetcode_username, added=False)
                 await interaction.edit_original_response(embed=embed)
 
-    @discord.app_commands.command(name="delete", description="Delete your profile from the leaderboard.")
+    @discord.app_commands.command(name="delete", description="Delete your profile from the leaderboard")
     async def delete(self, interaction: discord.Interaction) -> None:
-        """
-        Command to delete the user's profile from the leaderboard.
-
-        Args:
-            interaction (discord.Interaction): The interaction object representing the user command.
-
-        Returns:
-            None
-        """
-
         logger.info(
             'file: cogs/users.py ~ delete ~ run')
 
