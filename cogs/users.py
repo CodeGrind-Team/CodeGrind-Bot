@@ -9,10 +9,10 @@ from beanie.odm.operators.update.array import AddToSet, Pull
 from discord.ext import commands
 
 from bot_globals import calculate_scores, logger
-from embeds.users_embeds import (account_not_found, account_removed,
-                                 connect_account_instructions, profile_added,
-                                 synced_existing_user,
-                                 user_already_added_in_server)
+from embeds.users_embeds import (account_not_found_embed, account_removed_embed,
+                                 connect_account_instructions_embed, profile_added_embed,
+                                 synced_existing_user_embed,
+                                 user_already_added_in_server_embed)
 from models.projections import IdProjection
 from models.server_model import Server
 from models.user_model import DisplayInformation, Submissions, User
@@ -62,7 +62,7 @@ class Users(commands.Cog):
                     'file: cogs/users.py ~ add ~ user has already been added in the server ~ leetcode_username: %s', leetcode_username)
 
                 # User has already been added in the server
-                embed = user_already_added_in_server()
+                embed = user_already_added_in_server_embed()
                 await interaction.response.send_message(embed=embed, ephemeral=True)
 
             else:
@@ -78,7 +78,7 @@ class Users(commands.Cog):
                 server = await Server.get(server_id)
                 await server.save()
 
-                embed = synced_existing_user()
+                embed = synced_existing_user_embed()
                 await interaction.response.send_message(embed=embed, ephemeral=True)
 
         else:
@@ -86,7 +86,7 @@ class Users(commands.Cog):
             generated_string = ''.join(
                 random.choices(string.ascii_letters, k=8))
 
-            embed = connect_account_instructions(
+            embed = connect_account_instructions_embed(
                 generated_string, leetcode_username)
             await interaction.response.send_message(embed=embed, ephemeral=True)
 
@@ -135,13 +135,13 @@ class Users(commands.Cog):
                 logger.info(
                     'file: cogs/users.py ~ add ~ user has been added successfully ~ leetcode_username: %s', leetcode_username)
 
-                embed = profile_added(leetcode_username)
+                embed = profile_added_embed(leetcode_username)
                 await interaction.edit_original_response(embed=embed)
             else:
                 logger.info(
                     'file: cogs/users.py ~ add ~ user has not been added ~ leetcode_username: %s', leetcode_username)
 
-                embed = profile_added(leetcode_username, added=False)
+                embed = profile_added_embed(leetcode_username, added=False)
                 await interaction.edit_original_response(embed=embed)
 
     @discord.app_commands.command(name="remove", description="Remove your profile from this server's leaderboard")
@@ -181,14 +181,14 @@ class Users(commands.Cog):
                 logger.info(
                     'file: cogs/users.py ~ remove ~ profile removed - references removed from User and Server documents ~ user_id: %s', user_id)
 
-                embed = account_removed()
+                embed = account_removed_embed()
                 await interaction.response.send_message(embed=embed, ephemeral=True)
                 return
 
         logger.info(
             'file: cogs/users.py ~ remove ~ profile not found in this server ~ user_id: %s', user_id)
 
-        embed = account_not_found()
+        embed = account_not_found_embed()
         await interaction.response.send_message(embed=embed, ephemeral=True)
 
 

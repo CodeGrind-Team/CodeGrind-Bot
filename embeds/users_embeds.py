@@ -1,7 +1,7 @@
 import discord
 
 
-def synced_existing_user() -> discord.Embed:
+def synced_existing_user_embed() -> discord.Embed:
     embed = discord.Embed(title="Account synced",
                           color=discord.Color.green())
 
@@ -10,7 +10,7 @@ def synced_existing_user() -> discord.Embed:
     return embed
 
 
-def user_already_added_in_server() -> discord.Embed:
+def user_already_added_in_server_embed() -> discord.Embed:
     embed = discord.Embed(title="Account already added to this server",
                           color=discord.Color.blurple())
 
@@ -19,7 +19,7 @@ def user_already_added_in_server() -> discord.Embed:
     return embed
 
 
-def connect_account_instructions(generated_string: str, leetcode_username: str) -> discord.Embed:
+def connect_account_instructions_embed(generated_string: str, leetcode_username: str) -> discord.Embed:
     embed = discord.Embed(title="Instructions",
                           color=discord.Color.orange())
     embed.description = "Please change your LeetCode Profile Name to the generated sequence:"
@@ -44,7 +44,7 @@ def connect_account_instructions(generated_string: str, leetcode_username: str) 
     return embed
 
 
-def profile_added(leetcode_username: str, added: bool = True) -> discord.Embed:
+def profile_added_embed(leetcode_username: str, added: bool = True) -> discord.Embed:
     embed = discord.Embed(title=f"Profile {'' if added else 'not '}added",
                           color=discord.Color.green() if added else discord.Color.red())
     embed.add_field(name="Username:",
@@ -53,14 +53,14 @@ def profile_added(leetcode_username: str, added: bool = True) -> discord.Embed:
     return embed
 
 
-def account_removed() -> discord.Embed:
+def account_removed_embed() -> discord.Embed:
     embed = discord.Embed(title="Your account has been removed from this server",
                           color=discord.Color.green())
 
     return embed
 
 
-def account_not_found() -> discord.Embed:
+def account_not_found_embed() -> discord.Embed:
     embed = discord.Embed(title="Account not found",
                           color=discord.Color.red())
 

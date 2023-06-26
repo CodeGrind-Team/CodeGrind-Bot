@@ -7,7 +7,7 @@ import discord
 from bot_globals import TIMEZONE, client, logger
 from utils.io_handling import read_file
 from utils.leaderboards import send_leaderboard_winners
-from utils.questions import daily_question_embed
+from embeds.questions_embeds import daily_question_embed
 from utils.stats import update_stats_and_rankings
 
 
