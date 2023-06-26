@@ -3,19 +3,21 @@ import random
 import string
 
 import discord
+from beanie.odm.fields import WriteRules
+from beanie.odm.operators.find.comparison import In
+from beanie.odm.operators.update.array import AddToSet, Pull
 from discord.ext import commands
 
 from bot_globals import calculate_scores, logger
-from embeds.users_embeds import (connect_account_instructions, profile_added,
-                                 synced_existing_user, user_already_added_in_server)
+from embeds.users_embeds import (account_not_found, account_removed,
+                                 connect_account_instructions, profile_added,
+                                 synced_existing_user,
+                                 user_already_added_in_server)
 from models.projections import IdProjection
 from models.server_model import Server
 from models.user_model import DisplayInformation, Submissions, User
-from utils.io_handling import read_file, write_file
 from utils.middleware import ensure_server_document
 from utils.questions import get_problems_solved_and_rank
-from beanie.odm.operators.update.array import Push
-from beanie.odm.fields import WriteRules
 
 
 class Users(commands.Cog):
@@ -68,9 +70,9 @@ class Users(commands.Cog):
                     'file: cogs/users.py ~ add ~ add user\' display information for this server ~ leetcode_username: %s', leetcode_username)
 
                 # Add user's display information for this server
-                await User.find_one(User.id == user_id).update(Push({User.display_information: display_information}))
+                await User.find_one(User.id == user_id).update(AddToSet({User.display_information: display_information}))
 
-                await Server.find_one(Server.id == server_id).update(Push({Server.users: user_id}))
+                await Server.find_one(Server.id == server_id).update(AddToSet({Server.users: user_id}))
                 # Have to fetch and save document in order to convert user_id to a reference
                 # TODO: ask on beanie repo for the correct method of doing this
                 server = await Server.get(server_id)
@@ -125,9 +127,9 @@ class Users(commands.Cog):
                 user = User(id=user_id, leetcode_username=leetcode_username,
                             rank=rank, display_information=[display_information], submissions=submissions)
 
-                await Server.find_one(Server.id == server_id).update(Push({Server.users: user}))
+                await Server.find_one(Server.id == server_id).update(AddToSet({Server.users: user}))
                 server = await Server.get(server_id)
-                # link rule for create a new document for the new link
+                # link rule to create a new document for the new link
                 await server.save(link_rule=WriteRules.WRITE)
 
                 logger.info(
@@ -142,59 +144,52 @@ class Users(commands.Cog):
                 embed = profile_added(leetcode_username, added=False)
                 await interaction.edit_original_response(embed=embed)
 
-    @discord.app_commands.command(name="delete", description="Delete your profile from the leaderboard")
-    async def delete(self, interaction: discord.Interaction) -> None:
+    @discord.app_commands.command(name="remove", description="Remove your profile from this server's leaderboard")
+    @ensure_server_document
+    async def remove(self, interaction: discord.Interaction) -> None:
         logger.info(
-            'file: cogs/users.py ~ delete ~ run')
+            'file: cogs/users.py ~ remove ~ run')
 
         if not interaction.guild:
             await interaction.response.defer()
             return
 
-        discord_user = interaction.user
         server_id = interaction.guild.id
+        user_id = interaction.user.id
 
-        data = await read_file(f"data/{server_id}_leetcode_stats.json")
+        server_exists = await Server.find_one(Server.id == server_id).project(IdProjection)
 
-        if data is not None:
-            logger.info(
-                'file: cogs/users.py ~ delete ~ discord_user.id: %s', discord_user.id)
+        if not server_exists:
+            await interaction.response.defer()
+            return
 
-            # Iterate through the data points
-            if str(discord_user.id) in data["users"]:
-                leetcode_username = data["users"][str(
-                    discord_user.id)]["leetcode_username"]
-                # Found the data point with matching discord_user.id
-                # Delete the data point
-                del data["users"][str(discord_user.id)]
-                # Save the updated data
-                await write_file(f"data/{server_id}_leetcode_stats.json", data)
+        logger.info(
+            'file: cogs/users.py ~ remove ~ user_id: %s', user_id)
 
-                # Send a message to the user
-                embed = discord.Embed(title="Profile Deleted",
-                                      color=discord.Color.green())
-                embed.add_field(name="Username:",
-                                value=f"{leetcode_username}", inline=False)
+        user_exists = await User.find_one(User.id == user_id).project(IdProjection)
+
+        if user_exists:
+            display_information = await User.find_one(
+                User.id == user_id, User.display_information.server_id == server_id)
+
+            if display_information:
+                await User.find_one(
+                    User.id == user_id).update(Pull({User.display_information: {"server_id": server_id}}))
+
+                await Server.find_one(Server.id == server_id).update(Pull({Server.users: {"$id": user_id}}))
+
+                logger.info(
+                    'file: cogs/users.py ~ remove ~ profile removed - references removed from User and Server documents ~ user_id: %s', user_id)
+
+                embed = account_removed()
                 await interaction.response.send_message(embed=embed, ephemeral=True)
+                return
 
-            else:
-                # No matching data point found
-                embed = discord.Embed(title="Profile Not Found",
-                                      color=discord.Color.red())
-                await interaction.response.send_message(embed=embed, ephemeral=True)
+        logger.info(
+            'file: cogs/users.py ~ remove ~ profile not found in this server ~ user_id: %s', user_id)
 
-        else:
-            logger.info(
-                "file: cogs/users.py ~ delete ~ file not found: data/%s_leetcode_stats.json", interaction.guild.id)
-
-            # File does not exist
-            embed = discord.Embed(title="Profile Not Found",
-                                  color=discord.Color.red())
-            # This server does not have a leaderboard yet
-            embed.add_field(name="Error:",
-                            value="This server does not have a leaderboard yet.",
-                            inline=False)
-            await interaction.response.send_message(embed=embed, ephemeral=True)
+        embed = account_not_found()
+        await interaction.response.send_message(embed=embed, ephemeral=True)
 
 
 async def setup(client: commands.Bot):

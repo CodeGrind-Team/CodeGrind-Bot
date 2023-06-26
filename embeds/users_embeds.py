@@ -45,9 +45,25 @@ def connect_account_instructions(generated_string: str, leetcode_username: str) 
 
 
 def profile_added(leetcode_username: str, added: bool = True) -> discord.Embed:
-    embed = discord.Embed(title=f"Profile {'' if added else 'not'} added",
+    embed = discord.Embed(title=f"Profile {'' if added else 'not '}added",
                           color=discord.Color.green() if added else discord.Color.red())
     embed.add_field(name="Username:",
                     value=f"{leetcode_username}", inline=False)
+
+    return embed
+
+
+def account_removed() -> discord.Embed:
+    embed = discord.Embed(title="Your account has been removed from this server",
+                          color=discord.Color.green())
+
+    return embed
+
+
+def account_not_found() -> discord.Embed:
+    embed = discord.Embed(title="Account not found",
+                          color=discord.Color.red())
+
+    embed.description = "You haven't added your LeetCode account to this server"
 
     return embed
