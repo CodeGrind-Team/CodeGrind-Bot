@@ -4,7 +4,7 @@ import string
 
 import discord
 from beanie.odm.fields import WriteRules
-from beanie.odm.operators.find.comparison import In
+from beanie.odm.operators.find.comparison import NE
 from beanie.odm.operators.update.array import AddToSet, Pull
 from discord.ext import commands
 
@@ -15,7 +15,7 @@ from embeds.users_embeds import (account_not_found_embed, account_removed_embed,
                                  user_already_added_in_server_embed)
 from models.projections import IdProjection
 from models.server_model import Server
-from models.user_model import DisplayInformation, Submissions, User
+from models.user_model import DisplayInformation, Submissions, User, Scores
 from utils.middleware import ensure_server_document
 from utils.questions import get_problems_solved_and_rank
 
@@ -77,6 +77,10 @@ class Users(commands.Cog):
                 # TODO: ask on beanie repo for the correct method of doing this
                 server = await Server.get(server_id)
                 await server.save()
+
+                scores = Scores(timezone=server.timezone)
+
+                await User.find_one(User.id == user_id, User.scores.timezone != server.timezone).update(AddToSet({User.scores: scores}))
 
                 embed = synced_existing_user_embed()
                 await interaction.response.send_message(embed=embed, ephemeral=True)

@@ -35,7 +35,7 @@ TIMEFRAME_TITLE = {"alltime": {"field": "total_score", "title": "All-Time"},
                    "weekly": {"field": "week_score", "title": "Weekly"},
                    "daily": {"field": "today_score", "title": "Daily"},
                    "yesterday": {"field": "yesterday_score", "title": "Today's"},
-                   "last_week": {"field": "last_week_score", "title": "Last Week's"}}
+                   "last_week": {"field": "last_week_score", "title": "This Week's"}}
 
 
 def calculate_scores(easy: int = 0, medium: int = 0, hard: int = 0) -> int:

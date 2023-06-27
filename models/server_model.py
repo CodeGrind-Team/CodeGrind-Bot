@@ -14,10 +14,10 @@ class Channel(BaseModel):
 
 
 class Rankings(BaseModel):
-    date: datetime = Field(default_factory=datetime.utcnow)
-    winner: Optional[Link[User]] = None
-    daily: List[Link[User]]
-    weekly: List[Link[User]]
+    date: datetime
+    timeframe: str  # "daily" or "weekly"
+    winner: int  # user id
+    lb_rankings: List[int]  # list of user ids in ascending leaderboard rank
 
 
 class Server(Document):

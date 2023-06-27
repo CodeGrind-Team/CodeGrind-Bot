@@ -13,7 +13,7 @@ class DisplayInformation(BaseModel):
 
 
 class Scores(BaseModel):
-    timestamp: datetime
+    timezone: str
     today_score: Optional[int] = 0
     week_score: Optional[int] = 0
     yesterday_score: Optional[int] = 0
