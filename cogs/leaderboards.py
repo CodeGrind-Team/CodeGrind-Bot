@@ -17,7 +17,7 @@ class Leaderboards(commands.GroupCog, name="leaderboard"):
         logger.info("file: cogs/leaderboards.py ~ alltime ~ run")
 
         if not interaction.guild:
-            await interaction.response.defer()
+            await interaction.response.send_message(contents="An error has occured! Please try again.", ephemeral=True)
             return
 
         await display_leaderboard(interaction.response.send_message, interaction.guild.id, interaction.user.id, "alltime", page)
@@ -28,7 +28,7 @@ class Leaderboards(commands.GroupCog, name="leaderboard"):
         logger.info("file: cogs/leaderboards.py ~ weekly ~ run")
 
         if not interaction.guild:
-            await interaction.response.defer()
+            await interaction.response.send_message(contents="An error has occured! Please try again.", ephemeral=True)
             return
 
         await display_leaderboard(interaction.response.send_message, interaction.guild.id, interaction.user.id, "weekly", page)
@@ -39,7 +39,7 @@ class Leaderboards(commands.GroupCog, name="leaderboard"):
         logger.info("file: cogs/leaderboards.py ~ daily ~ run")
 
         if not interaction.guild:
-            await interaction.response.defer()
+            await interaction.response.send_message(contents="An error has occured! Please try again.", ephemeral=True)
             return
 
         await display_leaderboard(interaction.response.send_message, interaction.guild.id, interaction.user.id, "daily", page)

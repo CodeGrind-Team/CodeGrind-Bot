@@ -30,3 +30,4 @@ class Server(Document):
 
     class Settings:
         name = "servers"
+        use_state_management = True

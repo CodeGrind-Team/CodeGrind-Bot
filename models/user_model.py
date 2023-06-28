@@ -43,3 +43,4 @@ class User(Document):
 
     class Settings:
         name = "users"
+        use_state_management = True

@@ -4,11 +4,12 @@ from datetime import datetime, timedelta
 import discord
 import pytz
 
-from bot_globals import (RANK_EMOJI, TIMEFRAME_TITLE,
-                         TIMEZONE, client, logger)
-from embeds.leaderboards_embeds import Pagination, empty_leaderboard_embed, leaderboard_embed
+from bot_globals import RANK_EMOJI, TIMEFRAME_TITLE, TIMEZONE, client, logger
+from embeds.leaderboards_embeds import (empty_leaderboard_embed,
+                                        leaderboard_embed)
 from models.server_model import Server
 from models.user_model import User
+from utils.views import Pagination
 
 
 def get_score(server: Server, user: User, timeframe: str) -> int:

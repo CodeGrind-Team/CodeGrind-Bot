@@ -46,7 +46,7 @@ class Users(commands.Cog):
         server_exists = await Server.find_one(Server.id == server_id).project(IdProjection)
 
         if not server_exists:
-            await interaction.response.defer()
+            await interaction.response.send_message(contents="An error has occured! Please try again.", ephemeral=True)
             return
 
         display_information = DisplayInformation(
@@ -155,7 +155,7 @@ class Users(commands.Cog):
             'file: cogs/users.py ~ remove ~ run')
 
         if not interaction.guild:
-            await interaction.response.defer()
+            await interaction.response.send_message(contents="An error has occured! Please try again.", ephemeral=True)
             return
 
         server_id = interaction.guild.id
@@ -164,7 +164,7 @@ class Users(commands.Cog):
         server_exists = await Server.find_one(Server.id == server_id).project(IdProjection)
 
         if not server_exists:
-            await interaction.response.defer()
+            await interaction.response.send_message(contents="An error has occured! Please try again.", ephemeral=True)
             return
 
         logger.info(

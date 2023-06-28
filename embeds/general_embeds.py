@@ -54,3 +54,19 @@ def help_embed(is_admin: bool = False) -> discord.Embed:
             inline=False)
 
     return embed
+
+
+def not_admin_embed() -> discord.Embed:
+    embed = discord.Embed(title="Only admins can use this command",
+                          color=discord.Color.red())
+
+    return embed
+
+
+def not_creator_embed() -> discord.Embed:
+    embed = discord.Embed(title="Action denied",
+                          color=discord.Color.red())
+
+    embed.description = "Only the person who used the command can use the buttons on this leaderboard"
+
+    return embed
