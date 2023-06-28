@@ -5,6 +5,14 @@ import requests
 
 from bot_globals import logger
 
+# Read the ratings.txt file and populate the hashmap
+rating_ids = {}
+with open('ratings.txt', 'r') as file:
+    for line in file:
+        line = line.strip().split('\t')
+        title = line[2]
+        rating_id = line[1].split('.')[0]
+        rating_ids[title] = rating_id
 
 def daily_question_embed() -> discord.Embed:
     logger.info(
@@ -60,15 +68,10 @@ def daily_question_embed() -> discord.Embed:
     title = response_data['data']['challenge']['question']['title']
     # Extract and print the difficulty
     difficulty = response_data['data']['challenge']['question']['difficulty']
-    # Extract and print the date
-    # date = response_data['data']['challenge']['date']
-    rating_id = None
-    with open('../ratings.txt', 'r') as file:
-        for line in file:
-            line = line.strip().split('\t')
-            if line[2] == title:
-                rating_id = line[0].split('.')[0]
-                break
+
+    rating_id = rating_ids.get(title)
+
+        
     link = f"https://leetcode.com{link}"
     embed = discord.Embed(title=f"Daily Problem: {title}",
                           color=discord.Color.blue())
