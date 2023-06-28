@@ -4,6 +4,7 @@ import discord
 import requests
 
 from bot_globals import logger
+from utils.io_handling import read_ratings_txt
 
 
 def daily_question_embed() -> discord.Embed:
@@ -62,13 +63,7 @@ def daily_question_embed() -> discord.Embed:
     difficulty = response_data['data']['challenge']['question']['difficulty']
     # Extract and print the date
     # date = response_data['data']['challenge']['date']
-    rating_id = None
-    with open('../ratings.txt', 'r') as file:
-        for line in file:
-            line = line.strip().split('\t')
-            if line[2] == title:
-                rating_id = line[0].split('.')[0]
-                break
+    rating_id = await read_ratings_txt()
     link = f"https://leetcode.com{link}"
     embed = discord.Embed(title=f"Daily Problem: {title}",
                           color=discord.Color.blue())

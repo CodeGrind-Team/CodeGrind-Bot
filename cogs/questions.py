@@ -6,6 +6,7 @@ from discord.ext import commands
 
 from bot_globals import logger, session
 from utils.questions import daily_question_embed
+from utils.io_handling import read_ratings_txt
 
 
 class Questions(commands.Cog):
@@ -48,14 +49,8 @@ class Questions(commands.Cog):
                 title = question['stat']['question__title']
                 link = f"https://leetcode.com/problems/{question['stat']['question__title_slug']}/"
 
-                rating_id = None
-                with open('../ratings.txt', 'r') as file:
-                    for line in file:
-                        line = line.strip().split('\t')
-                        if line[2] == title:
-                            rating_id = line[0].split('.')[0]
-                            break
-
+                rating_id = await read_ratings_txt()
+                
                 embed = discord.Embed(title="LeetCode Question",
                                       color=discord.Color.green())
                 embed.add_field(name="Easy", value=title, inline=False)
@@ -86,13 +81,7 @@ class Questions(commands.Cog):
                 title = question['stat']['question__title']
                 link = f"https://leetcode.com/problems/{question['stat']['question__title_slug']}/"
 
-                rating_id = None
-                with open('../ratings.txt', 'r') as file:
-                    for line in file:
-                        line = line.strip().split('\t')
-                        if line[2] == title:
-                            rating_id = line[0].split('.')[0]
-                            break
+                rating_id = await read_ratings_txt()
 
                 embed = discord.Embed(title="LeetCode Question",
                                       color=discord.Color.green())
@@ -125,13 +114,7 @@ class Questions(commands.Cog):
                 title = question['stat']['question__title']
                 link = f"https://leetcode.com/problems/{question['stat']['question__title_slug']}/"
 
-                rating_id = None
-                with open('../ratings.txt', 'r') as file:
-                    for line in file:
-                        line = line.strip().split('\t')
-                        if line[2] == title:
-                            rating_id = line[0].split('.')[0]
-                            break
+                rating_id = await read_ratings_txt()
 
                 embed = discord.Embed(title="LeetCode Question",
                                       color=discord.Color.green())
@@ -149,13 +132,7 @@ class Questions(commands.Cog):
             url = session.get(
                 'https://leetcode.com/problems/random-one-question/all').url
 
-            rating_id = None
-            with open('../ratings.txt', 'r') as file:
-                for line in file:
-                    line = line.strip().split('\t')
-                    if line[2] == title:
-                        rating_id = line[0].split('.')[0]
-                        break
+            rating_id = await read_ratings_txt()
 
             embed = discord.Embed(title="LeetCode Question",
                                     color=discord.Color.green())
