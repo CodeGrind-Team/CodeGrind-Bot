@@ -46,6 +46,10 @@ class General(commands.Cog):
             name="Vote for the bot on top.gg",
             value="Love the bot? Vote for it on top.gg: https://top.gg/bot/1059122559066570885/vote",
             inline=False)
+        embed.add_field(
+            name="Get the Zerotrad Rating of a question",
+            value="Use `/rating <question_id>` to get the Zerotrac Rating of a question.",
+            inline=False)
 
         # for adminstrators
         if isinstance(interaction.user, discord.Member):

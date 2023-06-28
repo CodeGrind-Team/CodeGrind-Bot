@@ -34,6 +34,31 @@ class Questions(commands.Cog):
             title = line[2]
             rating_id = line[0].split('.')[0]
             rating_ids[title] = rating_id
+    
+    @discord.app_commands.rating_ids(name="rating", description="Returns the Zerotrac rating of the problem")
+    async def rating(self, interaction: discord.Interaction, title: str) -> None:
+        logger.info("file: cogs/questions.py ~ get_rating ~ run")
+
+        # Retrieve the rating ID from the hashmap based on the question title
+        rating_id = rating_ids.get(title)
+
+        if rating_id is None:
+            embed = discord.Embed(title="Rating",
+                                  color=discord.Color.blue())
+
+            embed.description = "Rating could not be retrieved"
+
+            await interaction.response.send_message(embed=embed)
+            return
+
+        embed = discord.Embed(title="Rating",
+                              color=discord.Color.blue())
+
+        embed.add_field(name="Title", value=title, inline=False)
+        embed.add_field(name="Zerotrac Rating", value=rating_id, inline=False)
+
+        await interaction.response.send_message(embed=embed)
+        return
 
     @discord.app_commands.command(
         name="question",
@@ -158,6 +183,8 @@ class Questions(commands.Cog):
                 "Please enter a valid difficulty level. (easy, medium, hard, random)",
                 ephemeral=True)
             return
+        
+
 
 
 async def setup(client: commands.Bot):
