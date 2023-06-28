@@ -62,13 +62,20 @@ def daily_question_embed() -> discord.Embed:
     difficulty = response_data['data']['challenge']['question']['difficulty']
     # Extract and print the date
     # date = response_data['data']['challenge']['date']
+    rating_id = None
+    with open('../ratings.txt', 'r') as file:
+        for line in file:
+            line = line.strip().split('\t')
+            if line[2] == title:
+                rating_id = line[0].split('.')[0]
+                break
     link = f"https://leetcode.com{link}"
     embed = discord.Embed(title=f"Daily Problem: {title}",
                           color=discord.Color.blue())
     embed.add_field(name="**Difficulty**",
                     value=f"{difficulty}", inline=True)
-    embed.add_field(name="**Link**", value=f"{link}", inline=False)
-
+    embed.add_field(name="**Zerotrac Rating**", value=f"{rating_id}", inline=True)
+    embed.add_field(name="**Link**", value=f"{link}", inline=False) 
     return embed
 
 

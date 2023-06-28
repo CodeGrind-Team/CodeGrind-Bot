@@ -48,11 +48,19 @@ class Questions(commands.Cog):
                 title = question['stat']['question__title']
                 link = f"https://leetcode.com/problems/{question['stat']['question__title_slug']}/"
 
+                rating_id = None
+                with open('../ratings.txt', 'r') as file:
+                    for line in file:
+                        line = line.strip().split('\t')
+                        if line[2] == title:
+                            rating_id = line[0].split('.')[0]
+                            break
+
                 embed = discord.Embed(title="LeetCode Question",
                                       color=discord.Color.green())
                 embed.add_field(name="Easy", value=title, inline=False)
                 embed.add_field(name="Link", value=link, inline=False)
-
+                embed.add_field(name="Zerotrad Rating", value=rating_id, inline=False)
                 await interaction.response.send_message(embed=embed)
             else:
                 # If the request was not successful, send an error message to the Discord channel
@@ -78,11 +86,19 @@ class Questions(commands.Cog):
                 title = question['stat']['question__title']
                 link = f"https://leetcode.com/problems/{question['stat']['question__title_slug']}/"
 
+                rating_id = None
+                with open('../ratings.txt', 'r') as file:
+                    for line in file:
+                        line = line.strip().split('\t')
+                        if line[2] == title:
+                            rating_id = line[0].split('.')[0]
+                            break
+
                 embed = discord.Embed(title="LeetCode Question",
-                                      color=discord.Color.orange())
+                                      color=discord.Color.green())
                 embed.add_field(name="Medium", value=title, inline=False)
                 embed.add_field(name="Link", value=link, inline=False)
-
+                embed.add_field(name="Zerotrad Rating", value=rating_id, inline=False)
                 await interaction.response.send_message(embed=embed)
             else:
                 # If the request was not successful, send an error message to the Discord channel
@@ -109,11 +125,19 @@ class Questions(commands.Cog):
                 title = question['stat']['question__title']
                 link = f"https://leetcode.com/problems/{question['stat']['question__title_slug']}/"
 
+                rating_id = None
+                with open('../ratings.txt', 'r') as file:
+                    for line in file:
+                        line = line.strip().split('\t')
+                        if line[2] == title:
+                            rating_id = line[0].split('.')[0]
+                            break
+
                 embed = discord.Embed(title="LeetCode Question",
-                                      color=discord.Color.red())
+                                      color=discord.Color.green())
                 embed.add_field(name="Hard", value=title, inline=False)
                 embed.add_field(name="Link", value=link, inline=False)
-
+                embed.add_field(name="Zerotrad Rating", value=rating_id, inline=False)
                 await interaction.response.send_message(embed=embed)
             else:
                 # If the request was not successful, send an error message to the Discord channel
@@ -125,12 +149,20 @@ class Questions(commands.Cog):
             url = session.get(
                 'https://leetcode.com/problems/random-one-question/all').url
 
-            embed = discord.Embed(title="Random Question",
-                                  color=discord.Color.green())
-            embed.add_field(name="URL", value=url, inline=False)
+            rating_id = None
+            with open('../ratings.txt', 'r') as file:
+                for line in file:
+                    line = line.strip().split('\t')
+                    if line[2] == title:
+                        rating_id = line[0].split('.')[0]
+                        break
 
+            embed = discord.Embed(title="LeetCode Question",
+                                    color=discord.Color.green())
+            embed.add_field(name="Easy", value=title, inline=False)
+            embed.add_field(name="Link", value=link, inline=False)
+            embed.add_field(name="Zerotrad Rating", value=rating_id, inline=False)
             await interaction.response.send_message(embed=embed)
-            return
         else:
             await interaction.response.send_message(
                 "Please enter a valid difficulty level. (easy, medium, hard, random)",
