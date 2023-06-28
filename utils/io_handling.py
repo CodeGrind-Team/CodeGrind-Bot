@@ -30,9 +30,10 @@ def write_file(path: str, data: dict[str, Any]) -> None:
     with open(path, "w", encoding="UTF-8") as file:
         json.dump(data, file, indent=4)
 
+
 @to_thread
-def read_ratings_txt() -> Any | None:
-    with open('ratings.txt', 'r') as file:
+def read_ratings_txt(title: str) -> Any | None:
+    with open('ratings.txt', 'r', encoding="UTF-8") as file:
         for line in file:
             line = line.strip().split('\t')
             if line[2] == title:

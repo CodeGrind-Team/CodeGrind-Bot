@@ -29,7 +29,7 @@ async def wait_until_next_half_hour() -> None:
 
 async def send_daily_question() -> None:
     logger.info("file: utils/message_scheduler.py ~ send_daily ~ run")
-    embed = daily_question_embed()
+    embed = await daily_question_embed()
 
     for filename in os.listdir("./data"):
         if filename.endswith(".json"):
