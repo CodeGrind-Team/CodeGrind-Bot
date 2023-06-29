@@ -2,7 +2,7 @@ from typing import List
 
 import discord
 
-from embeds.channels_embeds import channels_set_embed
+from embeds.channels_embeds import channel_set_embed, channel_remove_embed
 from embeds.general_embeds import not_creator_embed
 from utils.channels import get_options
 from utils.channels import save_channel_options
@@ -96,7 +96,8 @@ class NotificationTypeSelect(discord.ui.Select):
 
 
 class SaveButton(discord.ui.Button):
-    def __init__(self, selected_options: List[str], server_id: int, channel_id: int, channel_name: str):
+    def __init__(self, selected_options: List[str], adding: bool, server_id: int, channel_id: int, channel_name: str):
+        self.adding = adding
         self.server_id = server_id
         self.channel_id = channel_id
         self.channel_name = channel_name
@@ -109,17 +110,21 @@ class SaveButton(discord.ui.Button):
             await interaction.response.defer()
             return
         
-        await save_channel_options(self.server_id, self.channel_id, self.selected_options)
+        await save_channel_options(self.server_id, self.channel_id, self.adding, self.selected_options)
 
-        embed = channels_set_embed(self.channel_name, self.selected_options)
-        await interaction.response.edit_message(embed=embed, view=None)
+        if self.adding:
+            embed = channel_set_embed(self.channel_name, self.selected_options)
+            await interaction.response.edit_message(embed=embed, view=None)
+        else:
+            embed = channel_remove_embed(self.channel_name, self.selected_options)
+            await interaction.response.edit_message(embed=embed, view=None)
 
     
 
 class ChannelsSelect(discord.ui.View):
-    def __init__(self, server_id: int, channel_id: int, channel_name: str, available_types: List[str], *, timeout=180):
+    def __init__(self, server_id: int, channel_id: int, channel_name: str, available_types: List[str], adding: bool, *, timeout=180):
         super().__init__(timeout=timeout)
 
         self.selected_options = []
         self.add_item(NotificationTypeSelect(self.selected_options, available_types))
-        self.add_item(SaveButton(self.selected_options, server_id, channel_id, channel_name))
+        self.add_item(SaveButton(self.selected_options, adding, server_id, channel_id, channel_name))
