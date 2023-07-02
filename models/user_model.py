@@ -2,8 +2,7 @@ from datetime import datetime
 from typing import List, Optional
 
 from beanie import Document, Indexed
-from pydantic import BaseModel
-# from pymongo import IndexModel
+from pydantic import BaseModel, Field
 
 
 class DisplayInformation(BaseModel):
@@ -14,8 +13,15 @@ class DisplayInformation(BaseModel):
 
 class Scores(BaseModel):
     timezone: str
+    # TODO: use this data to determine if scores should be updated if there was downtime during a scheduled score update
+    last_updated: datetime = Field(default_factory=datetime.utcnow)
+
+    start_of_week_total_score: Optional[int]
+    start_of_day_total_score: Optional[int]
+
     today_score: Optional[int] = 0
     week_score: Optional[int] = 0
+
     yesterday_score: Optional[int] = 0
     last_week_score: Optional[int] = 0
 

@@ -12,3 +12,7 @@ async def init_mongodb_conn() -> None:
 
     await init_beanie(database=mongodb_client.bot,
                       document_models=[Server, User])
+
+if __name__ == "__main__":
+    import asyncio
+    asyncio.run(init_mongodb_conn())

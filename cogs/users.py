@@ -13,7 +13,7 @@ from embeds.users_embeds import (account_not_found_embed, account_removed_embed,
                                  connect_account_instructions_embed, profile_added_embed,
                                  synced_existing_user_embed,
                                  user_already_added_in_server_embed)
-from models.projections import IdProjection
+from models.projections import IdProjection, SubmissionsProjection
 from models.server_model import Server
 from models.user_model import DisplayInformation, Submissions, User, Scores
 from utils.middleware import ensure_server_document
@@ -78,7 +78,10 @@ class Users(commands.Cog):
                 server = await Server.get(server_id)
                 await server.save()
 
-                scores = Scores(timezone=server.timezone)
+                user = await User.find_one(User.id == user_id).project(SubmissionsProjection)
+
+                scores = Scores(timezone=server.timezone, start_of_week_score=user.submissions.total_score,
+                                start_of_last_week_score=user.submissions.total_score)
 
                 await User.find_one(User.id == user_id, User.scores.timezone != server.timezone).update(AddToSet({User.scores: scores}))
 
@@ -128,8 +131,11 @@ class Users(commands.Cog):
                 submissions = Submissions(
                     easy=easy, medium=medium, hard=hard, total_score=total_score)
 
-                user = User(id=user_id, leetcode_username=leetcode_username,
-                            rank=rank, display_information=[display_information], submissions=submissions)
+                scores = Scores(timezone=server.timezone, start_of_week_score=total_score,
+                                start_of_last_week_score=total_score)
+
+                user = User(id=user_id, leetcode_username=leetcode_username, rank=rank, display_information=[
+                            display_information], submissions=submissions, scores=[scores])
 
                 await Server.find_one(Server.id == server_id).update(AddToSet({Server.users: user}))
                 server = await Server.get(server_id)

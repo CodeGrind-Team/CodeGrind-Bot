@@ -5,11 +5,12 @@ from datetime import datetime
 
 from dotenv import load_dotenv
 
-from bot_globals import TIMEZONE, client, logger
+from bot_globals import client, logger
 from database import init_mongodb_conn
 from utils.leaderboards import send_leaderboard_winners
 from utils.message_scheduler import send_daily_question_and_update_stats
 from utils.stats import update_stats_and_rankings
+from models.server_model import Server
 
 load_dotenv()
 
@@ -29,7 +30,8 @@ async def on_ready() -> None:
 
     async with lock:
         if os.environ["UPDATE_STATS_ON_START"] == "True":
-            await update_stats_and_rankings(client, datetime.now(TIMEZONE), daily_reset, weekly_reset)
+            # Update to update all user for all timezones
+            await update_stats_and_rankings(await Server.find_one(Server.timezone == "Europe/London"), datetime.utcnow(), daily_reset, weekly_reset)
 
     async with lock:
         if daily_reset:

@@ -13,11 +13,16 @@ class Channel(BaseModel):
     winners: Optional[List[int]] = []
 
 
+class UserRank(BaseModel):
+    user_id: int
+    rank = int
+
+
 class Rankings(BaseModel):
     date: datetime
     timeframe: str  # "daily" or "weekly"
     winner: int  # user id
-    lb_rankings: List[int]  # list of user ids in ascending leaderboard rank
+    rankings: List[UserRank]  # leaderboard rankings
 
 
 class Server(Document):
