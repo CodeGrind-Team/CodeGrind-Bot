@@ -26,10 +26,10 @@ class Questions(commands.Cog):
     @discord.app_commands.command(name="rating", description="Returns the Zerotrac rating of the problem")
     async def rating(self, interaction: discord.Interaction, title: str) -> None:
         logger.info("file: cogs/questions.py ~ get_rating ~ run")
+        
 
-        rating = RATINGS[title]
 
-        if rating is None:
+        if title not in RATINGS:
             embed = discord.Embed(title="Rating",
                                   color=discord.Color.blue())
 
@@ -37,6 +37,8 @@ class Questions(commands.Cog):
 
             await interaction.response.send_message(embed=embed)
             return
+        
+        rating = RATINGS[title]
 
         embed = discord.Embed(title="Rating",
                               color=discord.Color.blue())
