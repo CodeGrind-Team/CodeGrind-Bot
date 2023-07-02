@@ -39,6 +39,10 @@ class General(commands.Cog):
             value="Use `/question <difficulty>` - specify the difficulty level of the question such as `easy`, `medium`, or `hard`. Use `random` for a question of any level.",
             inline=False)
         embed.add_field(
+            name="Get the Zerotrac Rating of a question",
+            value="Use `/rating <question_id>` to get the Zerotrac Rating of a question.",
+            inline=False)
+        embed.add_field(
             name="Score calculation",
             value=f"The score is calculated based on the amount of questions you have solved. Easy questions are worth {DIFFICULTY_SCORE['easy']} point, medium questions are worth {DIFFICULTY_SCORE['medium']} points, and hard questions are worth {DIFFICULTY_SCORE['hard']} points.",
             inline=False)

@@ -2,6 +2,7 @@ import asyncio
 import logging
 import os
 from datetime import datetime
+from typing import Dict
 
 import discord
 import pytz
@@ -36,3 +37,19 @@ TIMEFRAME_TITLE = {"alltime": {"field": "total_score", "title": "All-Time"},
                    "daily": {"field": "today_score", "title": "Daily"},
                    "yesterday": {"field": "yesterday_score", "title": "Today's"},
                    "last_week": {"field": "last_week_score", "title": "Last Week's"}}
+
+
+def read_ratings_txt() -> Dict[str, int]:
+    ratings = {}
+
+    with open('ratings.txt', 'r', encoding="UTF-8") as file:
+        for line in file:
+            line = line.strip().split('\t')
+            title = line[2]
+            rating = line[1].split('.')[0]
+            ratings[title] = int(rating)
+
+    return ratings
+
+
+RATINGS = read_ratings_txt()
