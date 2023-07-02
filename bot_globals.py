@@ -40,16 +40,22 @@ TIMEFRAME_TITLE = {"alltime": {"field": "total_score", "title": "All-Time"},
 
 
 def read_ratings_txt() -> Dict[str, int]:
+
     ratings = {}
 
     with open('ratings.txt', 'r', encoding="UTF-8") as file:
-        for line in file:
-            line = line.strip().split('\t')
-            title = line[2]
-            rating = line[1].split('.')[0]
-            ratings[title] = int(rating)
+        lines = file.readlines()
 
-    return ratings
+        for line in lines:
+            line_data = line.strip().split('\t')
+            rating = float(line_data[0])
+            question_id = int(line_data[1])
+            question_name = line_data[2].strip()
+
+            ratings[question_id] = {
+                'rating': rating,
+                'question_name': question_name
+            }
 
 
 RATINGS = read_ratings_txt()

@@ -26,28 +26,30 @@ class Questions(commands.Cog):
     @discord.app_commands.command(name="rating", description="Returns the Zerotrac rating of the problem")
     async def rating(self, interaction: discord.Interaction, title: str) -> None:
         logger.info("file: cogs/questions.py ~ get_rating ~ run")
-        
 
+        if title.isnumeric():
+            question_id = int(title)
+            if question_id not in RATINGS:
+                embed = discord.Embed(
+                    title="Zerotrac rating doesn't exist.", color=discord.Color.red())
+            rating = RATINGS[question_id]['rating']
 
-        if title not in RATINGS:
-            embed = discord.Embed(title="Rating",
-                                  color=discord.Color.blue())
+        elif title in RATINGS:
+            # If the title is in the RATINGS dictionary, assume it's the question name
+            rating = RATINGS[question_id]['rating']
 
-            embed.description = "Rating could not be retrieved"
+        else:
+            embed = discord.Embed(
+                title="Zerotrac rating doesn't exist.", color=discord.Color.red())
 
+        if rating is not None:
+            embed = discord.Embed(title="Zerotrac Rating",
+                                  color=discord.Color.green())
+            embed.add_field(name="Question Name",
+                            value=rating['question_name'], inline=False)
+            embed.add_field(name="Rating",
+                            value=f"||{int(rating['rating'])}||", inline=False)
             await interaction.response.send_message(embed=embed)
-            return
-        
-        rating = RATINGS[title]
-
-        embed = discord.Embed(title="Rating",
-                              color=discord.Color.blue())
-
-        embed.add_field(name="Title", value=title, inline=False)
-        embed.add_field(name="Zerotrac Rating",
-                        value=f"||{rating}||", inline=False)
-
-        await interaction.response.send_message(embed=embed)
         return
 
     @discord.app_commands.command(
@@ -77,7 +79,11 @@ class Questions(commands.Cog):
                 title = question['stat']['question__title']
                 link = f"https://leetcode.com/problems/{question['stat']['question__title_slug']}/"
 
-                rating = RATINGS[title]
+                rating = None
+                if title.isnumeric():
+                    question_id = int(title)
+                    if question_id in RATINGS:
+                        rating = int(RATINGS[question_id]['rating'])
 
                 embed = discord.Embed(title="LeetCode Question",
                                       color=discord.Color.green())
@@ -110,7 +116,11 @@ class Questions(commands.Cog):
                 title = question['stat']['question__title']
                 link = f"https://leetcode.com/problems/{question['stat']['question__title_slug']}/"
 
-                rating = RATINGS[title]
+                rating = None
+                if title.isnumeric():
+                    question_id = int(title)
+                    if question_id in RATINGS:
+                        rating = int(RATINGS[question_id]['rating'])
 
                 embed = discord.Embed(title="LeetCode Question",
                                       color=discord.Color.green())
@@ -143,8 +153,12 @@ class Questions(commands.Cog):
 
                 title = question['stat']['question__title']
                 link = f"https://leetcode.com/problems/{question['stat']['question__title_slug']}/"
-
-                rating = RATINGS[title]
+                
+                rating = None
+                if title.isnumeric():
+                    question_id = int(title)
+                    if question_id in RATINGS:
+                        rating = int(RATINGS[question_id]['rating'])
 
                 embed = discord.Embed(title="LeetCode Question",
                                       color=discord.Color.green())
@@ -165,7 +179,11 @@ class Questions(commands.Cog):
 
             title = url.split('/')[-2].replace('-', ' ')
 
-            rating = RATINGS[title]
+            rating = None
+            if title.isnumeric():
+                question_id = int(title)
+                if question_id in RATINGS:
+                    rating = int(RATINGS[question_id]['rating'])
 
             embed = discord.Embed(title="LeetCode Question",
                                   color=discord.Color.green())

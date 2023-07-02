@@ -61,7 +61,11 @@ async def daily_question_embed() -> discord.Embed:
     # Extract and print the difficulty
     difficulty = response_data['data']['challenge']['question']['difficulty']
 
-    rating = RATINGS[title]
+    rating = None
+    if title.isnumeric():
+        question_id = int(title)
+        if question_id in RATINGS:
+            rating = int(RATINGS[question_id]['rating'])
 
     link = f"https://leetcode.com{link}"
     embed = discord.Embed(title=f"Daily Problem: {title}",
