@@ -55,7 +55,7 @@ class Questions(commands.Cog):
                               color=discord.Color.blue())
 
         embed.add_field(name="Title", value=title, inline=False)
-        embed.add_field(name="Zerotrac Rating", value=rating_id, inline=False)
+        embed.add_field(name="Zerotrac Rating", value="||" + rating_id + "||", inline=False)
 
         await interaction.response.send_message(embed=embed)
         return
@@ -94,7 +94,7 @@ class Questions(commands.Cog):
                                       color=discord.Color.green())
                 embed.add_field(name="Easy", value=title, inline=False)
                 embed.add_field(name="Link", value=link, inline=False)
-                embed.add_field(name="Zerotrac Rating", value=rating_id, inline=False)
+                embed.add_field(name="Zerotrac Rating", value="||" + rating_id + "||", inline=False)
                 await interaction.response.send_message(embed=embed)
             else:
                 # If the request was not successful, send an error message to the Discord channel
@@ -126,7 +126,7 @@ class Questions(commands.Cog):
                                       color=discord.Color.green())
                 embed.add_field(name="Medium", value=title, inline=False)
                 embed.add_field(name="Link", value=link, inline=False)
-                embed.add_field(name="Zerotrac Rating", value=rating_id, inline=False)
+                embed.add_field(name="Zerotrac Rating", value="||" + rating_id + "||", inline=False)
                 await interaction.response.send_message(embed=embed)
             else:
                 # If the request was not successful, send an error message to the Discord channel
@@ -159,7 +159,7 @@ class Questions(commands.Cog):
                                       color=discord.Color.green())
                 embed.add_field(name="Hard", value=title, inline=False)
                 embed.add_field(name="Link", value=link, inline=False)
-                embed.add_field(name="Zerotrac Rating", value=rating_id, inline=False)
+                embed.add_field(name="Zerotrac Rating", value="||" + rating_id + "||", inline=False)
                 await interaction.response.send_message(embed=embed)
             else:
                 # If the request was not successful, send an error message to the Discord channel
@@ -170,13 +170,21 @@ class Questions(commands.Cog):
         elif difficulty == "random":
             url = session.get(
                 'https://leetcode.com/problems/random-one-question/all').url
+            
+            # get the leetcode id from the question
+            title = url.split('/')[-2]
+            # get the title of the question
+            title = title.replace('-', ' ')
+            # get the rating id from the title
+            rating_id = rating_ids.get(title)
 
             embed = discord.Embed(title="LeetCode Question",
                                     color=discord.Color.green())
             embed.add_field(name="Easy", value=title, inline=False)
-            embed.add_field(name="Link", value=link, inline=False)
             #url
-            embed.add_field(name="URL", value=url, inline=False)
+            #rating
+            embed.add_field(name="Zerotrac Rating", value="||" + rating_id + "||", inline=False)
+            embed.add_field(name="Link", value=url, inline=False)
             await interaction.response.send_message(embed=embed)
         else:
             await interaction.response.send_message(
