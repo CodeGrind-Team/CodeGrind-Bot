@@ -30,13 +30,18 @@ class Questions(commands.Cog):
 
         rating_data = await get_rating_data(question_id_or_title)
 
+        rating_text = "doesn't exist"
+
+        if ratingWdata is not None:
+            rating_text = f"||{int(rating_data['rating'])}||"
+
         if rating_data is not None:
             embed = discord.Embed(title="Zerotrac Rating",
                                   color=discord.Color.green())
             embed.add_field(name="Question Name",
-                            value=rating_data['question_name'], inline=False)
+                            value=rating_data['question_name'].title(), inline=False)
             embed.add_field(name="Rating",
-                            value=f"||{int(rating_data['rating'])}||", inline=False)
+                            value=rating_text, inline=False)
             await interaction.response.send_message(embed=embed)
 
     @discord.app_commands.command(
