@@ -3,7 +3,7 @@ from typing import Any
 import discord
 import requests
 
-from bot_globals import logger, RATINGS
+from bot_globals import logger
 from utils.ratings import get_rating_data
 
 
@@ -62,16 +62,20 @@ async def daily_question_embed() -> discord.Embed:
     # Extract and print the difficulty
     difficulty = response_data['data']['challenge']['question']['difficulty']
 
-    rating_data = get_rating_data(title)
-
     link = f"https://leetcode.com{link}"
+
+    rating_data = await get_rating_data(title)
+    rating_text = "doesn't exist"
+    if rating_data is not None:
+        rating_text = f"||{int(rating_data['rating'])}||"
+
     embed = discord.Embed(title=f"Daily Problem: {title}",
                           color=discord.Color.blue())
     embed.add_field(name="**Difficulty**",
                     value=f"{difficulty}", inline=True)
-    
+
     embed.add_field(name="**Zerotrac Rating**",
-                    value=f"{'||' + str(rating_data["rating"]) + '||' if rating_data is not None else "doesn't exist"}", inline=True)
+                    value=rating_text, inline=True)
     embed.add_field(name="**Link**", value=f"{link}", inline=False)
     return embed
 

@@ -4,7 +4,7 @@ import discord
 import requests
 from discord.ext import commands
 
-from bot_globals import logger, session, RATINGS
+from bot_globals import logger, session
 from utils.questions import daily_question_embed
 from utils.ratings import get_rating_data
 
@@ -28,8 +28,7 @@ class Questions(commands.Cog):
     async def rating(self, interaction: discord.Interaction, question_id_or_title: str) -> None:
         logger.info("file: cogs/questions.py ~ get_rating ~ run")
 
-
-        rating_data = get_rating_data(title)
+        rating_data = await get_rating_data(question_id_or_title)
 
         if rating_data is not None:
             embed = discord.Embed(title="Zerotrac Rating",
@@ -37,7 +36,7 @@ class Questions(commands.Cog):
             embed.add_field(name="Question Name",
                             value=rating_data['question_name'], inline=False)
             embed.add_field(name="Rating",
-                            value=f"||{rating_data['rating']}||", inline=False)
+                            value=f"||{int(rating_data['rating'])}||", inline=False)
             await interaction.response.send_message(embed=embed)
 
     @discord.app_commands.command(
@@ -67,14 +66,20 @@ class Questions(commands.Cog):
                 title = question['stat']['question__title']
                 link = f"https://leetcode.com/problems/{question['stat']['question__title_slug']}/"
 
-                rating_data = get_rating_data(title)
+                rating_data = await get_rating_data(title)
+
+                rating_text = "doesn't exist"
+
+                if rating_data is not None:
+                    rating_text = f"||{int(rating_data['rating'])}||"
 
                 embed = discord.Embed(title="LeetCode Question",
                                       color=discord.Color.green())
-                embed.add_field(name="Easy", value=title, inline=False)
+                embed.add_field(
+                    name="Easy", value=title.capitalize(), inline=False)
                 embed.add_field(name="Link", value=link, inline=False)
                 embed.add_field(name="Zerotrac Rating",
-                                value=f"{'||' + str(rating_data["rating"]) + '||' if rating_data is not None else "doesn't exist"}", inline=False)
+                                value=rating_text, inline=False)
                 await interaction.response.send_message(embed=embed)
             else:
                 # If the request was not successful, send an error message to the Discord channel
@@ -100,14 +105,20 @@ class Questions(commands.Cog):
                 title = question['stat']['question__title']
                 link = f"https://leetcode.com/problems/{question['stat']['question__title_slug']}/"
 
-                rating_data = get_rating_data(title)
+                rating_data = await get_rating_data(title)
+
+                rating_text = "doesn't exist"
+
+                if rating_data is not None:
+                    rating_text = f"||{int(rating_data['rating'])}||"
 
                 embed = discord.Embed(title="LeetCode Question",
-                                      color=discord.Color.green())
-                embed.add_field(name="Medium", value=title, inline=False)
+                                      color=discord.Color.orange())
+                embed.add_field(
+                    name="Medium", value=title.capitalize(), inline=False)
                 embed.add_field(name="Link", value=link, inline=False)
                 embed.add_field(name="Zerotrac Rating",
-                                value=f"{'||' + str(rating_data["rating"]) + '||' if rating_data is not None else "doesn't exist"}", inline=False)
+                                value=rating_text, inline=False)
                 await interaction.response.send_message(embed=embed)
             else:
                 # If the request was not successful, send an error message to the Discord channel
@@ -133,15 +144,21 @@ class Questions(commands.Cog):
 
                 title = question['stat']['question__title']
                 link = f"https://leetcode.com/problems/{question['stat']['question__title_slug']}/"
-                
-                rating_data = get_rating_data(title)
+
+                rating_data = await get_rating_data(title)
+
+                rating_text = "doesn't exist"
+
+                if rating_data is not None:
+                    rating_text = f"||{int(rating_data['rating'])}||"
 
                 embed = discord.Embed(title="LeetCode Question",
-                                      color=discord.Color.green())
-                embed.add_field(name="Hard", value=title, inline=False)
+                                      color=discord.Color.red())
+                embed.add_field(
+                    name="Hard", value=title.capitalize(), inline=False)
                 embed.add_field(name="Link", value=link, inline=False)
                 embed.add_field(name="Zerotrac Rating",
-                                value=f"{'||' + str(rating_data["rating"]) + '||' if rating_data is not None else "doesn't exist"}", inline=False)
+                                value=rating_text, inline=False)
                 await interaction.response.send_message(embed=embed)
             else:
                 # If the request was not successful, send an error message to the Discord channel
@@ -155,14 +172,20 @@ class Questions(commands.Cog):
 
             title = url.split('/')[-2].replace('-', ' ')
 
-            rating_data = get_rating_data(title)
+            rating_data = await get_rating_data(title)
+
+            rating_text = "doesn't exist"
+
+            if rating_data is not None:
+                rating_text = f"||{int(rating_data['rating'])}||"
 
             embed = discord.Embed(title="LeetCode Question",
-                                  color=discord.Color.green())
-            embed.add_field(name="Random", value=title, inline=False)
+                                  color=discord.Color.blurple())
+            embed.add_field(
+                name="Random", value=title.capitalize(), inline=False)
             embed.add_field(name="Link", value=url, inline=False)
             embed.add_field(name="Zerotrac Rating",
-                            value=f"{'||' + str(rating_data["rating"]) + '||' if rating_data is not None else "doesn't exist"}", inline=False)
+                            value=rating_text, inline=False)
             await interaction.response.send_message(embed=embed)
         else:
             await interaction.response.send_message(

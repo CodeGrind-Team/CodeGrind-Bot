@@ -39,7 +39,7 @@ TIMEFRAME_TITLE = {"alltime": {"field": "total_score", "title": "All-Time"},
                    "last_week": {"field": "last_week_score", "title": "Last Week's"}}
 
 
-def read_ratings_txt() -> Dict[str | int, str | int]:
+def read_ratings_txt() -> Dict:
 
     ratings = {}
 
@@ -60,6 +60,8 @@ def read_ratings_txt() -> Dict[str | int, str | int]:
             ratings[question_name] = {
                 'rating': rating
             }
+
+    return ratings
 
 
 RATINGS = read_ratings_txt()
