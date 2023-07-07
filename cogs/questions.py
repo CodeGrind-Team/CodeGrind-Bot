@@ -32,7 +32,7 @@ class Questions(commands.Cog):
 
         rating_text = "doesn't exist"
 
-        if ratingWdata is not None:
+        if rating_data is not None:
             rating_text = f"||{int(rating_data['rating'])}||"
 
         if rating_data is not None:
