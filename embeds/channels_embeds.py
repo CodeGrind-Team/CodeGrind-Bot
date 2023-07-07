@@ -40,7 +40,7 @@ def set_channels_instructions_embed(channel_name: str, adding: bool) -> discord.
 
     embed.add_field(
         name="Leaderboard daily and weekly winners",
-        value="Receive the winners of the daily and weekly leaderboards at midnight (your selected timezone)",
+        value="Receive the winners of the daily and weekly leaderboards at midnight (UTC)",
         inline=False)
 
     embed.add_field(

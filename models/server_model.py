@@ -15,14 +15,14 @@ class Channel(BaseModel):
 
 class UserRank(BaseModel):
     user_id: int
-    rank = int
+    rank: int
 
 
 class Rankings(BaseModel):
     date: datetime
     timeframe: str  # "daily" or "weekly"
     winner: int  # user id
-    rankings: List[UserRank]  # leaderboard rankings
+    rankings_order: List[UserRank]  # leaderboard rankings
 
 
 class Server(Document):

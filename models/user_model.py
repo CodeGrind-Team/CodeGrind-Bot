@@ -12,7 +12,6 @@ class DisplayInformation(BaseModel):
 
 
 class Scores(BaseModel):
-    timezone: str
     # TODO: use this data to determine if scores should be updated if there was downtime during a scheduled score update
     last_updated: datetime = Field(default_factory=datetime.utcnow)
 
@@ -45,7 +44,7 @@ class User(Document):
     display_information: List[DisplayInformation]
     submissions: Submissions
     history: Optional[List[History]] = []
-    scores: Optional[List[Scores]] = []
+    scores: Optional[Scores] = Field(default_factory=Scores)
 
     class Settings:
         name = "users"

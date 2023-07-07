@@ -1,15 +1,14 @@
 import asyncio
-import os
 from datetime import datetime, timedelta
 
 import discord
+from beanie.odm.operators.update.general import Set
 
 from bot_globals import client, logger
 from embeds.questions_embeds import daily_question_embed
-from models.server_model import Server
-from utils.io_handling import read_file
+from models.server_model import Server, User
 from utils.leaderboards import send_leaderboard_winners
-from utils.stats import update_stats_and_rankings
+from utils.stats import update_rankings, update_stats
 
 
 async def wait_until_next_half_hour() -> None:
@@ -32,8 +31,8 @@ async def send_daily_question(server: Server) -> None:
     logger.info("file: utils/message_scheduler.py ~ send_daily ~ run")
     embed = daily_question_embed()
 
-    for channel in server.channels:
-        channel = client.get_channel(channel.id)
+    for channel_id in server.channels.daily_question:
+        channel = client.get_channel(channel_id)
 
         if not isinstance(channel, discord.TextChannel):
             continue
@@ -59,25 +58,33 @@ async def send_daily_question_and_update_stats() -> None:
         "file: utils/message_scheduler.py ~ send_daily_question_and_update_stats ~ run")
 
     while not client.is_closed():
-        await wait_until_next_half_hour()
 
-        now_utc = datetime.utcnow()
-        daily_question_reset = now_utc.hour == 0 and now_utc.minute == 0
+        now = datetime.utcnow()
 
-        async for server in Server.all():
-            # daily changes at midnight UTC
-            now_timezone = datetime.now(server.timezone)
-            daily_reset = now_timezone.hour == 0 and now_timezone.minute == 0
-            weekly_reset = now_timezone.weekday(
-            ) == 0 and now_timezone.hour == 0 and now_timezone.minute == 0
+        # daily changes at midnight UTC
+        daily_reset = now.hour == 0 and now.minute == 0
+        weekly_reset = now.weekday(
+        ) == 0 and now.hour == 0 and now.minute == 0
 
-            await update_stats_and_rankings(server, now_utc, daily_reset, weekly_reset)
+        async for user in User.all():
+            await update_stats(user, now, daily_reset, weekly_reset)
+
+        async for server in Server.all(fetch_links=True):
+            await update_rankings(server, now, "daily")
 
             if daily_reset:
                 await send_leaderboard_winners(server, "yesterday")
 
+            await update_rankings(server, now, "weekly")
+
             if weekly_reset:
                 await send_leaderboard_winners(server, "last_week")
 
-            if daily_question_reset:
+            server.last_updated = now
+            await server.save_changes()
+
+        if daily_reset:
+            async for server in Server.all(fetch_links=True):
                 await send_daily_question(server)
+
+        await wait_until_next_half_hour()

@@ -1,9 +1,8 @@
-import os
 from datetime import datetime, timedelta
 
 import discord
 
-from bot_globals import RANK_EMOJI, TIMEFRAME_TITLE, TIMEZONE, client, logger
+from bot_globals import RANK_EMOJI, TIMEFRAME_TITLE, client, logger
 from embeds.leaderboards_embeds import (empty_leaderboard_embed,
                                         leaderboard_embed)
 from models.server_model import Server
@@ -11,37 +10,28 @@ from models.user_model import User
 from utils.views import Pagination
 
 
-def get_score(timezone: str, user: User, timeframe: str | None = None) -> int:
+def get_score(user: User, timeframe: str | None = None) -> int:
     if timeframe == "alltime":
         return user.submissions.total_score
 
     else:
-        scores = next(
-            (scores for scores in user.scores if scores.timezone == timezone), None)
-
-        if timeframe is None:
-            return scores
-
-        if scores is None:
-            return 0
-
         if timeframe == "daily":
-            return scores.today_score
+            return user.scores.today_score
 
         elif timeframe == "weekly":
-            return scores.week_score
+            return user.scores.week_score
 
         elif timeframe == "yesterday":
-            return scores.yesterday_score
+            return user.scores.yesterday_score
 
         elif timeframe == "last_week":
-            return scores.last_week_score
+            return user.scores.last_week_score
 
         elif timeframe == "start_of_week_total":
-            return scores.start_of_week_total_score if scores.start_of_week_total_score else user.submissions.total_score
+            return user.scores.start_of_week_total_score
 
         elif timeframe == "start_of_day_total":
-            return scores.start_of_day_total_score if scores.start_of_day_total_score else user.submissions.total_score
+            return user.scores.start_of_day_total_score
 
 
 async def display_leaderboard(send_message, server_id, user_id=None, timeframe: str = "alltime", page: int = 1, winners_only: bool = False, users_per_page: int = 10) -> None:
@@ -57,7 +47,7 @@ async def display_leaderboard(send_message, server_id, user_id=None, timeframe: 
         return
 
     users = sorted(server.users,
-                   key=lambda user: get_score(server.timezone, user, timeframe), reverse=True)
+                   key=lambda user: get_score(user, timeframe), reverse=True)
 
     pages = []
     page_count = -(-len(users)//users_per_page)
@@ -80,7 +70,7 @@ async def display_leaderboard(send_message, server_id, user_id=None, timeframe: 
 
             name = display_information.name
             hyperlink = display_information.hyperlink
-            total_score = get_score(server.timezone, user, timeframe)
+            total_score = get_score(user, timeframe)
 
             if winners_only and (total_score == 0 or place == 4):
                 reached_end_of_winners = True
@@ -113,10 +103,10 @@ async def display_leaderboard(send_message, server_id, user_id=None, timeframe: 
         title = f"{TIMEFRAME_TITLE[timeframe]['title']} Leaderboard"
         if winners_only:
             if timeframe == "yesterday":
-                title = f"{TIMEFRAME_TITLE[timeframe]['title']} Winners ({(datetime.now(TIMEZONE) - timedelta(days=1)).strftime('%d/%m/%Y')})"
+                title = f"{TIMEFRAME_TITLE[timeframe]['title']} Winners ({(datetime.utcnow() - timedelta(days=1)).strftime('%d/%m/%Y')})"
 
             elif timeframe == "last_week":
-                title = f"{TIMEFRAME_TITLE[timeframe]['title']} Winners ({(datetime.now(TIMEZONE) - timedelta(days=7)).strftime('%d/%m/%Y')} - {(datetime.now(TIMEZONE) - timedelta(days=1)).strftime('%d/%m/%Y')})"
+                title = f"{TIMEFRAME_TITLE[timeframe]['title']} Winners ({(datetime.utcnow() - timedelta(days=7)).strftime('%d/%m/%Y')} - {(datetime.utcnow() - timedelta(days=1)).strftime('%d/%m/%Y')})"
 
         embed = leaderboard_embed(
             server, page_i, page_count, title, leaderboard)

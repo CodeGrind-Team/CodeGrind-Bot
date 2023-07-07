@@ -7,10 +7,7 @@ from dotenv import load_dotenv
 
 from bot_globals import client, logger
 from database import init_mongodb_conn
-from utils.leaderboards import send_leaderboard_winners
 from utils.message_scheduler import send_daily_question_and_update_stats
-from utils.stats import update_stats_and_rankings
-from models.server_model import Server
 
 load_dotenv()
 
@@ -23,22 +20,11 @@ async def on_ready() -> None:
     server_ids = [guild.id for guild in client.guilds]
     logger.info('file: main.py ~ server IDs: %s', server_ids)
 
-    lock = asyncio.Lock()
-
     daily_reset = os.environ["DAILY_RESET"] == "True"
     weekly_reset = os.environ["WEEKLY_RESET"] == "True"
 
-    async with lock:
-        if os.environ["UPDATE_STATS_ON_START"] == "True":
-            # Update to update all user for all timezones
-            await update_stats_and_rankings(await Server.find_one(Server.timezone == "Europe/London"), datetime.utcnow(), daily_reset, weekly_reset)
-
-    async with lock:
-        if daily_reset:
-            await send_leaderboard_winners("yesterday")
-
-        if weekly_reset:
-            await send_leaderboard_winners("last_week")
+    if os.environ["UPDATE_STATS_ON_START"] == "True":
+        await send_daily_question_and_update_stats()
 
     try:
         synced = await client.tree.sync()

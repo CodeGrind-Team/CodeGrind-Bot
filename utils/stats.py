@@ -1,8 +1,8 @@
 from datetime import datetime
 
+from beanie.odm.operators.update.array import AddToSet
 from beanie.odm.operators.update.general import Set
 from utils.leaderboards import get_score
-
 from bot_globals import calculate_scores, logger
 from models.server_model import Rankings, Server, UserRank
 from models.user_model import User
@@ -23,13 +23,13 @@ async def update_rankings(server: Server, now: datetime, timeframe: str) -> None
     score_field = {"daily": "yesterday", "weekly": "last_week"}
 
     users_sorted = sorted(server.users,
-                          key=lambda user: get_score(server.timezone, user, score_field[timeframe]), reverse=True)
+                          key=lambda user: get_score(user, score_field[timeframe]), reverse=True)
 
     lb_rankings = []
     place = 0
     prev_score = float("-inf")
     for user in users_sorted:
-        total_score = get_score(server.timezone, user, score_field[timeframe])
+        total_score = get_score(user, score_field[timeframe])
 
         if total_score == 0:
             break
@@ -38,24 +38,23 @@ async def update_rankings(server: Server, now: datetime, timeframe: str) -> None
             place += 1
 
         user_rank = UserRank(user_id=user.id, rank=place)
-
         lb_rankings.append(user_rank)
 
     if len(lb_rankings) > 0:
         rankings = Rankings(date=now, timeframe=timeframe,
-                            winner=rankings[0].user_id, rankings=lb_rankings)
+                            winner=lb_rankings[0].user_id, rankings_order=lb_rankings)
 
-        await Server.find_one(Server.id == server.id).update({Server.rankings: rankings})
+        await Server.find_one(Server.id == server.id).update(AddToSet({Server.rankings: rankings}))
 
     logger.info(
         'file: cogs/stats.py ~ update_rankings ~ rankings updated successfully for %s timeframe', timeframe)
 
 
-async def update_stats(timezone: str, now: datetime, daily_reset: bool = False, weekly_reset: bool = False) -> None:
+async def update_stats(user: User, now: datetime, daily_reset: bool = False, weekly_reset: bool = False) -> None:
     logger.info("file: cogs/stats.py ~ update_stats ~ run ~ now: %s | daily_reset: %s | weekly_reset %s",
                 now.strftime("%d/%m/%Y, %H:%M:%S"), daily_reset, weekly_reset)
 
-    async for user in User.find(User.scores.timezone == timezone):
+    async for user in User.all():
         leetcode_username = user.leetcode_username
 
         submissions_and_rank = get_problems_solved_and_rank(
@@ -90,24 +89,22 @@ async def update_stats(timezone: str, now: datetime, daily_reset: bool = False, 
         # Week score
         # TODO: add projection
         user = await User.find_one(User.id == user.id)
-        start_of_week_total_score = get_score(
-            timezone, user, "start_of_week_total")
+        start_of_week_total_score = get_score(user, "start_of_week_total")
 
         week_score = total_score - start_of_week_total_score
 
-        await User.find_one(User.id == user.id, User.scores.timezone == timezone).update(Set({"scores.$.week_score": week_score}))
+        await User.find_one(User.id == user.id).update(Set({User.scores.week_score: week_score}))
 
         # Day score
         # TODO: add projection
         user = await User.find_one(User.id == user.id)
-        start_of_day_total_score = get_score(
-            timezone, user, "start_of_day_total")
+        start_of_day_total_score = get_score(user, "start_of_day_total")
 
         day_score = total_score - start_of_day_total_score
 
-        await User.find_one(User.id == user.id, User.scores.timezone == timezone).update(Set({"scores.$.today_score": day_score}))
-        print(user.id)
-        await User.find_one(User.id == user.id, User.scores.timezone == timezone).update(Set({"scores.$.last_updated": now}))
+        await User.find_one(User.id == user.id).update(Set({User.scores.today_score: day_score}))
+
+        await User.find_one(User.id == user.id).update(Set({User.scores.last_updated: now}))
 
         user = await User.find_one(User.id == user.id)
         user.rank = rank
@@ -124,13 +121,3 @@ async def update_stats(timezone: str, now: datetime, daily_reset: bool = False, 
 
         logger.info(
             'file: cogs/stats.py ~ update_stats ~ user stats updated successfully: %s', leetcode_username)
-
-
-async def update_stats_and_rankings(server: Server, now: datetime, daily_reset: bool = False, weekly_reset: bool = False) -> None:
-    await update_stats(server.timezone, now, daily_reset, weekly_reset)
-
-    if daily_reset:
-        await update_rankings(server, now, timeframe="daily")
-
-    if weekly_reset:
-        await update_rankings(server, now, timeframe="weekly")

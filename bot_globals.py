@@ -14,9 +14,7 @@ if not os.path.exists('data'):
 if not os.path.exists('logs'):
     os.makedirs('logs')
 
-TIMEZONE = pytz.timezone('Europe/London')
-
-logging.basicConfig(filename=f"logs/{datetime.now(TIMEZONE).strftime('%Y%m%d-%H%M%S')}.log",
+logging.basicConfig(filename=f"logs/{datetime.now(pytz.timezone('Europe/London')).strftime('%Y%m%d-%H%M%S')}.log",
                     format='%(asctime)s - %(levelname)s - %(message)s',
                     filemode='w')
 
