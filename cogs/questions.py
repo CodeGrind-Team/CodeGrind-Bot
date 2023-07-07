@@ -76,7 +76,7 @@ class Questions(commands.Cog):
                 embed = discord.Embed(title="LeetCode Question",
                                       color=discord.Color.green())
                 embed.add_field(
-                    name="Easy", value=title.capitalize(), inline=False)
+                    name="Easy", value=title.title(), inline=False)
                 embed.add_field(name="Link", value=link, inline=False)
                 embed.add_field(name="Zerotrac Rating",
                                 value=rating_text, inline=False)
@@ -115,7 +115,7 @@ class Questions(commands.Cog):
                 embed = discord.Embed(title="LeetCode Question",
                                       color=discord.Color.orange())
                 embed.add_field(
-                    name="Medium", value=title.capitalize(), inline=False)
+                    name="Medium", value=title.title(), inline=False)
                 embed.add_field(name="Link", value=link, inline=False)
                 embed.add_field(name="Zerotrac Rating",
                                 value=rating_text, inline=False)
@@ -155,7 +155,7 @@ class Questions(commands.Cog):
                 embed = discord.Embed(title="LeetCode Question",
                                       color=discord.Color.red())
                 embed.add_field(
-                    name="Hard", value=title.capitalize(), inline=False)
+                    name="Hard", value=title.title(), inline=False)
                 embed.add_field(name="Link", value=link, inline=False)
                 embed.add_field(name="Zerotrac Rating",
                                 value=rating_text, inline=False)
@@ -182,7 +182,7 @@ class Questions(commands.Cog):
             embed = discord.Embed(title="LeetCode Question",
                                   color=discord.Color.blurple())
             embed.add_field(
-                name="Random", value=title.capitalize(), inline=False)
+                name="Random", value=title.title(), inline=False)
             embed.add_field(name="Link", value=url, inline=False)
             embed.add_field(name="Zerotrac Rating",
                             value=rating_text, inline=False)
