@@ -29,10 +29,12 @@ def get_score(user: User, timeframe: str | None = None) -> int:
             return user.scores.last_week_score
 
         elif timeframe == "start_of_week_total":
-            return user.scores.start_of_week_total_score
+            start_of_week_total_score = user.scores.start_of_week_total_score
+            return start_of_week_total_score if start_of_week_total_score is not None else user.submissions.total_score
 
         elif timeframe == "start_of_day_total":
-            return user.scores.start_of_day_total_score
+            start_of_day_total_score = user.scores.start_of_day_total_score
+            return start_of_day_total_score if start_of_day_total_score is not None else user.submissions.total_score
 
 
 async def display_leaderboard(send_message, server_id, user_id=None, timeframe: str = "alltime", page: int = 1, winners_only: bool = False, users_per_page: int = 10) -> None:

@@ -13,7 +13,7 @@ class DisplayInformation(BaseModel):
 
 class Scores(BaseModel):
     # TODO: use this data to determine if scores should be updated if there was downtime during a scheduled score update
-    last_updated: datetime = Field(default_factory=datetime.utcnow)
+    last_updated: Optional[datetime] = Field(default_factory=datetime.utcnow)
 
     start_of_week_total_score: Optional[int]
     start_of_day_total_score: Optional[int]

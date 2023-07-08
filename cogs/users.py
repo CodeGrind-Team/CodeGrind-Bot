@@ -125,8 +125,8 @@ class Users(commands.Cog):
                 submissions = Submissions(
                     easy=easy, medium=medium, hard=hard, total_score=total_score)
 
-                scores = Scores(start_of_week_score=total_score,
-                                start_of_last_week_score=total_score)
+                scores = Scores(start_of_week_total_score=total_score,
+                                start_of_day_total_score=total_score)
 
                 user = User(id=user_id, leetcode_username=leetcode_username, rank=rank, display_information=[
                             display_information], submissions=submissions, scores=scores)

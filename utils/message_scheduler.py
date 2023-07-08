@@ -74,7 +74,7 @@ async def send_daily_question_and_update_stats(force_update: bool = False, force
             force_update = False
 
         async for user in User.all():
-            await update_stats(user, now, daily_reset)
+            await update_stats(user, now, daily_reset, weekly_reset)
 
         async for server in Server.all(fetch_links=True):
 
