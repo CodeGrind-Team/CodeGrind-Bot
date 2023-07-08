@@ -86,7 +86,7 @@ async def update_stats(user: User, now: datetime, daily_reset: bool = False, wee
 
     day_score = total_score - start_of_day_total_score
 
-    await User.find_one(User.id == user.id).update(Set({User.scores.today_score: day_score}))
+    await User.find_one(User.id == user.id).update(Set({User.scores.day_score: day_score}))
 
     await User.find_one(User.id == user.id).update(Set({User.scores.last_updated: now}))
 
@@ -99,7 +99,7 @@ async def update_stats(user: User, now: datetime, daily_reset: bool = False, wee
 
     if daily_reset:
         user.scores.yesterday_score = day_score
-        user.scores.today_score = 0
+        user.scores.day_score = 0
         user.scores.start_of_day_total_score = 0
 
     if weekly_reset:

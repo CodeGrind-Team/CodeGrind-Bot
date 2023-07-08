@@ -17,7 +17,7 @@ def get_score(user: User, timeframe: str | None = None) -> int:
 
     else:
         if timeframe == "daily":
-            return user.scores.today_score
+            return user.scores.day_score
 
         elif timeframe == "weekly":
             return user.scores.week_score
@@ -95,7 +95,7 @@ async def display_leaderboard(send_message, server_id, user_id=None, timeframe: 
             wins_text = f"({str(wins)} wins) "
             # wins won't be displayed for alltime timeframe as wins !> 0
             leaderboard.append(
-                f"**{RANK_EMOJI[place] if place in RANK_EMOJI and place != 0 else number_rank} {name_with_link if url else name}** {wins_text if  wins > 0 else ''}- **{total_score}** pts"
+                f"**{RANK_EMOJI[place] if place in RANK_EMOJI and total_score != 0 else number_rank} {name_with_link if url else name}** {wins_text if  wins > 0 else ''}- **{total_score}** pts"
             )
 
         title = f"{TIMEFRAME_TITLE[timeframe]['title']} Leaderboard"

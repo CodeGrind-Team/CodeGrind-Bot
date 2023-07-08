@@ -22,7 +22,7 @@ class Rankings(BaseModel):
     date: datetime
     timeframe: str  # "daily" or "weekly"
     winner: int  # user id
-    rankings_order: List[UserRank]  # leaderboard rankings
+    rankings_order: Optional[List[UserRank]] = []  # leaderboard rankings
 
 
 class Server(Document):

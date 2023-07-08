@@ -31,7 +31,7 @@ RANK_EMOJI = {1: "🥇", 2: "🥈", 3: "🥉"}
 
 TIMEFRAME_TITLE = {"alltime": {"field": "total_score", "title": "All-Time"},
                    "weekly": {"field": "week_score", "title": "Weekly"},
-                   "daily": {"field": "today_score", "title": "Daily"},
+                   "daily": {"field": "day_score", "title": "Daily"},
                    "yesterday": {"field": "yesterday_score", "title": "Today's"},
                    "last_week": {"field": "last_week_score", "title": "This Week's"}}
 

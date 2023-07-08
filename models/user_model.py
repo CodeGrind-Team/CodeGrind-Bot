@@ -18,7 +18,7 @@ class Scores(BaseModel):
     start_of_week_total_score: Optional[int]
     start_of_day_total_score: Optional[int]
 
-    today_score: Optional[int] = 0
+    day_score: Optional[int] = 0
     week_score: Optional[int] = 0
 
     yesterday_score: Optional[int] = 0
@@ -29,7 +29,7 @@ class Submissions(BaseModel):
     easy: int
     medium: int
     hard: int
-    total_score: int
+    total_score: Optional[int]
 
 
 class History(BaseModel):

@@ -57,21 +57,17 @@ async def send_daily_question_and_update_stats(force_update: bool = False, force
         "file: utils/message_scheduler.py ~ send_daily_question_and_update_stats ~ run")
 
     while not client.is_closed():
-        now = datetime.utcnow()
-
         if not force_update:
             await wait_until_next_half_hour()
-
-            # daily changes at midnight UTC
-            daily_reset = now.hour == 0 and now.minute == 0
-            weekly_reset = now.weekday(
-            ) == 0 and now.hour == 0 and now.minute == 0
-
         else:
-            # for debugging purposes
-            daily_reset = force_daily_reset
-            weekly_reset = force_weekly_reset
             force_update = False
+
+        now = datetime.utcnow()
+        # for debugging purposes
+        daily_reset = (now.hour == 0 and now.minute == 0) or force_daily_reset
+        weekly_reset = (now.weekday() == 0 and now.hour ==
+                        0 and now.minute == 0) or force_weekly_reset
+        force_update = False
 
         async for user in User.all():
             await update_stats(user, now, daily_reset, weekly_reset)
