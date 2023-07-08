@@ -2,7 +2,6 @@ import asyncio
 from datetime import datetime, timedelta
 
 import discord
-from beanie.odm.operators.update.general import Set
 
 from bot_globals import client, logger
 from embeds.questions_embeds import daily_question_embed

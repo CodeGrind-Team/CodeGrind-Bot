@@ -8,7 +8,7 @@ from pydantic import BaseModel, Field
 class DisplayInformation(BaseModel):
     server_id: Indexed(int)
     name: str
-    hyperlink: Optional[bool] = True
+    url: Optional[bool] = True
 
 
 class Scores(BaseModel):

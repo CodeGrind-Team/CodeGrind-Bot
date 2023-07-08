@@ -9,7 +9,7 @@ def help_embed(is_admin: bool = False) -> discord.Embed:
 
     embed.add_field(
         name="Add your account to the Leaderboard",
-        value="Use `/add <leetcode_username> <include_hyperlink>` - provide your LeetCode username and write 'yes' or 'no' if you want a hyperlink to your LeetCode account to be included on the leaderboard.",
+        value="Use `/add <leetcode_username> <include_url>` - provide your LeetCode username and write 'yes' or 'no' if you want a url to your LeetCode account to be included on the leaderboard.",
         inline=False)
 
     embed.add_field(

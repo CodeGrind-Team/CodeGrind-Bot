@@ -8,13 +8,15 @@ from beanie.odm.operators.update.array import AddToSet, Pull
 from discord.ext import commands
 
 from bot_globals import calculate_scores, logger
-from embeds.users_embeds import (account_not_found_embed, account_removed_embed,
-                                 connect_account_instructions_embed, profile_added_embed,
+from embeds.users_embeds import (account_not_found_embed,
+                                 account_removed_embed,
+                                 connect_account_instructions_embed,
+                                 profile_added_embed,
                                  synced_existing_user_embed,
                                  user_already_added_in_server_embed)
-from models.projections import IdProjection, SubmissionsProjection
+from models.projections import IdProjection
 from models.server_model import Server
-from models.user_model import DisplayInformation, Submissions, User, Scores
+from models.user_model import DisplayInformation, Scores, Submissions, User
 from utils.middleware import ensure_server_document
 from utils.questions import get_problems_solved_and_rank
 
@@ -28,14 +30,14 @@ class Users(commands.Cog):
         description="Adds a user to the leaderboard. Answer with 'yes' to link your LeetCode profile to the leaderboard"
     )
     @ensure_server_document
-    async def add(self, interaction: discord.Interaction, leetcode_username: str, include_hyperlink: str = "yes", displayed_name: str | None = None) -> None:
+    async def add(self, interaction: discord.Interaction, leetcode_username: str, include_url: str = "yes", displayed_name: str | None = None) -> None:
         logger.info(
-            'file: cogs/users.py ~ add ~ run ~ leetcode_username: %s, include_hyperlink: %s, displayed_name: %s', leetcode_username, include_hyperlink, displayed_name)
+            'file: cogs/users.py ~ add ~ run ~ leetcode_username: %s, include_url: %s, displayed_name: %s', leetcode_username, include_url, displayed_name)
 
         if not interaction.guild:
             return
 
-        hyperlink_bool = include_hyperlink.lower() in ("yes", "true", "t", "1")
+        url_bool = include_url.lower() in ("yes", "true", "t", "1")
         if displayed_name is None:
             displayed_name = interaction.user.name
 
@@ -49,7 +51,7 @@ class Users(commands.Cog):
             return
 
         display_information = DisplayInformation(
-            server_id=server_id, name=displayed_name, hyperlink=hyperlink_bool)
+            server_id=server_id, name=displayed_name, url=url_bool)
 
         user_exists = await User.find_one(User.id == user_id).project(IdProjection)
 

@@ -2,11 +2,13 @@ import discord
 from discord.ext import commands
 
 from bot_globals import logger
+from embeds.channels_embeds import (
+    channel_receiving_all_notification_types_embed,
+    channel_receiving_no_notification_types_embed,
+    set_channels_instructions_embed)
 from models.server_model import Server
-from utils.io_handling import read_file, write_file
 from utils.middleware import admins_only, ensure_server_document
 from utils.views import ChannelsSelect
-from embeds.channels_embeds import channel_receiving_all_notification_types_embed, channel_receiving_no_notification_types_embed, set_channels_instructions_embed
 
 
 class Channels(commands.GroupCog, name="notifychannel"):

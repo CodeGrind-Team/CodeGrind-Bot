@@ -29,7 +29,7 @@ class Server(Document):
     id: int
     users: Optional[List[Link[User]]] = []
     last_updated: datetime = Field(default_factory=datetime.utcnow)
-    timezone: Optional[str] = "UCT"
+    timezone: Optional[str] = "UTC"
     channels: Optional[Channel] = Field(default_factory=Channel)
     rankings: Optional[List[Rankings]] = []
 

@@ -1,5 +1,3 @@
-from typing import Dict
-
 from collections import Counter
 from datetime import datetime, timedelta
 
@@ -75,7 +73,7 @@ async def display_leaderboard(send_message, server_id, user_id=None, timeframe: 
                 continue
 
             name = display_information.name
-            hyperlink = display_information.hyperlink
+            url = display_information.url
             total_score = get_score(user, timeframe)
 
             if winners_only and (total_score == 0 or place == 4):
@@ -95,7 +93,7 @@ async def display_leaderboard(send_message, server_id, user_id=None, timeframe: 
             wins_text = f"({str(wins)} wins) "
             # wins won't be displayed for alltime timeframe as wins !> 0
             leaderboard.append(
-                f"**{RANK_EMOJI[place] if place in RANK_EMOJI and place != 0 else number_rank} {name_with_link if hyperlink else name}** {wins_text if  wins > 0 else ''}- **{total_score}** pts"
+                f"**{RANK_EMOJI[place] if place in RANK_EMOJI and place != 0 else number_rank} {name_with_link if url else name}** {wins_text if  wins > 0 else ''}- **{total_score}** pts"
             )
 
         title = f"{TIMEFRAME_TITLE[timeframe]['title']} Leaderboard"

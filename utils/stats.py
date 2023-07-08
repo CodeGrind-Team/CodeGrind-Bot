@@ -2,7 +2,7 @@ from datetime import datetime
 
 from beanie.odm.operators.update.array import AddToSet
 from beanie.odm.operators.update.general import Set
-from utils.leaderboards import get_score
+
 from bot_globals import calculate_scores, logger
 from models.server_model import Rankings, Server, UserRank
 from models.user_model import User
@@ -70,21 +70,6 @@ async def update_stats(user: User, now: datetime, daily_reset: bool = False, wee
         hard = submissions_and_rank["submitStatsGlobal"]["acSubmissionNum"]["Hard"]
 
         total_score = calculate_scores(easy, medium, hard)
-
-        # update based on last_updated at
-        # if weekly_reset:
-        #     start_of_last_week_score = next(
-        #         (score.start_of_last_week_score for score in user.scores if score.timezone == server.timezone), total_score)
-        #     last_week_score = total_score - start_of_last_week_score
-
-        #     await User.find_one(User.id == user.id, User.scores.timezone == server.timezone).update(Set({"scores.$.start_of_week_score": last_week_score}))
-
-        # if daily_reset:
-        #     start_of_week_score = next(
-        #         (score.start_of_week_score for score in user.scores if score.timezone == server.timezone), total_score)
-        #     yesterday_score = total_score - start_of_week_score
-
-        #     await User.find_one(User.id == user.id, User.scores.timezone == server.timezone).update(Set({"scores.$.yesterday_score": yesterday_score}))
 
         # Week score
         # TODO: add projection
