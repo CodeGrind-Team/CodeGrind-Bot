@@ -32,7 +32,7 @@ def daily_question_embed() -> discord.Embed:
     }
 
     try:
-        response = requests.post(url, json=data, headers=headers, timeout=5)
+        response = requests.post(url, json=data, headers=headers, timeout=10)
 
     except Exception as e:
         logger.exception(

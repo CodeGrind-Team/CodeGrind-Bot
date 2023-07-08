@@ -1,3 +1,6 @@
+from typing import Dict
+
+from collections import Counter
 from datetime import datetime, timedelta
 
 import discord
@@ -49,6 +52,9 @@ async def display_leaderboard(send_message, server_id, user_id=None, timeframe: 
     users = sorted(server.users,
                    key=lambda user: get_score(user, timeframe), reverse=True)
 
+    user_to_wins = Counter(
+        rankings.winner for rankings in server.rankings if rankings.timeframe == timeframe)
+
     pages = []
     page_count = -(-len(users)//users_per_page)
 
@@ -84,15 +90,7 @@ async def display_leaderboard(send_message, server_id, user_id=None, timeframe: 
             number_rank = f"{place}\."
             name_with_link = f"[{name}]({profile_link})"
 
-            wins = 0
-
-            # if timeframe == "daily":
-            #     wins = sum(
-            #         rank == 1 for rank in stats['daily_rankings'].values())
-
-            # elif timeframe == "weekly":
-            #     wins = sum(
-            #         rank == 1 for rank in stats['weekly_rankings'].values())
+            wins = user_to_wins[user.id]
 
             wins_text = f"({str(wins)} wins) "
             # wins won't be displayed for alltime timeframe as wins !> 0

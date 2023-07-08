@@ -45,7 +45,7 @@ class Questions(commands.Cog):
             return
 
         response = requests.get(
-            "https://leetcode.com/api/problems/all/", timeout=5)
+            "https://leetcode.com/api/problems/all/", timeout=10)
 
         if response.status_code != 200:
             await interaction.response.send_message(

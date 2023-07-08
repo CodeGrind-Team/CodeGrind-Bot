@@ -53,31 +53,38 @@ async def send_daily_question(server: Server) -> None:
         "file: utils/message_scheduler.py ~ send_daily ~ all daily questions sent to server ID: %s", server.id)
 
 
-async def send_daily_question_and_update_stats() -> None:
+async def send_daily_question_and_update_stats(force_update: bool = False, force_daily_reset: bool = False, force_weekly_reset: bool = False) -> None:
     logger.info(
         "file: utils/message_scheduler.py ~ send_daily_question_and_update_stats ~ run")
 
     while not client.is_closed():
-
         now = datetime.utcnow()
 
-        # daily changes at midnight UTC
-        daily_reset = now.hour == 0 and now.minute == 0
-        weekly_reset = now.weekday(
-        ) == 0 and now.hour == 0 and now.minute == 0
+        if not force_update:
+            await wait_until_next_half_hour()
+
+            # daily changes at midnight UTC
+            daily_reset = now.hour == 0 and now.minute == 0
+            weekly_reset = now.weekday(
+            ) == 0 and now.hour == 0 and now.minute == 0
+
+        else:
+            # for debugging purposes
+            daily_reset = force_daily_reset
+            weekly_reset = force_weekly_reset
+            force_update = False
 
         async for user in User.all():
             await update_stats(user, now, daily_reset, weekly_reset)
 
         async for server in Server.all(fetch_links=True):
-            await update_rankings(server, now, "daily")
 
             if daily_reset:
+                await update_rankings(server, now, "daily")
                 await send_leaderboard_winners(server, "yesterday")
 
-            await update_rankings(server, now, "weekly")
-
             if weekly_reset:
+                await update_rankings(server, now, "weekly")
                 await send_leaderboard_winners(server, "last_week")
 
             server.last_updated = now
@@ -86,5 +93,3 @@ async def send_daily_question_and_update_stats() -> None:
         if daily_reset:
             async for server in Server.all(fetch_links=True):
                 await send_daily_question(server)
-
-        await wait_until_next_half_hour()

@@ -41,7 +41,7 @@ def get_problems_solved_and_rank(leetcode_username: str) -> dict[str, Any] | Non
 
     try:
         response = requests.post(
-            url, json=data, headers=headers, timeout=5)
+            url, json=data, headers=headers, timeout=10)
     except Exception as e:
         logger.exception(
             "file: utils/questions.py ~ get_problems_solved_and_rank ~ exception: %s", e)
