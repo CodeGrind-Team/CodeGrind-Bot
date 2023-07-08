@@ -5,7 +5,7 @@ from beanie.odm.operators.update.general import Set
 
 from bot_globals import calculate_scores, logger
 from models.server_model import Rankings, Server, UserRank
-from models.user_model import User
+from models.user_model import User, History, Submissions
 from utils.leaderboards import get_score
 from utils.questions import get_problems_solved_and_rank
 
@@ -50,59 +50,57 @@ async def update_rankings(server: Server, now: datetime, timeframe: str) -> None
         'file: cogs/stats.py ~ update_rankings ~ rankings updated successfully for %s timeframe', timeframe)
 
 
-async def update_stats(user: User, now: datetime, daily_reset: bool = False, weekly_reset: bool = False) -> None:
-    logger.info("file: cogs/stats.py ~ update_stats ~ run ~ now: %s | daily_reset: %s | weekly_reset %s",
-                now.strftime("%d/%m/%Y, %H:%M:%S"), daily_reset, weekly_reset)
+async def update_stats(user: User, now: datetime, daily_reset: bool = False) -> None:
+    logger.info("file: cogs/stats.py ~ update_stats ~ run ~ now: %s | daily_reset: %s",
+                now, daily_reset)
 
-    async for user in User.all():
-        leetcode_username = user.leetcode_username
+    leetcode_username = user.leetcode_username
 
-        submissions_and_rank = get_problems_solved_and_rank(
-            leetcode_username)
+    submissions_and_rank = get_problems_solved_and_rank(
+        leetcode_username)
 
-        if submissions_and_rank is None:
-            continue
+    if submissions_and_rank is None:
+        return
 
-        rank = submissions_and_rank["profile"]["ranking"]
+    rank = submissions_and_rank["profile"]["ranking"]
 
-        easy = submissions_and_rank["submitStatsGlobal"]["acSubmissionNum"]["Easy"]
-        medium = submissions_and_rank["submitStatsGlobal"]["acSubmissionNum"]["Medium"]
-        hard = submissions_and_rank["submitStatsGlobal"]["acSubmissionNum"]["Hard"]
+    easy = submissions_and_rank["submitStatsGlobal"]["acSubmissionNum"]["Easy"]
+    medium = submissions_and_rank["submitStatsGlobal"]["acSubmissionNum"]["Medium"]
+    hard = submissions_and_rank["submitStatsGlobal"]["acSubmissionNum"]["Hard"]
 
-        total_score = calculate_scores(easy, medium, hard)
+    total_score = calculate_scores(easy, medium, hard)
 
-        # Week score
-        # TODO: add projection
-        user = await User.find_one(User.id == user.id)
-        start_of_week_total_score = get_score(user, "start_of_week_total")
+    # Week score
+    # TODO: add projection
+    user = await User.find_one(User.id == user.id)
+    start_of_week_total_score = get_score(user, "start_of_week_total")
 
-        week_score = total_score - start_of_week_total_score
+    week_score = total_score - start_of_week_total_score
 
-        await User.find_one(User.id == user.id).update(Set({User.scores.week_score: week_score}))
+    await User.find_one(User.id == user.id).update(Set({User.scores.week_score: week_score}))
 
-        # Day score
-        # TODO: add projection
-        user = await User.find_one(User.id == user.id)
-        start_of_day_total_score = get_score(user, "start_of_day_total")
+    # Day score
+    # TODO: add projection
+    user = await User.find_one(User.id == user.id)
+    start_of_day_total_score = get_score(user, "start_of_day_total")
 
-        day_score = total_score - start_of_day_total_score
+    day_score = total_score - start_of_day_total_score
 
-        await User.find_one(User.id == user.id).update(Set({User.scores.today_score: day_score}))
+    await User.find_one(User.id == user.id).update(Set({User.scores.today_score: day_score}))
 
-        await User.find_one(User.id == user.id).update(Set({User.scores.last_updated: now}))
+    await User.find_one(User.id == user.id).update(Set({User.scores.last_updated: now}))
 
-        user = await User.find_one(User.id == user.id)
-        user.rank = rank
-        user.submissions.easy = easy
-        user.submissions.medium = medium
-        user.submissions.hard = hard
-        user.submissions.total_score = total_score
-        await user.save_changes()
+    user = await User.find_one(User.id == user.id)
+    user.rank = rank
+    user.submissions.easy = easy
+    user.submissions.medium = medium
+    user.submissions.hard = hard
+    user.submissions.total_score = total_score
 
-        # TODO: Add to history
-        # if str(now.strftime("%d/%m/%Y")) not in stats["history"]:
-        #     data["users"][discord_id]["history"][str(now.strftime("%d/%m/%Y"))] = {
-        #         "easy": easy, "medium": medium, "hard": hard}
+    user.history.append(History(timestamp=now, submissions=Submissions(
+        easy=easy, medium=medium, hard=hard, total_score=total_score)))
 
-        logger.info(
-            'file: cogs/stats.py ~ update_stats ~ user stats updated successfully: %s', leetcode_username)
+    await user.save_changes()
+
+    logger.info(
+        'file: cogs/stats.py ~ update_stats ~ user stats updated successfully: %s', leetcode_username)

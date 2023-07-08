@@ -121,8 +121,8 @@ async def display_leaderboard(send_message, server_id, user_id=None, timeframe: 
 
 
 async def send_leaderboard_winners(server: Server, timeframe: str) -> None:
-    for channel in server.channels:
-        channel = client.get_channel(channel.id)
+    for channel_id in server.channels.winners:
+        channel = client.get_channel(channel_id)
 
         if not isinstance(channel, discord.TextChannel):
             continue
