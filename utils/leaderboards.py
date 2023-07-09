@@ -1,164 +1,120 @@
-import os
+from collections import Counter
 from datetime import datetime, timedelta
 
 import discord
 
-from bot_globals import (DIFFICULTY_SCORE, RANK_EMOJI, TIMEFRAME_TITLE,
-                         TIMEZONE, client, logger)
-from utils.io_handling import read_file
-
-class Pagination(discord.ui.View):
-    def __init__(self, user_id: int | None = None, pages: list[discord.Embed] | None = None, page: int = 0):
-        super().__init__()
-        self.page = page
-        self.user_id = user_id
-
-        if pages is None:
-            self.pages = []
-        else:
-            self.pages = pages
-
-        self.max_page = len(self.pages) - 1
-
-        if self.page == 0:
-            self.previous.style = discord.ButtonStyle.gray
-            self.previous.disabled = True
-
-        if self.page == self.max_page:
-            self.next.style = discord.ButtonStyle.gray
-            self.next.disabled = True
-
-    @discord.ui.button(label='<', style=discord.ButtonStyle.blurple)
-    async def previous(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
-        if self.user_id is None or interaction.user.id != self.user_id or interaction.message is None:
-            await interaction.response.defer()
-            return
-
-        if self.page - 1 >= 0:
-            self.page -= 1
-            await interaction.message.edit(embed=self.pages[self.page])
-
-            if self.page == 0:
-                button.style = discord.ButtonStyle.gray
-                button.disabled = True
-
-        # if self.page < self.max_page:
-        self.next.style = discord.ButtonStyle.blurple
-        self.next.disabled = False
-
-        await interaction.response.edit_message(view=self)
-
-    @discord.ui.button(label='>', style=discord.ButtonStyle.blurple)
-    async def next(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
-        if self.user_id is None or interaction.user.id != self.user_id or interaction.message is None:
-            await interaction.response.defer()
-            return
-
-        if self.page + 1 <= self.max_page:
-            self.page += 1
-            await interaction.message.edit(embed=self.pages[self.page])
-
-            if self.page == self.max_page:
-                button.style = discord.ButtonStyle.gray
-                button.disabled = True
-
-        self.previous.style = discord.ButtonStyle.blurple
-        self.previous.disabled = False
-
-        await interaction.response.edit_message(view=self)
-
-    @discord.ui.button(label='🗑️', style=discord.ButtonStyle.red)
-    async def delete(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
-        if interaction.user.id != self.user_id or interaction.message is None:
-            await interaction.response.defer()
-            return
-
-        await interaction.message.delete()
+from bot_globals import RANK_EMOJI, TIMEFRAME_TITLE, client, logger
+from embeds.leaderboards_embeds import (empty_leaderboard_embed,
+                                        leaderboard_embed)
+from models.server_model import Server
+from models.user_model import User
+from utils.views import Pagination
 
 
-async def display_leaderboard(send_message, server_id, user_id=None, timeframe: str = "alltime", page: int = 1, winners_only: bool = False, users_per_page: int = 10):
+def get_score(user: User, timeframe: str | None = None) -> int:
+    if timeframe == "alltime":
+        return user.submissions.total_score
+
+    else:
+        if timeframe == "daily":
+            return user.scores.day_score
+
+        elif timeframe == "weekly":
+            return user.scores.week_score
+
+        elif timeframe == "yesterday":
+            return user.scores.yesterday_score
+
+        elif timeframe == "last_week":
+            return user.scores.last_week_score
+
+        elif timeframe == "start_of_week_total":
+            start_of_week_total_score = user.scores.start_of_week_total_score
+            return start_of_week_total_score if start_of_week_total_score is not None else user.submissions.total_score
+
+        elif timeframe == "start_of_day_total":
+            start_of_day_total_score = user.scores.start_of_day_total_score
+            return start_of_day_total_score if start_of_day_total_score is not None else user.submissions.total_score
+
+
+async def display_leaderboard(send_message, server_id, user_id=None, timeframe: str = "alltime", page: int = 1, winners_only: bool = False, users_per_page: int = 10) -> None:
     logger.info(
         "file: cogs/leaderboards.py ~ display_leaderboard ~ run ~ guild id: %s", server_id)
 
-    if not os.path.exists(f"data/{server_id}_leetcode_stats.json"):
-        embed = discord.Embed(
-            title=f"{TIMEFRAME_TITLE[timeframe]['title']} Leaderboard",
-            description="No one has added their LeetCode username yet.",
-            color=discord.Color.red())
+    # TODO: Project
+    server = await Server.find_one(Server.id == server_id, fetch_links=True)
+
+    if not server:
+        embed = empty_leaderboard_embed()
         await send_message(embed=embed)
         return
 
-    data = await read_file(f"data/{server_id}_leetcode_stats.json")
+    users = sorted(server.users,
+                   key=lambda user: get_score(user, timeframe), reverse=True)
 
-    last_updated = data["last_updated"]
-
-    sorted_data = sorted(data["users"].items(),
-                         key=lambda x: x[1][TIMEFRAME_TITLE[timeframe]['field']],
-                         reverse=True)
-
-    if winners_only:
-        sorted_data = sorted_data[:3]
+    user_to_wins = Counter(
+        rankings.winner for rankings in server.rankings if rankings.timeframe == timeframe)
 
     pages = []
-    page_count = -(-len(sorted_data)//users_per_page)
+    page_count = -(-len(users)//users_per_page)
 
-    for i in range(page_count):
+    place = 0
+    prev_score = float("-inf")
+    reached_end_of_winners = False
+
+    for page_i in range(page_count):
         leaderboard = []
 
-        for j, (
-            _,
-            stats,
-        ) in enumerate(sorted_data[i * users_per_page: i * users_per_page + users_per_page], start=i * users_per_page + 1):
-            leetcode_username = stats["leetcode_username"]
+        for user in users[page_i * users_per_page: page_i * users_per_page + users_per_page]:
+            profile_link = f"https://leetcode.com/{user.leetcode_username}"
 
-            profile_link = f"https://leetcode.com/{leetcode_username}"
-            # Get the discord_username from the stats data in the JSON file
-            discord_username = stats["discord_username"]
-            # Get the hyperlink from the stats data in the JSON file
-            hyperlink = stats["hyperlink"]
-            if discord_username:
-                number_rank = f"{j}\."
-                discord_username_with_link = f"[{discord_username}]({profile_link})"
+            display_information = next(
+                (di for di in user.display_information if di.server_id == server_id), None)
 
-                wins = 0
+            if not display_information:
+                continue
 
-                if timeframe == "daily":
-                    wins = sum(
-                        rank == 1 for rank in stats['daily_rankings'].values())
+            name = display_information.name
+            url = display_information.url
+            total_score = get_score(user, timeframe)
 
-                elif timeframe == "weekly":
-                    wins = sum(
-                        rank == 1 for rank in stats['weekly_rankings'].values())
+            if winners_only and (total_score == 0 or place == 4):
+                reached_end_of_winners = True
+                break
 
-                wins_text = f"({str(wins)} wins) "
-                # wins won't be displayed for alltime timeframe as wins !> 0
-                leaderboard.append(
-                    f"**{RANK_EMOJI[j] if j in RANK_EMOJI else number_rank} {discord_username_with_link if hyperlink else discord_username}** {wins_text if  wins > 0 else ''}- **{stats[TIMEFRAME_TITLE[timeframe]['field']]}** pts"
-                )
+            if total_score != prev_score:
+                place += 1
+
+            prev_score = total_score
+
+            number_rank = f"{place}\."
+            name_with_link = f"[{name}]({profile_link})"
+
+            wins = user_to_wins[user.id]
+
+            wins_text = f"({str(wins)} wins) "
+            # wins won't be displayed for alltime timeframe as wins !> 0
+            leaderboard.append(
+                f"**{RANK_EMOJI[place] if place in RANK_EMOJI and total_score != 0 else number_rank} {name_with_link if url else name}** {wins_text if  wins > 0 else ''}- **{total_score}** pts"
+            )
 
         title = f"{TIMEFRAME_TITLE[timeframe]['title']} Leaderboard"
         if winners_only:
             if timeframe == "yesterday":
-                title = f"{TIMEFRAME_TITLE[timeframe]['title']} Winners ({(datetime.now(TIMEZONE) - timedelta(days=1)).strftime('%d/%m/%Y')})"
+                title = f"{TIMEFRAME_TITLE[timeframe]['title']} Winners ({(datetime.utcnow() - timedelta(days=1)).strftime('%d/%m/%Y')})"
 
             elif timeframe == "last_week":
-                title = f"{TIMEFRAME_TITLE[timeframe]['title']} Winners ({(datetime.now(TIMEZONE) - timedelta(days=7)).strftime('%d/%m/%Y')} - {(datetime.now(TIMEZONE) - timedelta(days=1)).strftime('%d/%m/%Y')})"
+                title = f"{TIMEFRAME_TITLE[timeframe]['title']} Winners ({(datetime.utcnow() - timedelta(days=7)).strftime('%d/%m/%Y')} - {(datetime.utcnow() - timedelta(days=1)).strftime('%d/%m/%Y')})"
 
-        embed = discord.Embed(title=title,
-                              color=discord.Color.yellow())
-
-        embed.description = "\n".join(leaderboard)
-        # Score Methodology: Easy: 1, Medium: 3, Hard: 7
-        embed.set_footer(
-            text=f"Easy: {DIFFICULTY_SCORE['easy']} point, Medium: {DIFFICULTY_SCORE['medium']} points, Hard: {DIFFICULTY_SCORE['hard']} points\nUpdated on {last_updated}\nPage {i + 1}/{page_count}")
-        # Score Equation: Easy * 1 + Medium * 3 + Hard * 7 = Total Score
+        embed = leaderboard_embed(
+            server, page_i, page_count, title, leaderboard)
         pages.append(embed)
 
+        if reached_end_of_winners:
+            break
+
     if len(pages) == 0:
-        title = f"{TIMEFRAME_TITLE[timeframe]['title']} Leaderboard"
-        embed = discord.Embed(title=title,
-                              color=discord.Color.yellow())
-        embed.description = "No accounts have been added to the leaderboard"
+        embed = empty_leaderboard_embed()
         pages.append(embed)
 
     page = page - 1 if page > 0 else 0
@@ -166,21 +122,14 @@ async def display_leaderboard(send_message, server_id, user_id=None, timeframe: 
     await send_message(embed=pages[page], view=view)
 
 
-async def send_leaderboard_winners(timeframe: str) -> None:
-    for filename in os.listdir("./data"):
-        if filename.endswith(".json"):
-            server_id = int(filename.split("_")[0])
+async def send_leaderboard_winners(server: Server, timeframe: str) -> None:
+    for channel_id in server.channels.winners:
+        channel = client.get_channel(channel_id)
 
-            data = await read_file(f"data/{server_id}_leetcode_stats.json")
+        if not isinstance(channel, discord.TextChannel):
+            continue
 
-            if "channels" in data:
-                for channel_id in data["channels"]:
-                    channel = client.get_channel(channel_id)
-
-                    if not isinstance(channel, discord.TextChannel):
-                        continue
-
-                    await display_leaderboard(channel.send, server_id, timeframe=timeframe, winners_only=True, users_per_page=3)
+        await display_leaderboard(channel.send, server.id, timeframe=timeframe, winners_only=True)
 
     logger.info(
         "file: utils/leaderboards.py ~ send_leaderboard_winners ~ %s winners leaderboard sent to channels", timeframe)

@@ -5,10 +5,10 @@ from datetime import datetime
 
 from dotenv import load_dotenv
 
-from bot_globals import TIMEZONE, client, logger
-from utils.leaderboards import send_leaderboard_winners
+from bot_globals import client, logger
+from database import init_mongodb_conn
 from utils.message_scheduler import send_daily_question_and_update_stats
-from utils.stats import update_stats_and_rankings
+from utils.ratings import read_ratings_txt
 
 load_dotenv()
 
@@ -21,27 +21,17 @@ async def on_ready() -> None:
     server_ids = [guild.id for guild in client.guilds]
     logger.info('file: main.py ~ server IDs: %s', server_ids)
 
-    lock = asyncio.Lock()
-
-    daily_reset = os.environ["DAILY_RESET"] == "True"
-    weekly_reset = os.environ["WEEKLY_RESET"] == "True"
-
-    async with lock:
-        if os.environ["UPDATE_STATS_ON_START"] == "True":
-            await update_stats_and_rankings(client, datetime.now(TIMEZONE), daily_reset, weekly_reset)
-
-    async with lock:
-        if daily_reset:
-            await send_leaderboard_winners("yesterday")
-
-        if weekly_reset:
-            await send_leaderboard_winners("last_week")
-
     try:
         synced = await client.tree.sync()
         logger.info("file: main.py ~ synced %s commands", len(synced))
 
-        await send_daily_question_and_update_stats()
+        if os.environ["UPDATE_STATS_ON_START"] == "True":
+            daily_reset = os.environ["DAILY_RESET"] == "True"
+            weekly_reset = os.environ["WEEKLY_RESET"] == "True"
+
+            await send_daily_question_and_update_stats(True, daily_reset, weekly_reset)
+        else:
+            await send_daily_question_and_update_stats()
 
     except Exception as e:
         logger.exception("file: main.py ~ on_ready ~ exception: %s", e)
@@ -56,6 +46,8 @@ async def load_extensions() -> None:
 
 async def main(token: str) -> None:
     async with client:
+        await read_ratings_txt()
+        await init_mongodb_conn()
         await load_extensions()
         await client.start(token)
 
