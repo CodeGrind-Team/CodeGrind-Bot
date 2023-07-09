@@ -5,6 +5,7 @@ import string
 import discord
 from beanie.odm.fields import WriteRules
 from beanie.odm.operators.update.array import AddToSet, Pull
+from beanie.odm.operators.update.general import Set
 from discord.ext import commands
 
 from bot_globals import calculate_scores, logger
@@ -13,7 +14,7 @@ from embeds.users_embeds import (account_not_found_embed,
                                  connect_account_instructions_embed,
                                  profile_added_embed,
                                  synced_existing_user_embed,
-                                 user_already_added_in_server_embed)
+                                 user_already_added_in_server_embed, profile_details_updated_embed, no_changes_provided_embed)
 from models.projections import IdProjection
 from models.server_model import Server
 from models.user_model import DisplayInformation, Scores, Submissions, User
@@ -30,16 +31,16 @@ class Users(commands.Cog):
         description="Adds a user to the leaderboard. Answer with 'yes' to link your LeetCode profile to the leaderboard"
     )
     @ensure_server_document
-    async def add(self, interaction: discord.Interaction, leetcode_username: str, include_url: str = "yes", displayed_name: str | None = None) -> None:
+    async def add(self, interaction: discord.Interaction, leetcode_username: str, include_url: str = "yes", name: str | None = None) -> None:
         logger.info(
-            'file: cogs/users.py ~ add ~ run ~ leetcode_username: %s, include_url: %s, displayed_name: %s', leetcode_username, include_url, displayed_name)
+            'file: cogs/users.py ~ add ~ run ~ leetcode_username: %s, include_url: %s, name: %s', leetcode_username, include_url, name)
 
         if not interaction.guild:
             return
 
         url_bool = include_url.lower() in ("yes", "true", "t", "1")
-        if displayed_name is None:
-            displayed_name = interaction.user.name
+        if name is None:
+            name = interaction.user.name
 
         server_id = interaction.guild.id
         user_id = interaction.user.id
@@ -51,7 +52,7 @@ class Users(commands.Cog):
             return
 
         display_information = DisplayInformation(
-            server_id=server_id, name=displayed_name, url=url_bool)
+            server_id=server_id, name=name, url=url_bool)
 
         user_exists = await User.find_one(User.id == user_id).project(IdProjection)
 
@@ -147,6 +148,50 @@ class Users(commands.Cog):
 
                 embed = profile_added_embed(leetcode_username, added=False)
                 await interaction.edit_original_response(embed=embed)
+
+    @discord.app_commands.command(name="update", description="Update your profile on this server's leaderboards")
+    @ensure_server_document
+    async def update(self, interaction: discord.Interaction, include_url: str | None = None, name: str | None = None) -> None:
+        logger.info(
+            'file: cogs/users.py ~ update ~ run ~ include_url: %s, name: %s', include_url, name)
+
+        if not interaction.guild:
+            return
+
+        server_id = interaction.guild.id
+        user_id = interaction.user.id
+
+        server_exists = await Server.find_one(Server.id == server_id).project(IdProjection)
+
+        if not server_exists:
+            await interaction.response.send_message(contents="An error has occured! Please try again.", ephemeral=True)
+            return
+
+        user = await User.find_one(User.id == user_id)
+
+        if user:
+            if include_url is None and name is None:
+                embed = no_changes_provided_embed()
+                await interaction.response.send_message(embed=embed, ephemeral=True)
+                return
+
+            if include_url is not None:
+                url_bool = include_url.lower() in ("yes", "true", "t", "1")
+                await User.find_one(User.id == user.id, User.display_information.server_id == server_id).update(Set({"display_information.$.url": url_bool}))
+
+            if name is not None:
+                # TODO: Add validation
+                await User.find_one(User.id == user.id, User.display_information.server_id == server_id).update(Set({"display_information.$.name": name}))
+
+            embed = profile_details_updated_embed()
+            await interaction.response.send_message(embed=embed, ephemeral=True)
+            return
+
+        logger.info(
+            'file: cogs/users.py ~ remove ~ profile not found in this server ~ user_id: %s', user_id)
+
+        embed = account_not_found_embed()
+        await interaction.response.send_message(embed=embed, ephemeral=True)
 
     @discord.app_commands.command(name="remove", description="Remove your profile from this server's leaderboard")
     @ensure_server_document

@@ -68,3 +68,19 @@ def account_not_found_embed() -> discord.Embed:
     embed.description = "You haven't added your LeetCode account to this server!\nUse `/add <leetcode_username>`"
 
     return embed
+
+
+def profile_details_updated_embed() -> discord.Embed:
+    embed = discord.Embed(
+        title="Your profile details for this server have been updated successfully", color=discord.Color.green())
+
+    return embed
+
+
+def no_changes_provided_embed() -> discord.Embed:
+    embed = discord.Embed(
+        title="No changes were provided", color=discord.Color.red())
+
+    embed.description = "You haven't provided a new name or whether you want to change if the leaderboard should include a hyperlink to your LeetCode profile"
+
+    return embed
