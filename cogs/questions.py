@@ -5,7 +5,7 @@ import requests
 from discord.ext import commands
 
 from bot_globals import logger
-from embeds.questions_embeds import daily_question_embed, question_embed, question_rating_embed
+from embeds.questions_embeds import daily_question_embed, question_embed, question_rating_embed, question_has_no_rating_embed
 from utils.ratings import get_rating_data
 
 
@@ -17,10 +17,9 @@ class Questions(commands.Cog):
     async def daily(self, interaction: discord.Interaction) -> None:
         logger.info("file: cogs/questions.py ~ get_daily ~ run")
 
-        embed = await daily_question_embed()
+        embed = daily_question_embed()
 
         await interaction.response.send_message(embed=embed)
-        return
 
     @discord.app_commands.command(name="rating", description="Returns the Zerotrac rating of the problem")
     async def rating(self, interaction: discord.Interaction, question_id_or_title: str) -> None:
@@ -33,11 +32,14 @@ class Questions(commands.Cog):
         if rating_data is not None:
             rating_text = f"||{int(rating_data['rating'])}||"
 
-        if rating_data is not None:
             embed = question_rating_embed(
                 rating_data["question_name"], rating_text)
 
             await interaction.response.send_message(embed=embed)
+            return
+
+        embed = question_has_no_rating_embed()
+        await interaction.response.send_message(embed=embed)
 
     @discord.app_commands.command(
         name="question",

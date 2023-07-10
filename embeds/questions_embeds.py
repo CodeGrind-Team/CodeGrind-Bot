@@ -97,3 +97,12 @@ def question_rating_embed(question_title: str, rating_text: str) -> discord.Embe
     embed.add_field(name="Rating", value=rating_text, inline=False)
 
     return embed
+
+
+def question_has_no_rating_embed() -> discord.Embed:
+    embed = discord.Embed(title="Zerotrac Rating",
+                          color=discord.Color.magenta())
+
+    embed.description = "This question doesn't have a Zerotrac rating"
+
+    return embed

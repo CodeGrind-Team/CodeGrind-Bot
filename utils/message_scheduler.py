@@ -28,7 +28,7 @@ async def wait_until_next_half_hour() -> None:
 
 async def send_daily_question(server: Server) -> None:
     logger.info("file: utils/message_scheduler.py ~ send_daily ~ run")
-    embed = await daily_question_embed()
+    embed = daily_question_embed()
 
     for channel_id in server.channels.daily_question:
         channel = client.get_channel(channel_id)
