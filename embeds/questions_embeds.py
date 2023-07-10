@@ -57,17 +57,7 @@ def daily_question_embed() -> discord.Embed:
     if rating_data is not None:
         rating_text = f"||{int(rating_data['rating'])}||"
 
-    return daily_problem_successful_embed(link, question_title, rating_text, difficulty)
-
-
-def daily_problem_successful_embed(link: str, question_name: str, difficulty: str) -> discord.Embed:
-    embed = discord.Embed(title=f"Daily Problem: {question_name}",
-                          color=discord.Color.blue())
-    embed.add_field(name="**Difficulty**",
-                    value=f"{difficulty}", inline=True)
-    embed.add_field(name="**Link**", value=f"{link}", inline=False)
-
-    return embed
+    return question_embed(difficulty, question_title, rating_text, link, daily_question=True)
 
 
 def daily_problem_unsuccessful_embed() -> discord.Embed:
@@ -79,7 +69,10 @@ def daily_problem_unsuccessful_embed() -> discord.Embed:
     return embed
 
 
-def question_embed(difficulty: str, question_title: str, rating_text: str, link: str) -> discord.Embed:
+def question_embed(difficulty: str, question_title: str, rating_text: str, link: str, daily_question: bool = False) -> discord.Embed:
+    if daily_question:
+        question_title = "Daily Question: " + question_title
+
     color_dict = {"easy": discord.Color.green(),
                   "medium": discord.Color.orange(),
                   "hard":  discord.Color.red()}
