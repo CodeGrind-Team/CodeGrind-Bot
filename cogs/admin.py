@@ -4,7 +4,7 @@ from beanie.odm.operators.update.general import Set
 from discord.ext import commands
 
 from bot_globals import logger
-from embeds.admin import invalid_timezone_embed, timezone_updated_embed
+from embeds.admin_embeds import invalid_timezone_embed, timezone_updated_embed
 from models.server_model import Server
 from utils.middleware import admins_only, ensure_server_document
 
