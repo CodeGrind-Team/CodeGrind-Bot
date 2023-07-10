@@ -123,7 +123,7 @@ class SaveButton(discord.ui.Button):
             await interaction.response.edit_message(embed=embed, view=None)
 
 
-class ChannelsSelect(discord.ui.View):
+class ChannelsSelectView(discord.ui.View):
     def __init__(self, server_id: int, channel_id: int, channel_name: str, available_types: List[str], adding: bool, *, timeout=180):
         super().__init__(timeout=timeout)
 

@@ -9,7 +9,7 @@ class General(commands.Cog):
     def __init__(self, client: commands.Bot):
         self.client = client
 
-    @discord.app_commands.command(name="help", description="Displays the help menu")
+    @discord.app_commands.command(name="help", description="Help for CodeGrind Bot")
     async def help(self, interaction: discord.Interaction) -> None:
         logger.info("file: cogs/help.py ~ help ~ run")
 

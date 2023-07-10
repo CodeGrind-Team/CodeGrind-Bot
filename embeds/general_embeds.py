@@ -4,54 +4,83 @@ from bot_globals import DIFFICULTY_SCORE
 
 
 def help_embed(is_admin: bool = False) -> discord.Embed:
-    embed = discord.Embed(title="LeetCode Bot Help",
+    embed = discord.Embed(title="CodeGrind Bot Help & Commands", url="https://github.com/Kevin-Roman/LeetCode-Discord-Bot/wiki/Commands",
                           color=discord.Color.blurple())
 
-    embed.add_field(
-        name="Add your account to the Leaderboard",
-        value="Use `/add <leetcode_username> <include_url>` - provide your LeetCode username and write 'yes' or 'no' if you want a url to your LeetCode account to be included on the leaderboard.",
-        inline=False)
+    embed.description = f"""
+## Introduction
+CodeGrind Bot helps you master LeetCode by competing with your friends on daily, weekly and all-time server leaderboards. Simply connect your LeetCode account to this bot and you are ready to go!
 
-    embed.add_field(
-        name="Delete your account from the Leaderboard",
-        value="Use `/delete`",
-        inline=False)
+This bot also provides you commands to get a random LeetCode question, the LeetCode daily question, retrieve the Zerotrac rating of a question, and receive a notification of the LeetCode daily question and the daily/weekly winners leaderboards.
 
-    embed.add_field(
-        name="Display your stats",
-        value="Use `/stats` to display your LeetCode statistics. \nUse `/stats <leetcode_username>` to display the LeetCode statistics of another user.",
-        inline=False)
+## Score calculation
+Each connected user is assigned a score which calculated based on the amount of questions you have solved. 
+Here is how much each question difficulty is worth:
+>    - Easy questions is worth {DIFFICULTY_SCORE['easy']} point
+>    - Medium questions are worth {DIFFICULTY_SCORE['medium']} points
+>    - Hard questions are worth {DIFFICULTY_SCORE['hard']} points
 
-    embed.add_field(
-        name="Display the Leaderboard",
-        value="Use `/leaderboard [timeframe]` - available timeframes: `alltime`, `weekly`, or `daily`. \nNote: the user's daily and weekly scores will only start being calculated after an account is created.",
-        inline=False)
+## Commands
+Please select a category from the dropdown to be shown all the commands related to the selected category.
+"""
 
-    embed.add_field(
-        name="Get the daily LeetCode question",
-        value="Use `/daily`",
-        inline=False)
+    embed.description += """
+## Account
 
-    embed.add_field(
-        name="Get a random LeetCode question",
-        value="Use `/question <difficulty>` - specify the difficulty level of the question such as `easy`, `medium`, or `hard`. Use `random` for a question of any level.",
-        inline=False)
+</add:1115756888185917542>: Adds your LeetCode account onto this server's leaderboards. 
+>    - `leetcode_username`: Your permanent LeetCode username.
+>    - `include_url` _(optional)_: 'yes' or 'no' if you want leaderboards in this server to include a hyperlink to your LeetCode profile or not. Default is 'yes'.
+>    - `name` _(optional)_: Your preferred name to be displayed on the leaderboards in this server.
 
-    embed.add_field(
-        name="Score calculation",
-        value=f"The score is calculated based on the amount of questions you have solved. Easy questions are worth {DIFFICULTY_SCORE['easy']} point, medium questions are worth {DIFFICULTY_SCORE['medium']} points, and hard questions are worth {DIFFICULTY_SCORE['hard']} points.",
-        inline=False)
+</update:1127716432168362004>: Updates your account preferences for this server.
+>    - `include_url` _(optional)_: 'yes' or 'no' if you want leaderboards in this server to include a hyperlink to your LeetCode profile or not. Default is 'yes'.
+>    - `name` _(optional)_: Your preferred name to be displayed on the leaderboards in this server.
+
+</remove:1127663038514876540>: Removes your LeetCode account from this server.
+
+## Leaderboard
+
+</leaderboard daily:1115756888664060015>: Returns today's leaderboard stats which resets at midnight (UTC)
+
+</leaderboard weekly:1115756888664060015>: Returns the week's leaderboard stats which resets on Sunday at midnight (UTC)
+
+</leaderboard alltime:1115756888664060015>: Returns the all-time leaderboard stats
+
+Note: stats for `daily` and `weekly` will only be calculated after an account is created. Any previous questions done that day or that week will not be calculated.
+
+## Statistics
+
+</stats:1115756888664060014>: Returns the statistics of your or someone else's LeetCode account.
+>    - `leetcode_username` _(optional)_: A LeetCode username. Default is your connected LeetCode account.
+
+## Questions
+
+</daily:1115756888185917544>: Returns the LeetCode daily question.
+
+</question:1115756888185917545>: Returns the Zerotrac rating of the given question.
+>    - `difficulty` _(optional)_: A difficulty level ('easy', 'medium' or 'hard'). Default is a 'random' difficulty level.
+
+</rating:1125116535745286185>: Returns a random question of your specified difficulty level.
+>    - `question_id_or_title`: The LeetCode question ID or the question's name/title."""
 
     if is_admin:
-        embed.add_field(
-            name="Admins only: Set daily LeetCode channel",
-            value="Use `/setdailychannel <channel>` to set the channel where the daily question and the daily and weekly leaderboard will be sent to. If no channel is specified, the channel where the command was written in will be used.",
-            inline=False)
+        embed.description += """
+# Admin commands
+These commands are only available to administrators of this server.
+## Settings
 
-        embed.add_field(
-            name="Admins only: Remove daily LeetCode channel",
-            value="Use `/removedailychannel <channel>` to stop daily questions and the daily and weekly leaderboards being sent to the channel. If no channel is specified, the channel where the command was written in will be used.",
-            inline=False)
+</settings timezone:1127663038514876538>: Change the timezone of the server.
+>    - `timezone`: A timezone (case sensitive) from the following list of timeones: https://gist.github.com/heyalexej/8bf688fd67d7199be4a1682b3eec7568 .
+
+## Notifications
+
+</notifychannel enable:1127663038514876541>: Set what notifications the channel receives.
+
+</notifychannel disable:1127663038514876541>: Stop channel from receiving selected notifications.
+
+>    - `channel` _(optional)_: The channel (e.g. "#home-channel"). Default is the channel where the command was ran.
+
+Note: please press the 'save' button twice"""
 
     return embed
 

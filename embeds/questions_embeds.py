@@ -53,7 +53,7 @@ def daily_question_embed() -> discord.Embed:
 
     rating_data = get_rating_data(question_title)
 
-    rating_text = "doesn't exist"
+    rating_text = "Doesn't exist"
     if rating_data is not None:
         rating_text = f"||{int(rating_data['rating'])}||"
 
@@ -101,7 +101,7 @@ def question_rating_embed(question_title: str, rating_text: str) -> discord.Embe
 
 def question_has_no_rating_embed() -> discord.Embed:
     embed = discord.Embed(title="Zerotrac Rating",
-                          color=discord.Color.magenta())
+                          color=discord.Color.red())
 
     embed.description = "This question doesn't have a Zerotrac rating"
 

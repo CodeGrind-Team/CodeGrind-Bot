@@ -8,7 +8,7 @@ from embeds.channels_embeds import (
     set_channels_instructions_embed)
 from models.server_model import Server
 from utils.middleware import admins_only, ensure_server_document
-from utils.views import ChannelsSelect
+from utils.views import ChannelsSelectView
 
 
 class Channels(commands.GroupCog, name="notifychannel"):
@@ -45,7 +45,7 @@ class Channels(commands.GroupCog, name="notifychannel"):
             notification_type[0] for notification_type in server.channels if channel.id not in notification_type[1]]
 
         embed = set_channels_instructions_embed(channel.name, adding=True)
-        await interaction.response.send_message(embed=embed, view=ChannelsSelect(server_id, channel.id, channel.name, available_types, adding=True), ephemeral=True)
+        await interaction.response.send_message(embed=embed, view=ChannelsSelectView(server_id, channel.id, channel.name, available_types, adding=True), ephemeral=True)
 
     @discord.app_commands.command(name="disable", description="Admins only: Stop channel from receiving selected notification types")
     @ensure_server_document
@@ -77,7 +77,7 @@ class Channels(commands.GroupCog, name="notifychannel"):
             notification_type[0] for notification_type in server.channels if channel.id in notification_type[1]]
 
         embed = set_channels_instructions_embed(channel.name, adding=False)
-        await interaction.response.send_message(embed=embed, view=ChannelsSelect(server_id, channel.id, channel.name, available_types, adding=False), ephemeral=True)
+        await interaction.response.send_message(embed=embed, view=ChannelsSelectView(server_id, channel.id, channel.name, available_types, adding=False), ephemeral=True)
 
 
 async def setup(client: commands.Bot):

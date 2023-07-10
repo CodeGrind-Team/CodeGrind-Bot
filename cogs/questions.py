@@ -27,7 +27,7 @@ class Questions(commands.Cog):
 
         rating_data = get_rating_data(question_id_or_title)
 
-        rating_text = "doesn't exist"
+        rating_text = "Doesn't exist"
 
         if rating_data is not None:
             rating_text = f"||{int(rating_data['rating'])}||"
