@@ -100,14 +100,14 @@ async def update_stats(user: User, now: datetime, daily_reset: bool = False, wee
     if daily_reset:
         user.scores.yesterday_score = day_score
         user.scores.day_score = 0
-        user.scores.start_of_day_total_score = 0
+        user.scores.start_of_day_total_score = total_score
         user.history.append(History(timestamp=now, submissions=Submissions(
             easy=easy, medium=medium, hard=hard, total_score=total_score)))
 
     if weekly_reset:
         user.scores.last_week_score = week_score
         user.scores.week_score = 0
-        user.scores.start_of_week_total_score = 0
+        user.scores.start_of_week_total_score = total_score
     
 
     await user.save_changes()
