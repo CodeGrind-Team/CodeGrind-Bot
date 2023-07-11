@@ -2,13 +2,8 @@ import discord
 
 from bot_globals import DIFFICULTY_SCORE
 
-
-def help_embed(is_admin: bool = False) -> discord.Embed:
-    embed = discord.Embed(title="CodeGrind Bot Help & Commands", url="https://github.com/Kevin-Roman/LeetCode-Discord-Bot/wiki/Commands",
-                          color=discord.Color.blurple())
-
-    embed.description = f"""
-## Introduction
+COMMAND_CATEGORIES = {"Home": f"""
+# About CodeGrind Bot
 CodeGrind Bot helps you master LeetCode by competing with your friends on daily, weekly and all-time server leaderboards. Simply connect your LeetCode account to this bot and you are ready to go!
 
 This bot also provides you commands to get a random LeetCode question, the LeetCode daily question, retrieve the Zerotrac rating of a question, and receive a notification of the LeetCode daily question and the daily/weekly winners leaderboards.
@@ -16,15 +11,13 @@ This bot also provides you commands to get a random LeetCode question, the LeetC
 ## Score calculation
 Each connected user is assigned a score which calculated based on the amount of questions you have solved. 
 Here is how much each question difficulty is worth:
->    - Easy questions is worth {DIFFICULTY_SCORE['easy']} point
+>    - Easy questions are worth {DIFFICULTY_SCORE['easy']} point
 >    - Medium questions are worth {DIFFICULTY_SCORE['medium']} points
 >    - Hard questions are worth {DIFFICULTY_SCORE['hard']} points
 
 ## Commands
-Please select a category from the dropdown to be shown all the commands related to the selected category.
-"""
-
-    embed.description += """
+Please select a category from the dropdown to be shown all the commands related to the selected category.""",
+                      "Account": """
 ## Account
 
 </add:1115756888185917542>: Adds your LeetCode account onto this server's leaderboards. 
@@ -36,8 +29,9 @@ Please select a category from the dropdown to be shown all the commands related 
 >    - `include_url` _(optional)_: 'yes' or 'no' if you want leaderboards in this server to include a hyperlink to your LeetCode profile or not. Default is 'yes'.
 >    - `name` _(optional)_: Your preferred name to be displayed on the leaderboards in this server.
 
-</remove:1127663038514876540>: Removes your LeetCode account from this server.
+</remove:1127663038514876540>: Removes your LeetCode account from this server.""",
 
+                      "Leaderboard": """
 ## Leaderboard
 
 </leaderboard daily:1115756888664060015>: Returns today's leaderboard stats which resets at midnight (UTC)
@@ -46,14 +40,16 @@ Please select a category from the dropdown to be shown all the commands related 
 
 </leaderboard alltime:1115756888664060015>: Returns the all-time leaderboard stats
 
-Note: stats for `daily` and `weekly` will only be calculated after an account is created. Any previous questions done that day or that week will not be calculated.
+Note: stats for `daily` and `weekly` will only be calculated after an account is created. Any previous questions done that day or that week will not be calculated.""",
 
+                      "Statistics": """
 ## Statistics
 
 </stats:1115756888664060014>: Returns the statistics of your or someone else's LeetCode account.
->    - `leetcode_username` _(optional)_: A LeetCode username. Default is your connected LeetCode account.
+>    - `leetcode_username` _(optional)_: A LeetCode username. Default is your connected LeetCode account.""",
 
-## Questions
+                      "LeetCode Questions": """
+## LeetCode Questions
 
 </daily:1115756888185917544>: Returns the LeetCode daily question.
 
@@ -61,10 +57,9 @@ Note: stats for `daily` and `weekly` will only be calculated after an account is
 >    - `difficulty` _(optional)_: A difficulty level ('easy', 'medium' or 'hard'). Default is a 'random' difficulty level.
 
 </rating:1125116535745286185>: Returns a random question of your specified difficulty level.
->    - `question_id_or_title`: The LeetCode question ID or the question's name/title."""
+>    - `question_id_or_title`: The LeetCode question ID or the question's name/title.""",
 
-    if is_admin:
-        embed.description += """
+                      "Admin": """
 # Admin commands
 These commands are only available to administrators of this server.
 ## Settings
@@ -80,7 +75,14 @@ These commands are only available to administrators of this server.
 
 >    - `channel` _(optional)_: The channel (e.g. "#home-channel"). Default is the channel where the command was ran.
 
-Note: please press the 'save' button twice"""
+Note: please press the 'save' button twice"""}
+
+
+def help_embed(description: str) -> discord.Embed:
+    embed = discord.Embed(title="CodeGrind Bot Info & Commands",
+                          url="https://github.com/Kevin-Roman/LeetCode-Discord-Bot/wiki/Commands", color=discord.Color.blurple())
+
+    embed.description = description
 
     return embed
 

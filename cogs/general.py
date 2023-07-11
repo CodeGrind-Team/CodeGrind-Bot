@@ -2,7 +2,8 @@ import discord
 from discord.ext import commands
 
 from bot_globals import logger
-from embeds.general_embeds import help_embed
+from embeds.general_embeds import help_embed, COMMAND_CATEGORIES
+from utils.views import CommandTypeSelectView
 
 
 class General(commands.Cog):
@@ -13,11 +14,11 @@ class General(commands.Cog):
     async def help(self, interaction: discord.Interaction) -> None:
         logger.info("file: cogs/help.py ~ help ~ run")
 
-        is_admin = isinstance(
-            interaction.user, discord.Member) and interaction.user.guild_permissions.administrator
+        embed = help_embed(COMMAND_CATEGORIES["Home"])
+        embed.set_footer(
+            text="Love our bot? Vote on top.gg using /vote")
 
-        embed = help_embed(is_admin)
-        await interaction.response.send_message(embed=embed, ephemeral=True)
+        await interaction.response.send_message(embed=embed, view=CommandTypeSelectView(COMMAND_CATEGORIES), ephemeral=True)
 
     # command for voting
     @discord.app_commands.command(name="vote", description="Vote for the bot on top.gg")

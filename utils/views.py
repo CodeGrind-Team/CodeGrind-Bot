@@ -1,9 +1,9 @@
-from typing import List
+from typing import List, Dict
 
 import discord
 
 from embeds.channels_embeds import channel_remove_embed, channel_set_embed
-from embeds.general_embeds import not_creator_embed
+from embeds.general_embeds import not_creator_embed, help_embed
 from utils.channels import get_options, save_channel_options
 
 
@@ -132,3 +132,58 @@ class ChannelsSelectView(discord.ui.View):
             self.selected_options, available_types))
         self.add_item(SaveButton(self.selected_options, adding,
                       server_id, channel_id, channel_name))
+
+
+class CommandTypeSelect(discord.ui.Select):
+    def __init__(self, command_categories: Dict[str, str]):
+        self.command_categories = command_categories
+
+        options = [
+            discord.SelectOption(
+                label="Home", emoji="🏠", description="Return to main page"),
+            discord.SelectOption(
+                label="Account", description="Account commands"),
+            discord.SelectOption(label="Leaderboard",
+                                 description="Leaderboard commands"),
+            discord.SelectOption(label="Statistics",
+                                 description="Statistics commands"),
+            discord.SelectOption(label="LeetCode Questions",
+                                 description="LeetCode Questions commands"),
+            discord.SelectOption(label="Admin", description="Admin commands")
+        ]
+
+        super().__init__(placeholder="Select command category",
+                         max_values=1, min_values=1,  options=options)
+
+    async def callback(self, interaction: discord.Interaction) -> None:
+        if self.values[0] == "Home":
+            embed = help_embed(self.command_categories["Home"])
+
+        elif self.values[0] == "Account":
+            embed = help_embed(self.command_categories["Account"])
+
+        elif self.values[0] == "Leaderboard":
+            embed = help_embed(self.command_categories["Leaderboard"])
+
+        elif self.values[0] == "Statistics":
+            embed = help_embed(self.command_categories["Statistics"])
+
+        elif self.values[0] == "LeetCode Questions":
+            embed = help_embed(
+                self.command_categories["LeetCode Questions"])
+
+        elif self.values[0] == "Admin":
+            embed = help_embed(self.command_categories["Admin"])
+
+        else:
+            await interaction.response.send_message(contents="An error has occured! Please try again.", ephemeral=True)
+            return
+
+        await interaction.response.edit_message(embed=embed)
+
+
+class CommandTypeSelectView(discord.ui.View):
+    def __init__(self, command_categories, *, timeout=180):
+        super().__init__(timeout=timeout)
+
+        self.add_item(CommandTypeSelect(command_categories))
