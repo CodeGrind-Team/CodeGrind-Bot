@@ -73,6 +73,8 @@ async def send_daily_question_and_update_stats(force_update: bool = False, force
             await update_stats(user, now, daily_reset, weekly_reset)
 
         async for server in Server.all(fetch_links=True):
+            server.last_updated = now
+            await server.save_changes()
 
             if daily_reset:
                 await update_rankings(server, now, "daily")
@@ -82,8 +84,6 @@ async def send_daily_question_and_update_stats(force_update: bool = False, force
                 await update_rankings(server, now, "weekly")
                 await send_leaderboard_winners(server, "last_week")
 
-            server.last_updated = now
-            await server.save_changes()
 
         if daily_reset:
             async for server in Server.all(fetch_links=True):
