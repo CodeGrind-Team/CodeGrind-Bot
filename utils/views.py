@@ -4,6 +4,7 @@ import discord
 
 from embeds.channels_embeds import channel_remove_embed, channel_set_embed
 from embeds.general_embeds import not_creator_embed, help_embed
+from embeds.misc_embeds import error_embed
 from utils.channels import get_options, save_channel_options
 
 
@@ -176,7 +177,8 @@ class CommandTypeSelect(discord.ui.Select):
             embed = help_embed(self.command_categories["Admin"])
 
         else:
-            await interaction.response.send_message(contents="An error has occured! Please try again.", ephemeral=True)
+            embed = error_embed()
+            await interaction.response.send_message(embed=embed, ephemeral=True)
             return
 
         await interaction.response.edit_message(embed=embed)

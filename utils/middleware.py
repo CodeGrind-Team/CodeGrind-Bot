@@ -4,6 +4,7 @@ from typing import Callable
 import discord
 
 from embeds.general_embeds import not_admin_embed
+from embeds.misc_embeds import error_embed
 from models.server_model import Server
 
 
@@ -11,7 +12,8 @@ def ensure_server_document(func: Callable) -> Callable:
     @wraps(func)
     async def wrapper(self, interaction: discord.Interaction, *args, **kwargs):
         if not interaction.guild:
-            await interaction.response.send_message(contents="An error has occured! Please try again.", ephemeral=True)
+            embed = error_embed()
+            await interaction.response.send_message(embed=embed, ephemeral=True)
             return
 
         server_id = interaction.guild.id
@@ -30,7 +32,8 @@ def admins_only(func: Callable) -> Callable:
     @wraps(func)
     async def wrapper(self, interaction: discord.Interaction, *args, **kwargs):
         if not interaction.guild or not isinstance(interaction.channel, discord.TextChannel) or not isinstance(interaction.user, discord.Member):
-            await interaction.response.send_message(contents="An error has occured! Please try again.", ephemeral=True)
+            embed = error_embed()
+            await interaction.response.send_message(embed=embed, ephemeral=True)
             return
 
         if not interaction.user.guild_permissions.administrator:

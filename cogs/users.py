@@ -15,6 +15,7 @@ from embeds.users_embeds import (account_not_found_embed,
                                  profile_added_embed,
                                  synced_existing_user_embed,
                                  user_already_added_in_server_embed, profile_details_updated_embed, no_changes_provided_embed)
+from embeds.misc_embeds import error_embed
 from models.projections import IdProjection
 from models.server_model import Server
 from models.user_model import DisplayInformation, Scores, Submissions, User
@@ -48,7 +49,8 @@ class Users(commands.Cog):
         server_exists = await Server.find_one(Server.id == server_id).project(IdProjection)
 
         if not server_exists:
-            await interaction.response.send_message(contents="An error has occured! Please try again.", ephemeral=True)
+            embed = error_embed()
+            await interaction.response.send_message(embed=embed, ephemeral=True)
             return
 
         display_information = DisplayInformation(
@@ -164,7 +166,8 @@ class Users(commands.Cog):
         server_exists = await Server.find_one(Server.id == server_id).project(IdProjection)
 
         if not server_exists:
-            await interaction.response.send_message(contents="An error has occured! Please try again.", ephemeral=True)
+            embed = error_embed()
+            await interaction.response.send_message(embed=embed, ephemeral=True)
             return
 
         user = await User.find_one(User.id == user_id)
@@ -200,7 +203,8 @@ class Users(commands.Cog):
             'file: cogs/users.py ~ remove ~ run')
 
         if not interaction.guild:
-            await interaction.response.send_message(contents="An error has occured! Please try again.", ephemeral=True)
+            embed = error_embed()
+            await interaction.response.send_message(embed=embed, ephemeral=True)
             return
 
         server_id = interaction.guild.id
@@ -209,7 +213,8 @@ class Users(commands.Cog):
         server_exists = await Server.find_one(Server.id == server_id).project(IdProjection)
 
         if not server_exists:
-            await interaction.response.send_message(contents="An error has occured! Please try again.", ephemeral=True)
+            embed = error_embed()
+            await interaction.response.send_message(embed=embed, ephemeral=True)
             return
 
         logger.info(

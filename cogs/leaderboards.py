@@ -2,6 +2,7 @@ import discord
 from discord.ext import commands
 
 from bot_globals import logger
+from embeds.misc_embeds import error_embed
 from utils.leaderboards import display_leaderboard
 from utils.middleware import ensure_server_document
 
@@ -17,7 +18,8 @@ class Leaderboards(commands.GroupCog, name="leaderboard"):
         logger.info("file: cogs/leaderboards.py ~ alltime ~ run")
 
         if not interaction.guild:
-            await interaction.response.send_message(contents="An error has occured! Please try again.", ephemeral=True)
+            embed = error_embed()
+            await interaction.response.send_message(embed=embed, ephemeral=True)
             return
 
         await display_leaderboard(interaction.response.send_message, interaction.guild.id, interaction.user.id, "alltime", page)
@@ -28,7 +30,8 @@ class Leaderboards(commands.GroupCog, name="leaderboard"):
         logger.info("file: cogs/leaderboards.py ~ weekly ~ run")
 
         if not interaction.guild:
-            await interaction.response.send_message(contents="An error has occured! Please try again.", ephemeral=True)
+            embed = error_embed()
+            await interaction.response.send_message(embed=embed, ephemeral=True)
             return
 
         await display_leaderboard(interaction.response.send_message, interaction.guild.id, interaction.user.id, "weekly", page)
@@ -39,7 +42,8 @@ class Leaderboards(commands.GroupCog, name="leaderboard"):
         logger.info("file: cogs/leaderboards.py ~ daily ~ run")
 
         if not interaction.guild:
-            await interaction.response.send_message(contents="An error has occured! Please try again.", ephemeral=True)
+            embed = error_embed()
+            await interaction.response.send_message(embed=embed, ephemeral=True)
             return
 
         await display_leaderboard(interaction.response.send_message, interaction.guild.id, interaction.user.id, "daily", page)

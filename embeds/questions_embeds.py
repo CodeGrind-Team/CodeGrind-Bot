@@ -2,6 +2,7 @@ import discord
 import requests
 
 from bot_globals import logger
+from embeds.misc_embeds import error_embed
 from utils.ratings import get_rating_data
 
 
@@ -37,12 +38,17 @@ def daily_question_embed() -> discord.Embed:
 
     except Exception as e:
         logger.exception(
-            "file: utils/questions.py ~ daily_question_embed ~ exception: %s", e)
+            "file: embeds/question_embeds.py ~ Daily problem could not be retrieved: %s", e)
 
-        return daily_problem_unsuccessful_embed()
+        embed = error_embed("Daily problem could not be retrieved")
+        return embed
 
     if response.status_code != 200:
-        return daily_problem_unsuccessful_embed()
+        logger.exception(
+            "file: embeds/question_embeds.py ~ Daily problem could not be retrieved. Error code: %s", response.status_code)
+
+        embed = error_embed("Daily problem could not be retrieved")
+        return embed
 
     response_data = response.json()
 

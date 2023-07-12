@@ -5,7 +5,10 @@ import requests
 from discord.ext import commands
 
 from bot_globals import logger
-from embeds.questions_embeds import daily_question_embed, question_embed, question_rating_embed, question_has_no_rating_embed
+from embeds.misc_embeds import error_embed
+from embeds.questions_embeds import (daily_question_embed, question_embed,
+                                     question_has_no_rating_embed,
+                                     question_rating_embed)
 from utils.ratings import get_rating_data
 
 
@@ -50,12 +53,26 @@ class Questions(commands.Cog):
 
         difficulty = difficulty.lower()
 
-        response = requests.get(
-            "https://leetcode.com/api/problems/all/", timeout=10)
+        try:
+            response = requests.get(
+                "https://leetcode.com/api/problems/all/", timeout=10)
+
+        except Exception as e:
+            logger.exception(
+                "file: cogs/questions.py ~ An error occurred while trying to get the question from LeetCode: %s", e)
+
+            embed = error_embed(
+                f"An error occurred while trying to get the question from LeetCode. LeetCode may be down.")
+            await interaction.response.send_message(embed=embed, ephemeral=True)
+            return
 
         if response.status_code != 200:
-            await interaction.response.send_message(
-                "An error occurred while trying to get the question from LeetCode")
+            logger.exception(
+                "file: cogs/questions.py ~ An error occurred while trying to get the question from LeetCode. Error code: %s", response.status_code)
+
+            embed = error_embed(
+                f"An error occurred while trying to get the question from LeetCode. LeetCode may be down.")
+            await interaction.response.send_message(embed=embed, ephemeral=True)
             return
 
         data = response.json()

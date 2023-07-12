@@ -5,6 +5,7 @@ from discord.ext import commands
 
 from bot_globals import logger
 from embeds.admin_embeds import invalid_timezone_embed, timezone_updated_embed
+from embeds.misc_embeds import error_embed
 from models.server_model import Server
 from utils.middleware import admins_only, ensure_server_document
 
@@ -20,7 +21,8 @@ class Channels(commands.GroupCog, name="settings"):
         logger.info("file: cogs/admin.py ~ settings timezone ~ run")
 
         if not interaction.guild or not isinstance(interaction.channel, discord.TextChannel) or not isinstance(interaction.user, discord.Member):
-            await interaction.response.send_message(contents="An error has occured! Please try again.", ephemeral=True)
+            embed = error_embed()
+            await interaction.response.send_message(embed=embed, ephemeral=True)
             return
 
         if timezone not in pytz.all_timezones:

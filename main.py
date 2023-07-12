@@ -29,9 +29,10 @@ async def on_ready() -> None:
     logger.info('file: main.py ~ server IDs: %s ~ total count: %s',
                 server_ids, len(server_ids))
 
-    dbl_token = os.environ["TOPGG_TOKEN"]
-    client.topggpy = topgg.DBLClient(
-        client, dbl_token, autopost=True, post_shard_count=True)
+    if os.environ["PRODUCTION"] == "True":
+        dbl_token = os.environ["TOPGG_TOKEN"]
+        client.topggpy = topgg.DBLClient(
+            client, dbl_token, autopost=True, post_shard_count=True)
 
     try:
         synced = await client.tree.sync()

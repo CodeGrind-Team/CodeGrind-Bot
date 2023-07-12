@@ -6,6 +6,7 @@ from embeds.channels_embeds import (
     channel_receiving_all_notification_types_embed,
     channel_receiving_no_notification_types_embed,
     set_channels_instructions_embed)
+from embeds.misc_embeds import error_embed
 from models.server_model import Server
 from utils.middleware import admins_only, ensure_server_document
 from utils.views import ChannelsSelectView
@@ -22,7 +23,8 @@ class Channels(commands.GroupCog, name="notifychannel"):
         logger.info("file: cogs/channels.py ~ notify enable ~ run")
 
         if not interaction.guild or not isinstance(interaction.channel, discord.TextChannel) or not isinstance(interaction.user, discord.Member):
-            await interaction.response.send_message(contents="An error has occured! Please try again.", ephemeral=True)
+            embed = error_embed()
+            await interaction.response.send_message(embed=embed, ephemeral=True)
             return
 
         if channel is None:
@@ -54,7 +56,8 @@ class Channels(commands.GroupCog, name="notifychannel"):
         logger.info("file: cogs/channels.py ~ notify disable ~ run")
 
         if not interaction.guild or not isinstance(interaction.channel, discord.TextChannel) or not isinstance(interaction.user, discord.Member):
-            await interaction.response.send_message(contents="An error has occured! Please try again.", ephemeral=True)
+            embed = error_embed()
+            await interaction.response.send_message(embed=embed, ephemeral=True)
             return
 
         if channel is None:

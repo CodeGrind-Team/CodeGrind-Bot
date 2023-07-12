@@ -3,6 +3,7 @@ from typing import Any
 import requests
 
 from bot_globals import logger
+from embeds.misc_embeds import error_embed
 
 
 def get_problems_solved_and_rank(leetcode_username: str) -> dict[str, Any] | None:
@@ -40,14 +41,18 @@ def get_problems_solved_and_rank(leetcode_username: str) -> dict[str, Any] | Non
         "file: utils/questions.py ~ get_problems_solved_and_rank ~ data requesting ~ https://leetcode.com/%s", leetcode_username)
 
     try:
-        response = requests.post(
-            url, json=data, headers=headers, timeout=10)
+        response = requests.post(url, json=data, headers=headers, timeout=10)
+
     except Exception as e:
         logger.exception(
             "file: utils/questions.py ~ get_problems_solved_and_rank ~ exception: %s", e)
+
         return
 
     if response.status_code != 200:
+        logger.exception(
+            "file: utils/questions.py ~ get_problems_solved_and_rank ~ Error code: %s", response.status_code)
+
         return
 
     response_data = response.json()
