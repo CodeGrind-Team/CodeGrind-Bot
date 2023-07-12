@@ -3,6 +3,7 @@ import logging
 import os
 from datetime import datetime
 
+import topgg
 from dotenv import load_dotenv
 
 from bot_globals import client, logger
@@ -14,12 +15,23 @@ load_dotenv()
 
 
 @client.event
+async def on_autopost_success():
+    logger.info("Posted server count (%s), shard count (%s)",
+                client.topggpy.guild_count, client.shard_count)
+
+
+@client.event
 async def on_ready() -> None:
     logger.info("file: main.py ~ on_ready ~ %s",
                 datetime.utcnow().strftime("%d/%m/%Y %H:%M:%S"))
     logger.info("file: main.py ~ logged in as a bot %s", client.user)
     server_ids = [guild.id for guild in client.guilds]
-    logger.info('file: main.py ~ server IDs: %s', server_ids)
+    logger.info('file: main.py ~ server IDs: %s ~ total count: %s',
+                server_ids, len(server_ids))
+
+    dbl_token = os.environ["TOPGG_TOKEN"]
+    client.topggpy = topgg.DBLClient(
+        client, dbl_token, autopost=True, post_shard_count=True)
 
     try:
         synced = await client.tree.sync()
