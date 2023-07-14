@@ -78,7 +78,7 @@ async def display_leaderboard(send_message, server_id, user_id=None, timeframe: 
             url = display_information.url
             total_score = get_score(user, timeframe)
 
-            if winners_only and (total_score == 0 or place == 4):
+            if winners_only and (total_score == 0 or place == 3):
                 reached_end_of_winners = True
                 break
 
