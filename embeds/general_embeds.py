@@ -80,7 +80,7 @@ Note: please press the 'save' button twice"""}
 
 def help_embed(description: str) -> discord.Embed:
     embed = discord.Embed(title="CodeGrind Bot Info & Commands",
-                          url="https://github.com/Kevin-Roman/LeetCode-Discord-Bot/wiki/Commands", color=discord.Color.blurple())
+                          url="https://github.com/CodeGrind-Team/CodeGrind-Bot/wiki/Commands", color=discord.Color.blurple())
 
     embed.description = description
 
