@@ -6,7 +6,7 @@ Get ready for an epic coding showdown with the CodeGrind Bot! Compare daily, wee
 
 ## Commands
 
-[Full list of commands here](https://github.com/Kevin-Roman/LeetCode-Discord-Bot/wiki/Commands)
+[Full list of commands here](https://github.com/CodeGrind-Team/CodeGrind-Bot/wiki/commands)
 
 ## Tools
 
