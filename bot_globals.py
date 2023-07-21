@@ -7,9 +7,6 @@ import discord
 import pytz
 from discord.ext import commands
 
-if not os.path.exists('data'):
-    os.makedirs('data')
-
 if not os.path.exists('logs'):
     os.makedirs('logs')
 
