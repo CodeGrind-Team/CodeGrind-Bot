@@ -26,9 +26,8 @@ async def wait_until_next_half_hour() -> None:
     await asyncio.sleep(seconds_to_wait)
 
 
-async def send_daily_question(server: Server) -> None:
+async def send_daily_question(server: Server, embed: discord.Embed) -> None:
     logger.info("file: utils/message_scheduler.py ~ send_daily ~ run")
-    embed = daily_question_embed()
 
     for channel_id in server.channels.daily_question:
         channel = client.get_channel(channel_id)
@@ -85,5 +84,7 @@ async def send_daily_question_and_update_stats(force_update: bool = False, force
                 await send_leaderboard_winners(server, "last_week")
 
         if daily_reset:
+            embed = daily_question_embed()
+
             async for server in Server.all(fetch_links=True):
-                await send_daily_question(server)
+                await send_daily_question(server, embed)
