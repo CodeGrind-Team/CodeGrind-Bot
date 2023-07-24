@@ -1,9 +1,9 @@
 import os
 import sys
 
-# Allow access to the rest of the repo, folders files outside of current folder
+# Make the directory to the root folder so that the other files can be imported
 current_path = os.path.dirname(__file__)
-parent_path = os.path.abspath(os.path.join(current_path, '..'))
+parent_path = os.path.abspath(os.path.join(current_path, '../..'))
 sys.path.append(parent_path)
 
 from random import randint
@@ -61,8 +61,8 @@ async def init_mongodb_conn(server_id: int, number_of_users: int) -> None:
 if __name__ == "__main__":
     import asyncio
 
-    # replace with your server's ID
-    server_id = os.environ["SERVER_ID"]
-    # number of users you want to create
-    number_of_users = 30
+    # The server you want to add the dummy users to
+    server_id = int(input("Server ID: "))
+    # The number of dummy users you want to be added
+    number_of_users = int(input("Number of dummy users to generate: "))
     asyncio.run(init_mongodb_conn(server_id, number_of_users))
