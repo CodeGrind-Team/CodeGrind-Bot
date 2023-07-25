@@ -7,7 +7,7 @@ from bot_globals import logger
 from embeds.admin_embeds import invalid_timezone_embed, timezone_updated_embed
 from embeds.misc_embeds import error_embed
 from models.server_model import Server
-from utils.middleware import admins_only, ensure_server_document
+from utils.middleware import admins_only, ensure_server_document, track_analytics
 
 
 class Channels(commands.GroupCog, name="settings"):
@@ -17,6 +17,7 @@ class Channels(commands.GroupCog, name="settings"):
     @discord.app_commands.command(name="timezone", description="Admins only: Change the timezone")
     @ensure_server_document
     @admins_only
+    @track_analytics
     async def set_timezone(self, interaction: discord.Interaction, timezone: str) -> None:
         logger.info("file: cogs/admin.py ~ settings timezone ~ run")
 

@@ -8,7 +8,7 @@ from embeds.channels_embeds import (
     set_channels_instructions_embed)
 from embeds.misc_embeds import error_embed
 from models.server_model import Server
-from utils.middleware import admins_only, ensure_server_document
+from utils.middleware import admins_only, ensure_server_document, track_analytics
 from utils.views import ChannelsSelectView
 
 
@@ -19,6 +19,7 @@ class Channels(commands.GroupCog, name="notifychannel"):
     @discord.app_commands.command(name="enable", description="Admins only: Set which channels should receive notifications")
     @ensure_server_document
     @admins_only
+    @track_analytics
     async def enable(self, interaction: discord.Interaction, channel: discord.TextChannel | None = None) -> None:
         logger.info("file: cogs/channels.py ~ notify enable ~ run")
 
@@ -52,6 +53,7 @@ class Channels(commands.GroupCog, name="notifychannel"):
     @discord.app_commands.command(name="disable", description="Admins only: Stop channel from receiving selected notification types")
     @ensure_server_document
     @admins_only
+    @track_analytics
     async def disable(self, interaction: discord.Interaction, channel: discord.TextChannel | None = None) -> None:
         logger.info("file: cogs/channels.py ~ notify disable ~ run")
 

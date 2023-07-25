@@ -5,7 +5,9 @@ import discord
 
 from bot_globals import client, logger
 from embeds.questions_embeds import daily_question_embed
-from models.server_model import Server, User
+from models.server_model import Server
+from models.user_model import User
+from models.analytics_model import Analytics, AnalyticsHistory
 from utils.leaderboards import send_leaderboard_winners
 from utils.stats import update_rankings, update_stats
 
@@ -88,3 +90,19 @@ async def send_daily_question_and_update_stats(force_update: bool = False, force
 
             async for server in Server.all(fetch_links=True):
                 await send_daily_question(server, embed)
+
+            analytics = await Analytics.find_all().to_list()
+
+            if not analytics:
+                analytics = Analytics()
+                await analytics.create()
+            else:
+                analytics = analytics[0]
+
+            analytics.history.append(AnalyticsHistory(
+                distinct_users=analytics.distinct_users_today, command_count=analytics.command_count_today))
+
+            analytics.distinct_users_today = []
+            analytics.command_count_today = 0
+
+            await analytics.save()
