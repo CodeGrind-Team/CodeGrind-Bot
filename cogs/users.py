@@ -9,17 +9,19 @@ from beanie.odm.operators.update.general import Set
 from discord.ext import commands
 
 from bot_globals import calculate_scores, logger
+from embeds.misc_embeds import error_embed
 from embeds.users_embeds import (account_not_found_embed,
                                  account_removed_embed,
                                  connect_account_instructions_embed,
+                                 no_changes_provided_embed,
                                  profile_added_embed,
+                                 profile_details_updated_embed,
                                  synced_existing_user_embed,
-                                 user_already_added_in_server_embed, profile_details_updated_embed, no_changes_provided_embed)
-from embeds.misc_embeds import error_embed
+                                 user_already_added_in_server_embed)
 from models.projections import IdProjection
 from models.server_model import Server
 from models.user_model import DisplayInformation, Scores, Submissions, User
-from utils.middleware import ensure_server_document
+from utils.middleware import ensure_server_document, track_analytics
 from utils.questions import get_problems_solved_and_rank
 
 
@@ -32,6 +34,7 @@ class Users(commands.Cog):
         description="Adds a user to the leaderboard. Answer with 'yes' to link your LeetCode profile to the leaderboard"
     )
     @ensure_server_document
+    @track_analytics
     async def add(self, interaction: discord.Interaction, leetcode_username: str, include_url: str = "yes", name: str | None = None) -> None:
         logger.info(
             'file: cogs/users.py ~ add ~ run ~ leetcode_username: %s, include_url: %s, name: %s', leetcode_username, include_url, name)
@@ -153,6 +156,7 @@ class Users(commands.Cog):
 
     @discord.app_commands.command(name="update", description="Update your profile on this server's leaderboards")
     @ensure_server_document
+    @track_analytics
     async def update(self, interaction: discord.Interaction, include_url: str | None = None, name: str | None = None) -> None:
         logger.info(
             'file: cogs/users.py ~ update ~ run ~ include_url: %s, name: %s', include_url, name)
@@ -198,6 +202,7 @@ class Users(commands.Cog):
 
     @discord.app_commands.command(name="remove", description="Remove your profile from this server's leaderboard")
     @ensure_server_document
+    @track_analytics
     async def remove(self, interaction: discord.Interaction) -> None:
         logger.info(
             'file: cogs/users.py ~ remove ~ run')

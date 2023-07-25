@@ -10,6 +10,7 @@ from embeds.questions_embeds import (daily_question_embed, question_embed,
                                      question_has_no_rating_embed,
                                      question_rating_embed)
 from utils.ratings import get_rating_data
+from utils.middleware import track_analytics
 
 
 class Questions(commands.Cog):
@@ -17,6 +18,7 @@ class Questions(commands.Cog):
         self.client = client
 
     @discord.app_commands.command(name="daily", description="Returns the daily problem")
+    @track_analytics
     async def daily(self, interaction: discord.Interaction) -> None:
         logger.info("file: cogs/questions.py ~ get_daily ~ run")
 
@@ -25,6 +27,7 @@ class Questions(commands.Cog):
         await interaction.response.send_message(embed=embed)
 
     @discord.app_commands.command(name="rating", description="Returns the Zerotrac rating of the problem")
+    @track_analytics
     async def rating(self, interaction: discord.Interaction, question_id_or_title: str) -> None:
         logger.info("file: cogs/questions.py ~ get_rating ~ run")
 
@@ -47,6 +50,7 @@ class Questions(commands.Cog):
     @discord.app_commands.command(
         name="question",
         description="Request a question based on difficulty or at random")
+    @track_analytics
     async def get_question(self, interaction: discord.Interaction, difficulty: str = "random") -> None:
         logger.info(
             "file: cogs/questions.py ~ question ~ run ~ difficulty: %s", difficulty)

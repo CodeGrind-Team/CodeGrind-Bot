@@ -6,6 +6,7 @@ from embeds.stats_embeds import invalid_username_embed, stats_embed
 from embeds.users_embeds import account_not_found_embed
 from models.projections import LeetCodeUsernameProjection
 from models.user_model import User
+from utils.middleware import track_analytics
 from utils.questions import get_problems_solved_and_rank
 
 
@@ -14,6 +15,7 @@ class Stats(commands.Cog):
         self.client = client
 
     @discord.app_commands.command(name="stats", description="Prints the stats of a user")
+    @track_analytics
     async def stats(self, interaction: discord.Interaction, leetcode_username: str | None = None) -> None:
         logger.info(
             'file: cogs/stats.py ~ stats ~ run ~ leetcode_username: %s', leetcode_username)

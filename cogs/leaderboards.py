@@ -4,7 +4,7 @@ from discord.ext import commands
 from bot_globals import logger
 from embeds.misc_embeds import error_embed
 from utils.leaderboards import display_leaderboard
-from utils.middleware import ensure_server_document
+from utils.middleware import ensure_server_document, track_analytics
 
 
 class Leaderboards(commands.GroupCog, name="leaderboard"):
@@ -14,6 +14,7 @@ class Leaderboards(commands.GroupCog, name="leaderboard"):
 
     @discord.app_commands.command(name="alltime", description="View the All-Time leaderboard")
     @ensure_server_document
+    @track_analytics
     async def alltime(self, interaction: discord.Interaction, page: int = 1) -> None:
         logger.info("file: cogs/leaderboards.py ~ alltime ~ run")
 
@@ -26,6 +27,7 @@ class Leaderboards(commands.GroupCog, name="leaderboard"):
 
     @discord.app_commands.command(name="weekly", description="View the Weekly leaderboard")
     @ensure_server_document
+    @track_analytics
     async def weekly(self, interaction: discord.Interaction, page: int = 1) -> None:
         logger.info("file: cogs/leaderboards.py ~ weekly ~ run")
 
@@ -38,6 +40,7 @@ class Leaderboards(commands.GroupCog, name="leaderboard"):
 
     @discord.app_commands.command(name="daily", description="View the Daily leaderboard")
     @ensure_server_document
+    @track_analytics
     async def daily(self, interaction: discord.Interaction, page: int = 1) -> None:
         logger.info("file: cogs/leaderboards.py ~ daily ~ run")
 
