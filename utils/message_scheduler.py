@@ -1,31 +1,15 @@
-import asyncio
-from datetime import datetime, timedelta
+from datetime import datetime, time
 
 import discord
+from discord.ext import tasks
 
 from bot_globals import client, logger
 from embeds.questions_embeds import daily_question_embed
+from models.analytics_model import Analytics, AnalyticsHistory
 from models.server_model import Server
 from models.user_model import User
-from models.analytics_model import Analytics, AnalyticsHistory
 from utils.leaderboards import send_leaderboard_winners
 from utils.stats import update_rankings, update_stats
-
-
-async def wait_until_next_half_hour() -> None:
-    now_utc = datetime.utcnow()
-
-    if now_utc.minute < 30:
-        next_half_hour = now_utc.replace(minute=30, second=0, microsecond=0)
-    else:
-        next_half_hour = (now_utc + timedelta(hours=1)).replace(minute=0,
-                                                                second=0, microsecond=0)
-
-    logger.info(
-        "file: utils/message_scheduler.py ~ wait_until_next_half_hour ~ next_half_hour: %s", next_half_hour)
-
-    seconds_to_wait = (next_half_hour - now_utc).total_seconds()
-    await asyncio.sleep(seconds_to_wait)
 
 
 async def send_daily_question(server: Server, embed: discord.Embed) -> None:
@@ -53,56 +37,52 @@ async def send_daily_question(server: Server, embed: discord.Embed) -> None:
         "file: utils/message_scheduler.py ~ send_daily ~ all daily questions sent to server ID: %s", server.id)
 
 
-async def send_daily_question_and_update_stats(force_update: bool = False, force_daily_reset: bool = False, force_weekly_reset: bool = False) -> None:
+@tasks.loop(time=[time(hour=hour, minute=minute) for hour in range(24) for minute in [0, 30]])
+async def send_daily_question_and_update_stats() -> None:
     logger.info(
-        "file: utils/message_scheduler.py ~ send_daily_question_and_update_stats ~ run")
+        "file: utils/message_scheduler.py ~ send_daily_question_and_update_stats ~ started")
 
-    while not client.is_closed():
-        if not force_update:
-            await wait_until_next_half_hour()
-        else:
-            force_update = False
+    now = datetime.utcnow()
 
-        now = datetime.utcnow()
-        # for debugging purposes
-        daily_reset = (now.hour == 0 and now.minute == 0) or force_daily_reset
-        weekly_reset = (now.weekday() == 0 and now.hour ==
-                        0 and now.minute == 0) or force_weekly_reset
-        force_update = False
+    daily_reset = now.hour == 0 and now.minute == 0
+    weekly_reset = now.weekday() == 0 and now.hour == 0 and now.minute == 0
 
-        async for user in User.all():
-            await update_stats(user, now, daily_reset, weekly_reset)
+    async for user in User.all():
+        await update_stats(user, now, daily_reset, weekly_reset)
 
-        async for server in Server.all(fetch_links=True):
-            server.last_updated = now
-            await server.save_changes()
-
-            if daily_reset:
-                await update_rankings(server, now, "daily")
-                await send_leaderboard_winners(server, "yesterday")
-
-            if weekly_reset:
-                await update_rankings(server, now, "weekly")
-                await send_leaderboard_winners(server, "last_week")
+    async for server in Server.all(fetch_links=True):
+        server.last_updated = now
+        await server.save_changes()
 
         if daily_reset:
-            embed = daily_question_embed()
+            await update_rankings(server, now, "daily")
+            await send_leaderboard_winners(server, "yesterday")
 
-            async for server in Server.all(fetch_links=True):
-                await send_daily_question(server, embed)
+        if weekly_reset:
+            await update_rankings(server, now, "weekly")
+            await send_leaderboard_winners(server, "last_week")
 
-            analytics = await Analytics.find_all().to_list()
+    if daily_reset:
+        embed = daily_question_embed()
 
-            if not analytics:
-                analytics = Analytics()
-                await analytics.create()
-            else:
-                analytics = analytics[0]
+        async for server in Server.all(fetch_links=True):
+            await send_daily_question(server, embed)
 
-            analytics.history.append(AnalyticsHistory(
-                distinct_users=analytics.distinct_users_today, command_count=analytics.command_count_today))
+        analytics = await Analytics.find_all().to_list()
 
-            analytics.distinct_users_today = []
-            analytics.command_count_today = 0
+        if not analytics:
+            analytics = Analytics()
+            await analytics.create()
+        else:
+            analytics = analytics[0]
 
-            await analytics.save()
+        analytics.history.append(AnalyticsHistory(
+            distinct_users=analytics.distinct_users_today, command_count=analytics.command_count_today))
+
+        analytics.distinct_users_today = []
+        analytics.command_count_today = 0
+
+        await analytics.save()
+
+    logger.info(
+        "file: utils/message_scheduler.py ~ send_daily_question_and_update_stats ~ ended")
