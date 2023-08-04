@@ -21,7 +21,11 @@ async def send_daily_question(server: Server, embed: discord.Embed) -> None:
         if not isinstance(channel, discord.TextChannel):
             continue
 
-        await channel.send(embed=embed)
+        try:
+            await channel.send(embed=embed)
+        except discord.errors.Forbidden as e:
+            logger.exception(
+                "file: utils/message_scheduler.py ~ send_daily ~ missing permissions on channel id %s. Error: %s", channel.id, e)
 
         # async for message in channel.history(limit=1):
         #     try:
