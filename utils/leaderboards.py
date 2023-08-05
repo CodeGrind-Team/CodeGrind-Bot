@@ -119,7 +119,12 @@ async def display_leaderboard(send_message, server_id, user_id=None, timeframe: 
 
     page = page - 1 if page > 0 else 0
     view = None if winners_only else Pagination(user_id, pages, page)
-    await send_message(embed=pages[page], view=view)
+
+    try:
+        await send_message(embed=pages[page], view=view)
+    except discord.errors.Forbidden as e:
+        logger.exception(
+            "file: utils/leaderboards.py ~ display_leaderboard ~ missing permissions on server id %s. Error: %s", server_id, e)
 
 
 async def send_leaderboard_winners(server: Server, timeframe: str) -> None:
