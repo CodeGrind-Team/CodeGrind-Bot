@@ -30,7 +30,7 @@ class Users(commands.Cog):
 
     @discord.app_commands.command(
         name="add",
-        description="Adds a user to the leaderboard. Answer with 'yes' to link your LeetCode profile to the leaderboard"
+        description="Connect your LeetCode account to this server"
     )
     @ensure_server_document
     @track_analytics
