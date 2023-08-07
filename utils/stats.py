@@ -102,7 +102,7 @@ async def update_stats(user: User, now: datetime, daily_reset: bool = False, wee
         member = client.get_guild(user.display_information[i].server_id).get_member(
             user.id)
 
-        if member:
+        if not member:
             await Server.find_one(Server.id == user.display_information[i].server_id).update(Pull({"users": {"$id": user.id}}))
             del user.display_information[i]
             continue
