@@ -16,26 +16,25 @@ class Stats(commands.Cog):
 
     @discord.app_commands.command(name="stats", description="Prints the stats of a user")
     @track_analytics
-    async def stats(self, interaction: discord.Interaction, leetcode_username: str | None = None) -> None:
-        logger.info(
-            'file: cogs/stats.py ~ stats ~ run ~ leetcode_username: %s', leetcode_username)
+    async def stats(self, interaction: discord.Interaction, user: discord.Member | None = None) -> None:
+        logger.info('file: cogs/stats.py ~ stats ~ run')
 
         if not interaction.guild:
             return
 
-        user_id = interaction.user.id
+        if user:
+            user_id = user.id
+        else:
+            user_id = interaction.user.id
 
-        if leetcode_username is None:
-            user = await User.find_one(User.id == user_id).project(LeetCodeUsernameProjection)
+        user = await User.find_one(User.id == user_id).project(LeetCodeUsernameProjection)
 
-            if not user:
-                embed = account_not_found_embed()
-                await interaction.response.send_message(embed=embed, ephemeral=True)
-                return
-
-            leetcode_username = user.leetcode_username
-
-        stats = get_problems_solved_and_rank(leetcode_username)
+        if not user:
+            embed = account_not_found_embed()
+            await interaction.response.send_message(embed=embed, ephemeral=True)
+            return
+        
+        stats = get_problems_solved_and_rank(user.leetcode_username)
 
         if not stats:
             embed = invalid_username_embed()

@@ -35,16 +35,14 @@ class Users(commands.Cog):
     )
     @ensure_server_document
     @track_analytics
-    async def add(self, interaction: discord.Interaction, leetcode_username: str, include_url: str = "yes", name: str | None = None) -> None:
+    async def add(self, interaction: discord.Interaction, leetcode_username: str, include_url: str = "yes") -> None:
         logger.info(
-            'file: cogs/users.py ~ add ~ run ~ leetcode_username: %s, include_url: %s, name: %s', leetcode_username, include_url, name)
+            'file: cogs/users.py ~ add ~ run ~ leetcode_username: %s, include_url: %s', leetcode_username, include_url)
 
         if not interaction.guild:
             return
 
         url_bool = include_url.lower() in ("yes", "true", "t", "1")
-        if name is None:
-            name = interaction.user.name
 
         server_id = interaction.guild.id
         user_id = interaction.user.id
@@ -57,7 +55,7 @@ class Users(commands.Cog):
             return
 
         display_information = DisplayInformation(
-            server_id=server_id, name=name, url=url_bool)
+            server_id=server_id, name=interaction.user.display_name, url=url_bool)
 
         user_exists = await User.find_one(User.id == user_id).project(IdProjection)
 
@@ -157,9 +155,9 @@ class Users(commands.Cog):
     @discord.app_commands.command(name="update", description="Update your profile on this server's leaderboards")
     @ensure_server_document
     @track_analytics
-    async def update(self, interaction: discord.Interaction, include_url: str | None = None, name: str | None = None) -> None:
+    async def update(self, interaction: discord.Interaction, include_url: str | None = None) -> None:
         logger.info(
-            'file: cogs/users.py ~ update ~ run ~ include_url: %s, name: %s', include_url, name)
+            'file: cogs/users.py ~ update ~ run ~ include_url: %s', include_url)
 
         if not interaction.guild:
             return
@@ -185,10 +183,6 @@ class Users(commands.Cog):
             if include_url is not None:
                 url_bool = include_url.lower() in ("yes", "true", "t", "1")
                 await User.find_one(User.id == user.id, User.display_information.server_id == server_id).update(Set({"display_information.$.url": url_bool}))
-
-            if name is not None:
-                # TODO: Add validation
-                await User.find_one(User.id == user.id, User.display_information.server_id == server_id).update(Set({"display_information.$.name": name}))
 
             embed = profile_details_updated_embed()
             await interaction.response.send_message(embed=embed, ephemeral=True)
