@@ -22,12 +22,10 @@ Please select a category from the dropdown to be shown all the commands related 
 
 </add:1115756888185917542>: Adds your LeetCode account onto this server's leaderboards. 
 >    - `leetcode_username`: Your permanent LeetCode username.
->    - `include_url` _(optional)_: 'yes' or 'no' if you want leaderboards in this server to include a hyperlink to your LeetCode profile or not. Default is 'yes'.
->    - `name` _(optional)_: Your preferred name to be displayed on the leaderboards in this server.
+>    - `include_url` _(optional)_: Decide whether you want leaderboards in this server to include a hyperlink to your LeetCode profile or not. Default is 'True'.
 
 </update:1127716432168362004>: Updates your account preferences for this server.
->    - `include_url` _(optional)_: 'yes' or 'no' if you want leaderboards in this server to include a hyperlink to your LeetCode profile or not. Default is 'yes'.
->    - `name` _(optional)_: Your preferred name to be displayed on the leaderboards in this server.
+>    - `include_url` _(optional)_: Decide whether you want leaderboards in this server to include a hyperlink to your LeetCode profile or not. Default is 'True'.
 
 </remove:1127663038514876540>: Removes your LeetCode account from this server.""",
 
@@ -46,7 +44,8 @@ Note: stats for `daily` and `weekly` will only be calculated after an account is
 ## Statistics
 
 </stats:1115756888664060014>: Returns the statistics of your or someone else's LeetCode account.
->    - `leetcode_username` _(optional)_: A LeetCode username. Default is your connected LeetCode account.""",
+>    - `user` _(optional)_: A user from the server. Default is your account.
+>    - `display_publicly` _(optional)_: Whether you want everyone in the server to see the stats. Default is 'False'""",
 
                       "LeetCode Questions": """
 ## LeetCode Questions

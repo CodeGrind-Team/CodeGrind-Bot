@@ -65,7 +65,7 @@ def account_not_found_embed() -> discord.Embed:
         title="Account not found",
         color=discord.Color.red())
 
-    embed.description = "You haven't added your LeetCode account to this server!\nUse `/add <leetcode_username>`"
+    embed.description = "The user hasn't linked their LeetCode account to this server yet! To connect to the bot use </add:1115756888185917542>`"
 
     return embed
 

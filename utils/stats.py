@@ -3,7 +3,7 @@ from datetime import datetime
 from beanie.odm.operators.update.array import AddToSet
 from beanie.odm.operators.update.general import Set
 
-from bot_globals import calculate_scores, logger
+from bot_globals import calculate_scores, logger, client
 from models.server_model import Rankings, Server, UserRank
 from models.user_model import User, History, Submissions
 from utils.leaderboards import get_score
@@ -97,6 +97,11 @@ async def update_stats(user: User, now: datetime, daily_reset: bool = False, wee
     user.submissions.hard = hard
     user.submissions.total_score = total_score
 
+    for display_information in user.display_information:
+        name = client.get_guild(display_information.server_id).get_member(
+            user.id).display_name
+        display_information.name = name
+
     if daily_reset:
         user.scores.yesterday_score = day_score
         user.scores.day_score = 0
@@ -108,7 +113,6 @@ async def update_stats(user: User, now: datetime, daily_reset: bool = False, wee
         user.scores.last_week_score = week_score
         user.scores.week_score = 0
         user.scores.start_of_week_total_score = total_score
-    
 
     await user.save_changes()
 
