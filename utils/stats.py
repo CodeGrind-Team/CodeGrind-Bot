@@ -98,8 +98,9 @@ async def update_stats(user: User, now: datetime, daily_reset: bool = False, wee
     user.submissions.total_score = total_score
 
     for display_information in user.display_information:
-        name = client.get_guild(server_id).get_member(user.id).display_name
-        await User.find_one(User.id == user.id, User.display_information.server_id == display_information.server_id).update(Set({"display_information.$.name": name}))
+        name = client.get_guild(display_information.server_id).get_member(
+            user.id).display_name
+        display_information.name = name
 
     if daily_reset:
         user.scores.yesterday_score = day_score
@@ -112,7 +113,6 @@ async def update_stats(user: User, now: datetime, daily_reset: bool = False, wee
         user.scores.last_week_score = week_score
         user.scores.week_score = 0
         user.scores.start_of_week_total_score = total_score
-    
 
     await user.save_changes()
 
