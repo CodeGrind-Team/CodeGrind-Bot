@@ -99,7 +99,12 @@ async def update_stats(user: User, now: datetime, daily_reset: bool = False, wee
     user.submissions.total_score = total_score
 
     for i in range(len(user.display_information)-1, -1, -1):
-        member = client.get_guild(user.display_information[i].server_id).get_member(
+        guild = client.get_guild(user.display_information[i].server_id)
+
+        if not guild:
+            continue
+
+        member = guild.get_member(
             user.id)
 
         if not member:
