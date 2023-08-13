@@ -40,12 +40,13 @@ class Stats(commands.Cog):
             await interaction.response.send_message(embed=embed, ephemeral=True)
             return
 
+        await interaction.response.defer(ephemeral=True)
         embed, file = await stats_embed(user.leetcode_username)
 
         if file is None:
-            await interaction.response.send_message(embed=embed, ephemeral=True)
+            await interaction.followup.send(embed=embed, ephemeral=True)
         else:
-            await interaction.response.send_message(embed=embed, file=file, ephemeral=not display_publicly)
+            await interaction.followup.send(embed=embed, file=file, ephemeral=not display_publicly)
 
 
 async def setup(client: commands.Bot):
