@@ -1,21 +1,20 @@
 import discord
 from discord.ext import commands
 
-from bot_globals import calculate_scores, logger
-from embeds.stats_embeds import invalid_username_embed, stats_embed, account_hidden_embed
+from bot_globals import logger
+from embeds.stats_embeds import stats_embed, account_hidden_embed
 from embeds.users_embeds import account_not_found_embed
 from models.user_model import User
 from utils.middleware import track_analytics
-from utils.questions import get_problems_solved_and_rank
 
 
 class Stats(commands.Cog):
     def __init__(self, client):
         self.client = client
 
-    @discord.app_commands.command(name="stats", description="Displays the stats of a user")
+    @discord.app_commands.command(name="stats", description="Displays a user's stats")
     @track_analytics
-    async def stats(self, interaction: discord.Interaction, user: discord.Member | None = None, display_publicly: bool = False) -> None:
+    async def stats(self, interaction: discord.Interaction, user: discord.Member | None = None, display_publicly: bool = True) -> None:
         logger.info('file: cogs/stats.py ~ stats ~ run')
 
         if not interaction.guild:
@@ -41,24 +40,12 @@ class Stats(commands.Cog):
             await interaction.response.send_message(embed=embed, ephemeral=True)
             return
 
-        stats = get_problems_solved_and_rank(user.leetcode_username)
+        embed, file = await stats_embed(user.leetcode_username)
 
-        if not stats:
-            embed = invalid_username_embed()
+        if file is None:
             await interaction.response.send_message(embed=embed, ephemeral=True)
-            return
-
-        rank = stats["profile"]["ranking"]
-        easy = stats["submitStatsGlobal"]["acSubmissionNum"]["Easy"]
-        medium = stats["submitStatsGlobal"]["acSubmissionNum"]["Medium"]
-        hard = stats["submitStatsGlobal"]["acSubmissionNum"]["Hard"]
-        total_questions_done = stats["submitStatsGlobal"]["acSubmissionNum"]["All"]
-
-        total_score = calculate_scores(easy, medium, hard)
-
-        embed = stats_embed(user.leetcode_username, rank, easy,
-                            medium, hard, total_questions_done, total_score)
-        await interaction.response.send_message(embed=embed, ephemeral=not display_publicly)
+        else:
+            await interaction.ressponse.send_message(embed=embed, file=file, ephemeral=not display_publicly)
 
 
 async def setup(client: commands.Bot):

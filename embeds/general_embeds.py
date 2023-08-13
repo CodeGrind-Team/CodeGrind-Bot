@@ -45,7 +45,7 @@ Note: stats for `daily` and `weekly` will only be calculated after an account is
 
 </stats:1115756888664060014>: Returns the statistics of your or someone else's LeetCode account.
 >    - `user` _(optional)_: A user from the server. Default is your account.
->    - `display_publicly` _(optional)_: Whether you want everyone in the server to see the stats. Default is 'False'""",
+>    - `display_publicly` _(optional)_: Whether you want everyone in the server to see the stats. Default is 'True'""",
 
                       "LeetCode Questions": """
 ## LeetCode Questions
