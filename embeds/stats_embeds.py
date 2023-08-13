@@ -17,20 +17,23 @@ def stats_embed(leetcode_username: str) -> Tuple[discord.Embed, discord.File | N
     embed.set_footer(
         text="Credit to github.com/JacobLinCool/LeetCode-Stats-Card")
 
-    url = f"https://leetcard.jacoblin.cool/{leetcode_username}?theme=dark&font=Overpass%20Mono&animation=false&width=500&ext=activity"
+    width = 500
+    height = 400
+
+    url = f"https://leetcard.jacoblin.cool/{leetcode_username}?theme=dark&font=Overpass%20Mono&animation=false&width={width}&height={height}&ext=activity"
 
     # Making sure the website is reachable before running hti.screenshot()
     # as the method will stall if url isn't reachable.
     try:
-        get = requests.get(url)
+        response = requests.get(url)
 
-        if get.status_code != 200:
+        if response.status_code != 200:
             return error_embed(), None
 
     except requests.exceptions.RequestException as e:
         return error_embed(), None
 
-    paths = hti.screenshot(url=url, size=(500, 400))
+    paths = hti.screenshot(url=url, size=(width, height))
 
     with open(paths[0], "rb") as f:
         # read the file contents
