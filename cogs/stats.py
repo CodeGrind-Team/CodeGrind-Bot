@@ -41,7 +41,8 @@ class Stats(commands.Cog):
             return
 
         await interaction.response.defer(ephemeral=not display_publicly)
-        embed, file = await stats_embed(user.leetcode_username)
+
+        embed, file = await stats_embed(user.leetcode_username, user.leetcode_username if display_information is None else display_information.name)
 
         if file is None:
             await interaction.followup.send(embed=embed)
