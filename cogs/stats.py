@@ -45,7 +45,7 @@ class Stats(commands.Cog):
         if file is None:
             await interaction.response.send_message(embed=embed, ephemeral=True)
         else:
-            await interaction.ressponse.send_message(embed=embed, file=file, ephemeral=not display_publicly)
+            await interaction.response.send_message(embed=embed, file=file, ephemeral=not display_publicly)
 
 
 async def setup(client: commands.Bot):
