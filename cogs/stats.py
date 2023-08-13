@@ -42,6 +42,9 @@ class Stats(commands.Cog):
 
         await interaction.response.defer(ephemeral=not display_publicly)
 
+        # Needed because if user already has connected their account to the bot
+        # but hasn't connected their account to the corresponding server,
+        # then display_information is None.
         embed, file = await stats_embed(user.leetcode_username, user.leetcode_username if display_information is None else display_information.name)
 
         if file is None:

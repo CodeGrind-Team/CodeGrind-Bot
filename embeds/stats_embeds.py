@@ -20,7 +20,7 @@ def stats_embed(leetcode_username: str, display_name: str) -> Tuple[discord.Embe
     width = 500
     height = 400
 
-    url = f"https://leetcard.jacoblin.cool/{leetcode_username}?theme=dark&font=Overpass%20Mono&animation=false&width={width}&height={height}&ext=activity"
+    url = f"https://leetcard.jacoblin.cool/{leetcode_username}?theme=dark&animation=false&width={width}&height={height}&ext=activity"
 
     # Making sure the website is reachable before running hti.screenshot()
     # as the method will stall if url isn't reachable.
