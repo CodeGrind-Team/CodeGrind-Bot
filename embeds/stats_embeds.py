@@ -1,27 +1,56 @@
+import io
+import os
+from typing import Tuple
+
 import discord
+import requests
+from html2image import Html2Image
+
+from embeds.misc_embeds import error_embed
+from utils.run_blocking import to_thread
 
 
-def stats_embed(leetcode_username: str, rank: int, easy: int, medium: int, hard: int, total_questions_done: int, total_score: int) -> discord.Embed:
-    embed = discord.Embed(
-        title=f"Rank: {rank}", color=discord.Color.blue())
-
-    embed.add_field(name="**Easy**",
-                    value=f"{easy}", inline=True)
-
-    embed.add_field(name="**Medium**",
-                    value=f"{medium}", inline=True)
-
-    embed.add_field(name="**Hard**",
-                    value=f"{hard}", inline=True)
-
+@to_thread
+def stats_embed(leetcode_username: str) -> Tuple[discord.Embed, discord.File | None]:
+    embed = discord.Embed(title=leetcode_username,
+                          url=f"https://leetcode.com/{leetcode_username}", color=discord.Color.orange())
     embed.set_footer(
-        text=f"Total: {total_questions_done} | Score: {total_score}")
+        text="Credit to github.com/JacobLinCool/LeetCode-Stats-Card")
 
-    embed.set_author(
-        name=f"{leetcode_username}'s LeetCode Stats",
-    )
+    hti = Html2Image(
+        browser_executable=os.environ["BROWSER_EXECUTABLE_PATH"])
 
-    return embed
+    url = f"https://leetcard.jacblin.cool/{leetcode_username}?theme=dark&font=Overpass%20Mono&animation=false&width=500&ext=activity"
+
+    # Making sure the website is reachable before running hti.screenshot()
+    # as the method will stall if url isn't reachable.
+    try:
+        get = requests.get(url)
+
+        if get.status_code != 200:
+            return error_embed(), None
+
+    except requests.exceptions.RequestException as e:
+        return error_embed(), None
+
+    paths = hti.screenshot(url=url, size=(500, 400))
+
+    with open(paths[0], "rb") as f:
+        # read the file contents
+        data = f.read()
+        # create a BytesIO object from the data
+        image_binary = io.BytesIO(data)
+        # move the cursor to the beginning
+        image_binary.seek(0)
+
+        file = discord.File(
+            fp=image_binary, filename=f"{leetcode_username}.png")
+
+    os.remove(paths[0])
+
+    embed.set_image(url=f"attachment://{leetcode_username}.png")
+
+    return embed, file
 
 
 def invalid_username_embed() -> discord.Embed:
