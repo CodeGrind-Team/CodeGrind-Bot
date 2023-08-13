@@ -4,8 +4,8 @@ from typing import Tuple
 
 import discord
 import requests
-from html2image import Html2Image
 
+from bot_globals import hti
 from embeds.misc_embeds import error_embed
 from utils.run_blocking import to_thread
 
@@ -17,10 +17,7 @@ def stats_embed(leetcode_username: str) -> Tuple[discord.Embed, discord.File | N
     embed.set_footer(
         text="Credit to github.com/JacobLinCool/LeetCode-Stats-Card")
 
-    hti = Html2Image(
-        browser_executable=os.environ["BROWSER_EXECUTABLE_PATH"])
-
-    url = f"https://leetcard.jacblin.cool/{leetcode_username}?theme=dark&font=Overpass%20Mono&animation=false&width=500&ext=activity"
+    url = f"https://leetcard.jacoblin.cool/{leetcode_username}?theme=dark&font=Overpass%20Mono&animation=false&width=500&ext=activity"
 
     # Making sure the website is reachable before running hti.screenshot()
     # as the method will stall if url isn't reachable.

@@ -1,4 +1,3 @@
-import asyncio
 import logging
 import os
 from datetime import datetime
@@ -6,6 +5,10 @@ from datetime import datetime
 import discord
 import pytz
 from discord.ext import commands
+from dotenv import load_dotenv
+from html2image import Html2Image
+
+load_dotenv()
 
 if not os.path.exists('logs'):
     os.makedirs('logs')
@@ -16,7 +19,8 @@ logging.basicConfig(filename=f"logs/{datetime.now(pytz.timezone('Europe/London')
 
 logger = logging.getLogger()
 
-file_lock = asyncio.Lock()
+hti = Html2Image(
+    browser_executable=os.environ["BROWSER_EXECUTABLE_PATH"])
 
 intents = discord.Intents().all()
 client = commands.Bot(command_prefix=',', intents=intents)
