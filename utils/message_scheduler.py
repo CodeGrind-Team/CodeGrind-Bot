@@ -72,7 +72,7 @@ async def send_daily_question_and_update_stats(update_stats: bool = True, force_
             await send_leaderboard_winners(server, "last_week")
 
     if daily_reset:
-        embed = daily_question_embed()
+        embed = await daily_question_embed()
 
         async for server in Server.all(fetch_links=True):
             await send_daily_question(server, embed)

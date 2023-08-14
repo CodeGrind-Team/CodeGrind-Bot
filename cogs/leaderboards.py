@@ -23,7 +23,9 @@ class Leaderboards(commands.GroupCog, name="leaderboard"):
             await interaction.response.send_message(embed=embed, ephemeral=True)
             return
 
-        await display_leaderboard(interaction.response.send_message, interaction.guild.id, interaction.user.id, "alltime", page)
+        await interaction.response.defer()
+
+        await display_leaderboard(interaction.followup.send, interaction.guild.id, interaction.user.id, "alltime", page)
 
     @discord.app_commands.command(name="weekly", description="View the Weekly leaderboard")
     @ensure_server_document
@@ -36,7 +38,9 @@ class Leaderboards(commands.GroupCog, name="leaderboard"):
             await interaction.response.send_message(embed=embed, ephemeral=True)
             return
 
-        await display_leaderboard(interaction.response.send_message, interaction.guild.id, interaction.user.id, "weekly", page)
+        await interaction.response.defer()
+
+        await display_leaderboard(interaction.followup.send, interaction.guild.id, interaction.user.id, "weekly", page)
 
     @discord.app_commands.command(name="daily", description="View the Daily leaderboard")
     @ensure_server_document
@@ -49,7 +53,9 @@ class Leaderboards(commands.GroupCog, name="leaderboard"):
             await interaction.response.send_message(embed=embed, ephemeral=True)
             return
 
-        await display_leaderboard(interaction.response.send_message, interaction.guild.id, interaction.user.id, "daily", page)
+        await interaction.response.defer()
+
+        await display_leaderboard(interaction.followup.send, interaction.guild.id, interaction.user.id, "daily", page)
 
 
 async def setup(client: commands.Bot):

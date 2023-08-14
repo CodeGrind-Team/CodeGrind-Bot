@@ -4,8 +4,10 @@ import requests
 from bot_globals import logger
 from embeds.misc_embeds import error_embed
 from utils.ratings import get_rating_data
+from utils.run_blocking import to_thread
 
 
+@to_thread
 def daily_question_embed() -> discord.Embed:
     logger.info(
         "file: embeds/questions_embeds.py ~ daily_question_embed ~ run")

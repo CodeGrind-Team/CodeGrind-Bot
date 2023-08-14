@@ -24,6 +24,11 @@ def get_rating_data(title: str) -> Dict | None:
 
 
 @to_thread
+def get_rating_data_to_thread(title: str) -> Dict | None:
+    return get_rating_data(title)
+
+
+@to_thread
 def read_ratings_txt() -> None:
     with open('ratings.txt', 'r', encoding="UTF-8") as file:
         lines = file.readlines()
