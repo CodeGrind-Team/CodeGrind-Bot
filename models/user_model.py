@@ -24,6 +24,8 @@ class Scores(BaseModel):
     yesterday_score: Optional[int] = 0
     last_week_score: Optional[int] = 0
 
+    streak: Optional[int] = 0
+
 
 class Submissions(BaseModel):
     easy: int
