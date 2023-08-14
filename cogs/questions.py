@@ -9,7 +9,7 @@ from embeds.misc_embeds import error_embed
 from embeds.questions_embeds import (daily_question_embed, question_embed,
                                      question_has_no_rating_embed,
                                      question_rating_embed)
-from utils.ratings import get_rating_data
+from utils.ratings import get_rating_data_to_thread
 from utils.middleware import track_analytics
 
 
@@ -35,7 +35,7 @@ class Questions(commands.Cog):
 
         await interaction.response.defer()
 
-        rating_data = await get_rating_data(question_id_or_title)
+        rating_data = await get_rating_data_to_thread(question_id_or_title)
 
         rating_text = "Doesn't exist"
 
@@ -104,7 +104,7 @@ class Questions(commands.Cog):
 
         link = f"https://leetcode.com/problems/{question_title_slug}/"
 
-        rating_data = await get_rating_data(question_title)
+        rating_data = await get_rating_data_to_thread(question_title)
 
         rating_text = "Doesn't exist"
         if rating_data is not None:

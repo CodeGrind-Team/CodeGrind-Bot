@@ -59,7 +59,7 @@ def daily_question_embed() -> discord.Embed:
 
     link = f"https://leetcode.com{response_data['data']['challenge']['link']}"
 
-    rating_data = await get_rating_data(question_title)
+    rating_data = get_rating_data(question_title)
 
     rating_text = "Doesn't exist"
     if rating_data is not None:

@@ -4,7 +4,6 @@ from bot_globals import RATINGS
 from utils.run_blocking import to_thread
 
 
-@to_thread
 def get_rating_data(title: str) -> Dict | None:
     if title.isnumeric():
         question_id = int(title)
@@ -22,6 +21,11 @@ def get_rating_data(title: str) -> Dict | None:
             "rating": RATINGS[title.lower()]["rating"]
         }
         return rating_data
+
+
+@to_thread
+def get_rating_data_to_thread(title: str) -> Dict | None:
+    return get_rating_data(title)
 
 
 @to_thread

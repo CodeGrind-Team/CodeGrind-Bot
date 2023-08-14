@@ -22,7 +22,7 @@ class Leaderboards(commands.GroupCog, name="leaderboard"):
             embed = error_embed()
             await interaction.response.send_message(embed=embed, ephemeral=True)
             return
-        
+
         await interaction.response.defer()
 
         await display_leaderboard(interaction.followup.send, interaction.guild.id, interaction.user.id, "alltime", page)
@@ -37,7 +37,7 @@ class Leaderboards(commands.GroupCog, name="leaderboard"):
             embed = error_embed()
             await interaction.response.send_message(embed=embed, ephemeral=True)
             return
-        
+
         await interaction.response.defer()
 
         await display_leaderboard(interaction.followup.send, interaction.guild.id, interaction.user.id, "weekly", page)
