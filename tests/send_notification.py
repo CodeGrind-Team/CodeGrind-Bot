@@ -1,5 +1,11 @@
+from models.user_model import User
+from models.server_model import Server
+from bot_globals import client
+from motor.motor_asyncio import AsyncIOMotorClient
+from dotenv import load_dotenv
+from beanie import init_beanie
+import discord
 import asyncio
-import io
 import os
 import sys
 
@@ -8,30 +14,9 @@ current_path = os.path.dirname(__file__)
 parent_path = os.path.abspath(os.path.join(current_path, '..'))
 sys.path.append(parent_path)
 
-import discord
-from beanie import init_beanie
-from dotenv import load_dotenv
-from motor.motor_asyncio import AsyncIOMotorClient
-
-from bot_globals import client
-from models.server_model import Server
-from models.user_model import User
 
 load_dotenv()
 
-def add_file(image_path: str | None = None) -> discord.File:
-    with open(image_path, "rb") as f:
-        # read the file contents
-        data = f.read()
-        # create a BytesIO object from the data
-        image_binary = io.BytesIO(data)
-        # move the cursor to the beginning
-        image_binary.seek(0)
-
-        file = discord.File(
-            fp=image_binary, filename=f"image.png")
-
-    return file
 
 @client.event
 async def on_ready() -> None:
@@ -46,7 +31,7 @@ Using </stats:1115756888664060014>, you can now easily select a specific user fr
 Here's an example of how it now looks like:"""
 
     # Don't include a file by setting this to None
-    file = add_file("C:/Users/kevro/Downloads/image.png")
+    image_path = "C:/Users/kevro/Downloads/image.png"
 
     # The notification type(s) to send the message to. One from: "maintenance", "daily_question", "winner"
     notification_type = "maintenance"
@@ -63,13 +48,13 @@ Here's an example of how it now looks like:"""
         if "maintenance" in notification_type:
             for channel_id in server.channels.maintenance:
                 channel = client.get_channel(channel_id)
-                
+
                 if not isinstance(channel, discord.TextChannel):
                     continue
 
                 try:
-                    if file:
-                        await channel.send(content=message, file=file)
+                    if image_path:
+                        await channel.send(content=message, file=discord.File(image_path))
                     else:
                         await channel.send(content=message)
 
@@ -106,7 +91,6 @@ Here's an example of how it now looks like:"""
                 except discord.errors.Forbidden as e:
                     print(e)
 
-        
     print("DONE!")
 
 
@@ -114,7 +98,7 @@ async def main(token: str) -> None:
     async with client:
         await client.start(token)
 
-#notification_types, message, file
+# notification_types, message, file
 
 if __name__ == "__main__":
     token = os.environ['TOKEN']
