@@ -2,6 +2,7 @@ import discord
 from discord.ext import commands
 
 from bot_globals import logger
+from embeds.misc_embeds import error_embed
 from embeds.stats_embeds import stats_embed, account_hidden_embed
 from embeds.users_embeds import account_not_found_embed
 from models.user_model import User
@@ -17,7 +18,11 @@ class Stats(commands.Cog):
     async def stats(self, interaction: discord.Interaction, user: discord.Member | None = None, display_publicly: bool = True) -> None:
         logger.info('file: cogs/stats.py ~ stats ~ run')
 
+        await interaction.response.defer(ephemeral=not display_publicly)
+
         if not interaction.guild:
+            embed = error_embed()
+            await interaction.response.send_message(embed=embed, ephemeral=True)
             return
 
         if user:
@@ -29,7 +34,7 @@ class Stats(commands.Cog):
 
         if not user:
             embed = account_not_found_embed()
-            await interaction.response.send_message(embed=embed, ephemeral=True)
+            await interaction.followup.send(embed=embed)
             return
 
         display_information = next(
@@ -37,10 +42,8 @@ class Stats(commands.Cog):
 
         if user.id != interaction.user.id and not display_information.url:
             embed = account_hidden_embed()
-            await interaction.response.send_message(embed=embed, ephemeral=True)
+            await interaction.followup.send(embed=embed)
             return
-
-        await interaction.response.defer(ephemeral=not display_publicly)
 
         # Needed because if user already has connected their account to the bot
         # but hasn't connected their account to the corresponding server,

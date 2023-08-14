@@ -4,8 +4,10 @@ import requests
 from bot_globals import logger
 from embeds.misc_embeds import error_embed
 from utils.ratings import get_rating_data
+from utils.run_blocking import to_thread
 
 
+@to_thread
 def daily_question_embed() -> discord.Embed:
     logger.info(
         "file: embeds/questions_embeds.py ~ daily_question_embed ~ run")
@@ -57,7 +59,7 @@ def daily_question_embed() -> discord.Embed:
 
     link = f"https://leetcode.com{response_data['data']['challenge']['link']}"
 
-    rating_data = get_rating_data(question_title)
+    rating_data = await get_rating_data(question_title)
 
     rating_text = "Doesn't exist"
     if rating_data is not None:

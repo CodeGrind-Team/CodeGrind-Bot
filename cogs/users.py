@@ -39,7 +39,11 @@ class Users(commands.Cog):
             'file: cogs/users.py ~ add ~ run ~ leetcode_username: %s, include_url: %s', leetcode_username, include_url)
 
         if not interaction.guild:
+            embed = error_embed()
+            await interaction.response.send_message(embed=embed, ephemeral=True)
             return
+
+        await interaction.response.defer(ephemeral=True)
 
         server_id = interaction.guild.id
         user_id = interaction.user.id
@@ -48,7 +52,7 @@ class Users(commands.Cog):
 
         if not server_exists:
             embed = error_embed()
-            await interaction.response.send_message(embed=embed, ephemeral=True)
+            await interaction.followup.send(embed=embed)
             return
 
         display_information = DisplayInformation(
@@ -65,7 +69,7 @@ class Users(commands.Cog):
 
                 # User has already been added in the server
                 embed = user_already_added_in_server_embed()
-                await interaction.response.send_message(embed=embed, ephemeral=True)
+                await interaction.followup.send(embed=embed)
 
             else:
                 logger.info(
@@ -81,7 +85,7 @@ class Users(commands.Cog):
                 await server.save()
 
                 embed = synced_existing_user_embed()
-                await interaction.response.send_message(embed=embed, ephemeral=True)
+                await interaction.followup.send(embed=embed)
 
         else:
             # Generate a random string for account linking
@@ -90,7 +94,7 @@ class Users(commands.Cog):
 
             embed = connect_account_instructions_embed(
                 generated_string, leetcode_username)
-            await interaction.response.send_message(embed=embed, ephemeral=True)
+            await interaction.followup.send(embed=embed, ephemeral=True)
 
             profile_name = None
             check_interval = 5  # seconds
@@ -157,16 +161,20 @@ class Users(commands.Cog):
             'file: cogs/users.py ~ update ~ run ~ include_url: %s', include_url)
 
         if not interaction.guild:
+            embed = error_embed()
+            await interaction.response.send_message(embed=embed, ephemeral=True)
             return
 
         server_id = interaction.guild.id
         user_id = interaction.user.id
 
+        await interaction.response.defer(ephemeral=True)
+
         server_exists = await Server.find_one(Server.id == server_id).project(IdProjection)
 
         if not server_exists:
             embed = error_embed()
-            await interaction.response.send_message(embed=embed, ephemeral=True)
+            await interaction.followup.send(embed=embed)
             return
 
         user = await User.find_one(User.id == user_id)
@@ -175,14 +183,14 @@ class Users(commands.Cog):
             await User.find_one(User.id == user.id, User.display_information.server_id == server_id).update(Set({"display_information.$.url": include_url}))
             embed = profile_details_updated_embed()
 
-            await interaction.response.send_message(embed=embed, ephemeral=True)
+            await interaction.followup.send(embed=embed)
             return
 
         logger.info(
             'file: cogs/users.py ~ remove ~ profile not found in this server ~ user_id: %s', user_id)
 
         embed = account_not_found_embed()
-        await interaction.response.send_message(embed=embed, ephemeral=True)
+        await interaction.followup.send(embed=embed)
 
     @discord.app_commands.command(name="remove", description="Remove your profile from this server's leaderboard")
     @ensure_server_document
@@ -199,11 +207,13 @@ class Users(commands.Cog):
         server_id = interaction.guild.id
         user_id = interaction.user.id
 
+        await interaction.response.defer(ephemeral=True)
+
         server_exists = await Server.find_one(Server.id == server_id).project(IdProjection)
 
         if not server_exists:
             embed = error_embed()
-            await interaction.response.send_message(embed=embed, ephemeral=True)
+            await interaction.followup.send(embed=embed)
             return
 
         logger.info(
@@ -225,14 +235,14 @@ class Users(commands.Cog):
                     'file: cogs/users.py ~ remove ~ profile removed - references removed from User and Server documents ~ user_id: %s', user_id)
 
                 embed = account_removed_embed()
-                await interaction.response.send_message(embed=embed, ephemeral=True)
+                await interaction.followup.send(embed=embed)
                 return
 
         logger.info(
             'file: cogs/users.py ~ remove ~ profile not found in this server ~ user_id: %s', user_id)
 
         embed = account_not_found_embed()
-        await interaction.response.send_message(embed=embed, ephemeral=True)
+        await interaction.followup.send(embed=embed)
 
 
 async def setup(client: commands.Bot):

@@ -22,16 +22,20 @@ class Questions(commands.Cog):
     async def daily(self, interaction: discord.Interaction) -> None:
         logger.info("file: cogs/questions.py ~ get_daily ~ run")
 
-        embed = daily_question_embed()
+        await interaction.response.defer()
 
-        await interaction.response.send_message(embed=embed)
+        embed = await daily_question_embed()
+
+        await interaction.followup.send(embed=embed)
 
     @discord.app_commands.command(name="rating", description="Returns the Zerotrac rating of the problem")
     @track_analytics
     async def rating(self, interaction: discord.Interaction, question_id_or_title: str) -> None:
         logger.info("file: cogs/questions.py ~ get_rating ~ run")
 
-        rating_data = get_rating_data(question_id_or_title)
+        await interaction.response.defer()
+
+        rating_data = await get_rating_data(question_id_or_title)
 
         rating_text = "Doesn't exist"
 
@@ -41,11 +45,11 @@ class Questions(commands.Cog):
             embed = question_rating_embed(
                 rating_data["question_name"], rating_text)
 
-            await interaction.response.send_message(embed=embed)
+            await interaction.followup.send(embed=embed)
             return
 
         embed = question_has_no_rating_embed()
-        await interaction.response.send_message(embed=embed)
+        await interaction.followup.send(embed=embed)
 
     @discord.app_commands.command(
         name="question",
@@ -57,6 +61,8 @@ class Questions(commands.Cog):
 
         difficulty = difficulty.lower()
 
+        await interaction.response.defer()
+
         try:
             response = requests.get(
                 "https://leetcode.com/api/problems/all/", timeout=10)
@@ -67,7 +73,7 @@ class Questions(commands.Cog):
 
             embed = error_embed(
                 f"An error occurred while trying to get the question from LeetCode. LeetCode may be down.")
-            await interaction.response.send_message(embed=embed, ephemeral=True)
+            await interaction.followup.send(embed=embed, ephemeral=True)
             return
 
         if response.status_code != 200:
@@ -76,7 +82,7 @@ class Questions(commands.Cog):
 
             embed = error_embed(
                 f"An error occurred while trying to get the question from LeetCode. LeetCode may be down.")
-            await interaction.response.send_message(embed=embed, ephemeral=True)
+            await interaction.followup.send(embed=embed, ephemeral=True)
             return
 
         data = response.json()
@@ -98,14 +104,14 @@ class Questions(commands.Cog):
 
         link = f"https://leetcode.com/problems/{question_title_slug}/"
 
-        rating_data = get_rating_data(question_title)
+        rating_data = await get_rating_data(question_title)
 
         rating_text = "Doesn't exist"
         if rating_data is not None:
             rating_text = f"||{int(rating_data['rating'])}||"
 
         embed = question_embed(difficulty, question_title, rating_text, link)
-        await interaction.response.send_message(embed=embed)
+        await interaction.followup.send(embed=embed)
 
 
 async def setup(client: commands.Bot):

@@ -30,12 +30,14 @@ class Channels(commands.GroupCog, name="settings"):
             embed = invalid_timezone_embed()
             await interaction.response.send_message(embed=embed, ephemeral=True)
             return
+        
+        await interaction.response.defer(ephemeral=True)
 
         server_id = interaction.guild.id
         await Server.find_one(Server.id == server_id).update(Set({Server.timezone: timezone}))
 
         embed = timezone_updated_embed()
-        await interaction.response.send_message(embed=embed, ephemeral=True)
+        await interaction.followup.send(embed=embed, ephemeral=True)
 
 
 async def setup(client: commands.Bot):
