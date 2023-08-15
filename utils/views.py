@@ -95,8 +95,6 @@ class NotificationTypeSelect(discord.ui.Select):
             if label in self.values:
                 self.selected_options.append(notification_type)
 
-        await interaction.response.defer()
-
 
 class SaveButton(discord.ui.Button):
     def __init__(self, selected_options: List[str], adding: bool, server_id: int, channel_id: int, channel_name: str):
@@ -110,7 +108,6 @@ class SaveButton(discord.ui.Button):
 
     async def callback(self, interaction: discord.Interaction) -> None:
         if not self.selected_options:
-            await interaction.response.defer()
             return
 
         await save_channel_options(self.server_id, self.channel_id, self.adding, self.selected_options)
