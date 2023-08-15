@@ -37,14 +37,14 @@ TIMEFRAME_TITLE = {"alltime": {"field": "total_score", "title": "All-Time"},
 RATINGS = {}
 
 MILESTONE_ROLES = {
-    1: ("Initiate (1 Problem)", discord.Color.blue()),          # 1 Problem
-    10: ("Problem Solver (10 Problems)", discord.Color.green()),  # 10 Problems
-    25: ("Algorithm Apprentice (25 Problems)", discord.Color.gold()),  # 25 Problems
-    50: ("Logic Guru (50 Problems)", discord.Color.purple()),     # 50 Problems
-    75: ("Code Crusader (75 Problems)", discord.Color.orange()),  # 75 Problems
-    100: ("LeetCode Legend (100 Problems)", discord.Color.red()),  # 100 Problems
-    150: ("Problem Connoisseur (150 Problems)", discord.Color.teal()),  # 150 Problems
-    200: ("Mastermind (200 Problems)", discord.Color.dark_blue())  # 200 Problems
+    1: ("Initiate (1 Point)", discord.Color.blue()),          # 1 Problem
+    10: ("Problem Solver (10 Points)", discord.Color.green()),  # 10 Problems
+    25: ("Algorithm Apprentice (25 Points)", discord.Color.gold()),  # 25 Problems
+    50: ("Logic Guru (50 Points)", discord.Color.purple()),     # 50 Problems
+    75: ("Code Crusader (75 Points)", discord.Color.orange()),  # 75 Problems
+    100: ("LeetCode Legend (100 Points)", discord.Color.red()),  # 100 Problems
+    150: ("Problem Connoisseur (150 Points)", discord.Color.teal()),  # 150 Problems
+    200: ("Mastermind (200 Points)", discord.Color.dark_blue())  # 200 Problems
 }
 
 STREAK_ROLES = {
