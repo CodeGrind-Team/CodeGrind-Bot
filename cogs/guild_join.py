@@ -7,7 +7,7 @@ from embeds.users_embeds import account_not_found_embed
 from models.user_model import User
 from utils.middleware import track_analytics
 
-from bot_globals import STREAK_ROLES, MILESTONE_ROLES
+from bot_globals import STREAK_ROLES, MILESTONE_ROLES, VERIFIED_ROLE
 
 class GuildJoin(commands.Cog):
     def __init__(self, client):
@@ -27,7 +27,7 @@ class GuildJoin(commands.Cog):
 
     # When the bot joins the server, create a verified role to be used for connected users.
 async def generate_connected_users_role(self, guild: discord.Guild) -> discord.Role:
-    role_name = "CodeGrind Verified"
+    role_name = VERIFIED_ROLE
     role = discord.utils.get(guild.roles, name=role_name)
 
     if role is None:
