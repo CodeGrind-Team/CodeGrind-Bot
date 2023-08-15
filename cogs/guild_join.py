@@ -21,6 +21,7 @@ class GuildJoin(commands.Cog):
         # Create a new role
         await generate_connected_users_role(self, guild)
         await generate_milestone_users_role(self, guild)
+        await generate_streaks_users_role(self, guild)
 
         return None
 

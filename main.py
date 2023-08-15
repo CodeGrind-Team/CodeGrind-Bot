@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 
 from bot_globals import client, logger
 from database import init_mongodb_conn
-from utils.message_scheduler import send_daily_question_and_update_stats
+from utils.message_scheduler import send_daily_question_and_update_stats, send_daily_question_and_update_stats_schedule
 from utils.ratings import read_ratings_txt
 
 load_dotenv()
