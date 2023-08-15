@@ -14,7 +14,7 @@ class GuildJoin(commands.Cog):
 
     # When the bot joins a server, create a new display information for each user in the server.
     @commands.Cog.listener()
-    async def on_guild_join(self, guild: discord.Guild) -> None:
+    async def on_guild_join(self, guild: discord.Guild):
         print(f'Joined {guild.name} with {guild.member_count} members!')
 
         # Create a new role
@@ -28,7 +28,7 @@ class GuildJoin(commands.Cog):
     @ensure_server_document
     @admins_only
     @track_analytics
-    async def create_roles(self, interaction: discord.Interaction) -> None:
+    async def create_roles(self, interaction: discord.Interaction):
         logger.info("file: cogs/guild_join.py ~ createRoles ~ run")
 
         if not interaction.guild or not isinstance(interaction.channel, discord.TextChannel) or not isinstance(interaction.user, discord.Member):
@@ -46,19 +46,19 @@ class GuildJoin(commands.Cog):
         await interaction.followup.send("Roles created successfully!")
 
     # When the bot joins the server, create a verified role to be used for connected users.
-async def generate_connected_users_role(self, guild: discord.Guild) -> None:
-    generate_roles_from_string(self, guild, VERIFIED_ROLE)
+async def generate_connected_users_role(self, guild: discord.Guild):
+    await generate_roles_from_string(self, guild, VERIFIED_ROLE)
 
 
-async def generate_milestone_users_role(self, guild: discord.Guild) -> None:
-    generate_roles_from_dict(self, guild, MILESTONE_ROLES)
+async def generate_milestone_users_role(self, guild: discord.Guild):
+    await generate_roles_from_dict(self, guild, MILESTONE_ROLES)
 
 
-async def generate_streaks_users_role(self, guild: discord.Guild) -> None:
-    generate_roles_from_dict(self, guild, STREAK_ROLES)
+async def generate_streaks_users_role(self, guild: discord.Guild):
+    await generate_roles_from_dict(self, guild, STREAK_ROLES)
 
 
-async def generate_roles_from_dict(self, guild: discord.Guild, roles: dict) -> None:
+async def generate_roles_from_dict(self, guild: discord.Guild, roles: dict):
     for role in roles:
         role_name, role_color = roles[role]
 
@@ -67,11 +67,11 @@ async def generate_roles_from_dict(self, guild: discord.Guild, roles: dict) -> N
                                     hoist=False, mentionable=False)
 
 
-async def generate_roles_from_string(self, guild: discord.Guild, role: str) -> None:
-    role = discord.utils.get(guild.roles, name=role)
+async def generate_roles_from_string(self, guild: discord.Guild, role_str: str):
+    role = discord.utils.get(guild.roles, name=role_str)
 
     if role is None:
-        role = await guild.create_role(name=role, color=discord.Color.gray(),
+        await guild.create_role(name=role_str, color=discord.Color.light_gray(),
                                         hoist=False, mentionable=False)
 
 
