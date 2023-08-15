@@ -1,13 +1,11 @@
 import discord
 from discord.ext import commands
 
-from bot_globals import logger
+from bot_globals import logger, STREAK_ROLES, MILESTONE_ROLES, VERIFIED_ROLE
 from embeds.stats_embeds import stats_embed, account_hidden_embed
 from embeds.users_embeds import account_not_found_embed
 from models.user_model import User
 from utils.middleware import track_analytics
-
-from bot_globals import STREAK_ROLES, MILESTONE_ROLES, VERIFIED_ROLE
 
 class GuildJoin(commands.Cog):
     def __init__(self, client):
@@ -31,7 +29,7 @@ async def generate_connected_users_role(self, guild: discord.Guild) -> discord.R
     role = discord.utils.get(guild.roles, name=role_name)
 
     if role is None:
-        role = await guild.create_role(name=role_name, color=discord.Color.gray(), hoist=True, mentionable=False)
+        role = await guild.create_role(name=role_name, color=discord.Color.gray(), hoist=False, mentionable=False)
 
     return role
 
@@ -41,7 +39,7 @@ async def generate_milestone_users_role(self, guild: discord.Guild) -> None:
     for role in MILESTONE_ROLES:
         role_name, role_color = MILESTONE_ROLES.get(role)
         if discord.utils.get(guild.roles, name=role_name) is None:
-            created_roles.append(await guild.create_role(name=role_name, color=role_color, hoist=True, mentionable=False))
+            created_roles.append(await guild.create_role(name=role_name, color=role_color, hoist=False, mentionable=False))
 
     return created_roles
 
@@ -51,7 +49,7 @@ async def generate_streaks_users_role(self, guild: discord.Guild) -> discord.Rol
     for role in STREAK_ROLES:
         role_name, role_color = STREAK_ROLES.get(role)
         if discord.utils.get(guild.roles, name=role_name) is None:
-            created_roles.append(await guild.create_role(name=role_name, color=role_color, hoist=True, mentionable=False))
+            created_roles.append(await guild.create_role(name=role_name, color=role_color, hoist=False, mentionable=False))
 
     return created_roles
 

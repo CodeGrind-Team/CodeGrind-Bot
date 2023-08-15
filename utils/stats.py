@@ -149,7 +149,7 @@ async def update_stats(user: User, now: datetime, daily_reset: bool = False, wee
     
 
 async def give_user_streak_role(user: discord.User, guild_id: int, streak: int) -> None:
-    logger.info(f"file: utils/message_scheduler.py ~ give_user_streak_role ~ run - {user.id} - {streak}")
+    logger.info(f"file: utils/stats.py ~ give_user_streak_role ~ run - {user.id} - {streak}")
     guild = client.get_guild(guild_id)
 
     if not guild:
@@ -183,7 +183,7 @@ async def give_user_streak_role(user: discord.User, guild_id: int, streak: int) 
     return None
 
 async def give_user_milestone_role(user: discord.User, guild_id: int, totalSolved: int) -> None:
-    logger.info(f"file: utils/message_scheduler.py ~ give_user_milestone_role ~ run - {user.id} - {totalSolved}")
+    logger.info(f"file: utils/stats.py ~ give_user_milestone_role ~ run - {user.id} - {totalSolved} - {guild_id}")
 
     guild = client.get_guild(guild_id)
 
