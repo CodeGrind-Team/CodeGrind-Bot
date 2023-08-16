@@ -1,7 +1,6 @@
 import asyncio
 import logging
 import os
-from datetime import datetime
 
 import topgg
 from dotenv import load_dotenv
@@ -31,10 +30,12 @@ async def on_ready() -> None:
     if update_stats_on_start or daily_reset_on_start or weekly_reset_on_start:
         await send_daily_question_and_update_stats(update_stats_on_start, daily_reset_on_start, weekly_reset_on_start)
 
+
 @client.event
 async def setup_hook() -> None:
     logger.info("file: main.py ~ setup_hook ~ start")
-    logger.info("file: main.py ~ setup_hook ~ logged in as a bot %s", client.user)
+    logger.info(
+        "file: main.py ~ setup_hook ~ logged in as a bot %s", client.user)
 
     if os.environ["PRODUCTION"] == "True":
         dbl_token = os.environ["TOPGG_TOKEN"]

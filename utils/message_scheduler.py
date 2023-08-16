@@ -46,16 +46,17 @@ async def send_daily_question_and_update_stats_schedule() -> None:
     await send_daily_question_and_update_stats()
 
 
-async def send_daily_question_and_update_stats(update_stats_bool: bool = True, force_daily_reset: bool = False, force_weekly_reset: bool = False) -> None:
+async def send_daily_question_and_update_stats(force_update_stats: bool = True, force_daily_reset: bool = False, force_weekly_reset: bool = False) -> None:
     logger.info(
         "file: utils/message_scheduler.py ~ send_daily_question_and_update_stats ~ started")
 
     now = datetime.utcnow()
 
     daily_reset = (now.hour == 0 and now.minute == 0) or force_daily_reset
-    weekly_reset = (now.weekday() == 0 and now.hour == 0 and now.minute == 0) or force_weekly_reset
+    weekly_reset = (now.weekday() == 0 and now.hour ==
+                    0 and now.minute == 0) or force_weekly_reset
 
-    if update_stats_bool:
+    if force_update_stats:
         async for user in User.all():
             await update_stats(user, now, daily_reset, weekly_reset)
 
