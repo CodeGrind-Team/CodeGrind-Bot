@@ -22,6 +22,7 @@ from models.server_model import Server
 from models.user_model import DisplayInformation, Scores, Submissions, User
 from utils.middleware import ensure_server_document, track_analytics
 from utils.questions import get_problems_solved_and_rank
+from utils.roles import give_verified_role
 
 
 class Users(commands.Cog):
@@ -61,8 +62,7 @@ class Users(commands.Cog):
         user_exists = await User.find_one(User.id == user_id).project(IdProjection)
 
         if user_exists:
-            # It has passed the checks so it will or has been added - add connected role to user
-            await add_verified_role_to_user(interaction)
+            await give_verified_role(interaction.user, interaction.guild.id)
 
             display_information_exists = await User.find_one(User.id == user_id, User.display_information.server_id == server_id)
 
@@ -144,8 +144,7 @@ class Users(commands.Cog):
                 # link rule to create a new document for the new link
                 await server.save(link_rule=WriteRules.WRITE)
 
-                # Add role if user has been added
-                await add_verified_role_to_user(interaction)
+                await give_verified_role(interaction.user, interaction.guild.id)
 
                 logger.info(
                     'file: cogs/users.py ~ add ~ user has been added successfully ~ leetcode_username: %s', leetcode_username)
@@ -250,23 +249,6 @@ class Users(commands.Cog):
         embed = account_not_found_embed()
         await interaction.followup.send(embed=embed)
 
-async def add_verified_role_to_user(interaction: discord.Interaction) -> None:
-    # Get the role to assign from the guild's roles
-    role_to_assign = discord.utils.get(interaction.guild.roles, name=VERIFIED_ROLE)
-
-    # Check if the role exists
-    if role_to_assign is None:
-        return
-
-    try:
-        # Attempt to assign the role to the user
-        await interaction.user.add_roles(role_to_assign)
-    except discord.Forbidden:
-        # Handle "403 Forbidden" error
-        logger.error(f"file: cogs/users.py ~ assign_verified_role ~ run ~ 403 Forbidden error")
-    except Exception as e:
-        # Handle other exceptions
-        logger.error(f"file: cogs/users.py ~ assign_verified_role ~ run ~ {e}")
 
 async def setup(client: commands.Bot):
     await client.add_cog(Users(client))

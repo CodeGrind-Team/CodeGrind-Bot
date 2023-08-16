@@ -9,7 +9,7 @@ from models.server_model import Rankings, Server, UserRank
 from models.user_model import User, History, Submissions
 from utils.leaderboards import get_score
 from utils.questions import get_problems_solved_and_rank
-from utils.roles import give_user_milestone_role, give_user_streak_role
+from utils.roles import give_milestone_role, give_streak_role, give_verified_role
 
 
 async def update_rankings(server: Server, now: datetime, timeframe: str) -> None:
@@ -123,7 +123,15 @@ async def update_stats(user: User, now: datetime, daily_reset: bool = False, wee
         user.scores.day_score = 0
         user.scores.start_of_day_total_score = total_score
         user.history.append(History(timestamp=now, submissions=Submissions(
-            easy=easy, medium=medium, hard=hard, total_score=total_score)))
+            easy=easy, medium=medium, hard=hard, total_score=total_score), streak=user.scores.streak))
+
+        # For the user in all servers, update their streak and milestone roles
+        servers = await Server.find_all("users.id" == user.id).to_list()
+
+        for server in servers:
+            await give_verified_role(user, server.id)
+            await give_streak_role(user, server.id, user.scores.streak)
+            await give_milestone_role(user, server.id, user.submissions.total_score)
 
     if weekly_reset:
         user.scores.last_week_score = week_score
@@ -131,15 +139,6 @@ async def update_stats(user: User, now: datetime, daily_reset: bool = False, wee
         user.scores.start_of_week_total_score = total_score
 
     await user.save_changes()
-
-
-    # For the user in all servers, update their streak and milestone roles
-    result = await Server.find_all("users.id" == user.id).to_list()
-
-    for server_id in result:
-        await give_user_streak_role(user, server_id.id, user.scores.streak)
-        # logger.info("file: utils/message_scheduler.py ~ send_daily_question_and_update_stats ~ updated streak role for user %s", user.id)
-        await give_user_milestone_role(user, server_id.id, user.submissions.total_score)
 
     logger.info(
         'file: cogs/stats.py ~ update_stats ~ user stats updated successfully: %s', leetcode_username)

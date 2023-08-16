@@ -1,71 +1,132 @@
 import discord
-from bot_globals import MILESTONE_ROLES, STREAK_ROLES, logger, client
 
-async def give_user_streak_role(user: discord.User, guild_id: int, streak: int) -> None:
-    logger.info(f"file: utils/stats.py ~ give_user_streak_role ~ run - {user.id} - {streak}")
+from bot_globals import (MILESTONE_ROLES, STREAK_ROLES, VERIFIED_ROLE, client,
+                         logger)
+from models.user_model import User
+
+
+async def generate_roles_from_string(guild: discord.Guild, role: str):
+    role_exists = discord.utils.get(guild.roles, name=role)
+
+    if role_exists is None:
+        try:
+            await guild.create_role(name=role, color=discord.Color.light_gray(),
+                                    hoist=False, mentionable=False)
+        except discord.errors.Forbidden:
+            logger.exception(
+                "file: cogs/roles.py ~ generate_roles_from_string ~ 403 Forbidden error")
+
+
+async def generate_roles_from_dict(guild: discord.Guild, roles: dict):
+    for role in roles:
+        role_name, role_color = roles[role]
+
+        if discord.utils.get(guild.roles, name=role_name) is None:
+            try:
+                await guild.create_role(name=role_name, color=role_color,
+                                        hoist=False, mentionable=False)
+            except discord.errors.Forbidden:
+                logger.exception(
+                    "file: cogs/roles.py ~ generate_roles_from_dict ~ 403 sForbidden error")
+
+
+async def give_verified_role(user: discord.User | User, guild_id: int) -> None:
     guild = client.get_guild(guild_id)
 
     if not guild:
         return
-    
+
     discord_user = guild.get_member(user.id)
 
     if not discord_user:
         return
-    
+
+    role_to_assign = discord.utils.get(guild.roles, name=VERIFIED_ROLE)
+
+    # Check if the role exists
+    if role_to_assign is None:
+        return
+
+    try:
+        # Attempt to assign the role to the user
+        await discord_user.add_roles(role_to_assign)
+    except discord.errors.Forbidden:
+        logger.exception(
+            "file: cogs/roles.py ~ give_verified_role ~ run ~ 403 Forbidden error")
+    except Exception as e:
+        # Handle other exceptions
+        logger.exception(
+            "file: cogs/roles.py ~ give_verified_role ~ run ~ error: %s", e)
+
+
+async def give_streak_role(user: discord.User, guild_id: int, streak: int) -> None:
+    logger.info(
+        "file: utils/roles.py ~ give_streak_role ~ run ~ user_id: %s ~ streak: %s", user.id, streak)
+    guild = client.get_guild(guild_id)
+
+    if not guild:
+        return
+
+    discord_user = guild.get_member(user.id)
+
+    if not discord_user:
+        return
+
     role_to_assign = None
-    
-    for role_streak, (role_name, role_color) in STREAK_ROLES.items():
+
+    for role_streak, (role_name, _) in STREAK_ROLES.items():
         if streak >= role_streak:
             role_to_assign = discord.utils.get(guild.roles, name=role_name)
-    
-    # Remove all other streak roles
+
+    # Remove all other roles
     for role_streak, _ in STREAK_ROLES.items():
-        role_name, _ = STREAK_ROLES.get(role_streak)
+        role_name, _ = STREAK_ROLES[role_streak]
         role = discord.utils.get(guild.roles, name=role_name)
-        if (role and role in discord_user.roles and role != role_to_assign) or role_to_assign is None:
+        if role is not None:
             await discord_user.remove_roles(role)
-            
+
     if role_to_assign:
-        # Give the user the appropriate streak role
+        # Give the user the appropriate role
         await discord_user.add_roles(role_to_assign)
-        logger.info(f"Assigned {role_to_assign.name} role to {discord_user.display_name}")
+        logger.info(
+            "file: utils/roles.py ~ give_streak_role ~ assigned %s role to %s", role_to_assign.name, discord_user.display_name)
     else:
-        logger.warning("No suitable streak role found.")
+        logger.warning(
+            "file: utils/roles.py ~ give_streak_role ~ no suitable streak role found.")
 
-    return None
 
-async def give_user_milestone_role(user: discord.User, guild_id: int, totalSolved: int) -> None:
-    logger.info(f"file: utils/stats.py ~ give_user_milestone_role ~ run - {user.id} - {totalSolved} - {guild_id}")
+async def give_milestone_role(user: discord.User, guild_id: int, total_solved: int) -> None:
+    logger.info(
+        "file: utils/roles.py ~ give_milestone_role ~ run ~ user_id: %s, total_solved: %s, guild_id: %s", user.id, total_solved, guild_id)
 
     guild = client.get_guild(guild_id)
 
     if not guild:
         return
-    
+
     discord_user = guild.get_member(user.id)
 
     if not discord_user:
         return
-    
-    role_to_assign = None
-    
-    for role_milestone, (role_name, role_color) in MILESTONE_ROLES.items():
-        if totalSolved >= role_milestone:
-            role_to_assign = discord.utils.get(guild.roles, name=role_name)
-    
-    # Remove all other streak roles
-    for role_milestone, _ in MILESTONE_ROLES.items():
-        role_name, _ = MILESTONE_ROLES.get(role_milestone)
-        role = discord.utils.get(guild.roles, name=role_name)
-        if (role and role in discord_user.roles and role != role_to_assign) or role_to_assign is None:
-            await discord_user.remove_roles(role)
-    
-    if role_to_assign:
-        # Give the user the appropriate streak role
-        await discord_user.add_roles(role_to_assign)
-        logger.info(f"Assigned {role_to_assign.name} role to {discord_user.display_name}")
-    else:
-        logger.warning("No suitable milestone role found.")
 
-    return None
+    role_to_assign = None
+
+    for role_milestone, (role_name, _) in MILESTONE_ROLES.items():
+        if total_solved >= role_milestone:
+            role_to_assign = discord.utils.get(guild.roles, name=role_name)
+
+    # Remove all other roles
+    for role_milestone, _ in MILESTONE_ROLES.items():
+        role_name, _ = MILESTONE_ROLES[role_milestone]
+        role = discord.utils.get(guild.roles, name=role_name)
+        if role is not None:
+            await discord_user.remove_roles(role)
+
+    if role_to_assign:
+        # Give the user the appropriate role
+        await discord_user.add_roles(role_to_assign)
+        logger.info("file: utils/roles.py ~ give_milestone_role ~ assigned %s role to %s", role_to_assign.name,
+                    discord_user.display_name)
+    else:
+        logger.warning(
+            "file: utils/roles.py ~ give_milestone_role ~ no suitable milestone role found.")
