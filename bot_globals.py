@@ -37,21 +37,21 @@ TIMEFRAME_TITLE = {"alltime": {"field": "total_score", "title": "All-Time"},
 RATINGS = {}
 
 MILESTONE_ROLES = {
-    1: ("Initiate (1 Point)", discord.Color.blue()),          # 1 Problem
-    10: ("Problem Solver (10 Points)", discord.Color.green()),  # 10 Problems
-    25: ("Algorithm Apprentice (25 Points)", discord.Color.gold()),  # 25 Problems
-    50: ("Logic Guru (50 Points)", discord.Color.purple()),     # 50 Problems
-    75: ("Code Crusader (75 Points)", discord.Color.orange()),  # 75 Problems
-    100: ("LeetCode Legend (100 Points)", discord.Color.red()),  # 100 Problems
-    150: ("Problem Connoisseur (150 Points)", discord.Color.teal()),  # 150 Problems
-    200: ("Mastermind (200 Points)", discord.Color.dark_blue())  # 200 Problems
+    1: ("Novice (1 pt)", discord.Color.dark_grey()),
+    100: ("Apprentice (100 pts)", discord.Color.green()),
+    200: ("Capable (200 pts)", discord.Color.blue()),
+    500: ("Competent (500 pts)", discord.Color.dark_blue()),
+    1000: ("Advanced (1000 pts)", discord.Color.orange()),
+    2000: ("Expert (2000 pts)", discord.Color.red()),
+    4000: ("Master (4000 pts)", discord.Color.purple()),
+    8000: ("Legend (8000 pts)", discord.Color.gold())
 }
 
 STREAK_ROLES = {
-    3: ("Streak Starter (3 Days)", discord.Color.blue()),          # 3 Days
-    7: ("Streak Challenger (7 Days)", discord.Color.green()),  # 7 Days
-    14: ("Streak Conqueror (14 Days)", discord.Color.gold()),  # 14 Days
-    30: ("Streak Legend (30 Days)", discord.Color.purple()),     # 30 Days
+    3: ("Streak Initiate (3 Days)", discord.Color.green()),
+    7: ("Streak Pursuer (7 Days)", discord.Color.blue()),
+    14: ("Streak Adventurer (14 Days)", discord.Color.red()),
+    30: ("Streak Dominator (30 Days)", discord.Color.purple()),
 }
 
 VERIFIED_ROLE = "CodeGrind Verified"
