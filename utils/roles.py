@@ -5,19 +5,19 @@ from bot_globals import (MILESTONE_ROLES, STREAK_ROLES, VERIFIED_ROLE, client,
 from models.user_model import User
 
 
-async def generate_roles_from_string(guild: discord.Guild, role: str):
-    role_exists = discord.utils.get(guild.roles, name=role)
+async def create_roles_from_string(guild: discord.Guild, role: str):
+    role_found = discord.utils.get(guild.roles, name=role)
 
-    if role_exists is None:
+    if not role_found:
         try:
             await guild.create_role(name=role, color=discord.Color.light_gray(),
                                     hoist=False, mentionable=False)
         except discord.errors.Forbidden:
             logger.exception(
-                "file: cogs/roles.py ~ generate_roles_from_string ~ 403 Forbidden error")
+                "file: cogs/roles.py ~ create_roles_from_string ~ 403 Forbidden error")
 
 
-async def generate_roles_from_dict(guild: discord.Guild, roles: dict):
+async def create_roles_from_dict(guild: discord.Guild, roles: dict):
     for role in roles:
         role_name, role_color = roles[role]
 
@@ -27,7 +27,32 @@ async def generate_roles_from_dict(guild: discord.Guild, roles: dict):
                                         hoist=False, mentionable=False)
             except discord.errors.Forbidden:
                 logger.exception(
-                    "file: cogs/roles.py ~ generate_roles_from_dict ~ 403 sForbidden error")
+                    "file: cogs/roles.py ~ create_roles_from_dict ~ 403 Forbidden error")
+
+
+async def remove_roles_from_string(guild: discord.Guild, role: str):
+    role_found = discord.utils.get(guild.roles, name=role)
+
+    if role_found:
+        try:
+            await role_found.delete()
+        except discord.errors.Forbidden:
+            logger.exception(
+                "file: cogs/roles.py ~ remove_roles_from_string ~ 403 Forbidden error")
+
+
+async def remove_roles_from_dict(guild: discord.Guild, roles: dict):
+    for role in roles:
+        role_name, _ = roles[role]
+
+        role_found = discord.utils.get(guild.roles, name=role_name)
+
+        if role_found:
+            try:
+                await role_found.delete()
+            except discord.errors.Forbidden:
+                logger.exception(
+                    "file: cogs/roles.py ~ remove_roles_from_dict ~ 403 Forbidden error")
 
 
 async def give_verified_role(user: discord.User | User, guild_id: int) -> None:
