@@ -179,7 +179,7 @@ Distributed under the GPL-3.0 License. See [LICENSE](https://github.com/CodeGrin
 
 - **Kevin Roman** - _BSc Computer Science Undergraduate at Uni of Bath_ - [Kevin Roman](https://github.com/Kevin-Roman) - _Founder_
 - **Leo Lungu** - _BSc Computer Science Undergraduate at QMUL_ - [Leo Lungu](https://github.com/leo-lungu) - _Founder_
-- **Shaan Khan** - _Comp Sci Student_ - [Shaan Khan](https://github.com/ShaanCoding/) - _Implemented Streaks, Milestones, Verified Roles & Leetcode Embedded Stats_
+- **Shaan Khan** - _Fullstack Software Engineer_ - [Shaan Khan](https://github.com/ShaanCoding/) - _Implemented Streaks, Milestones, Verified Roles & Leetcode Embedded Stats_
 
 ## Acknowledgements
 
