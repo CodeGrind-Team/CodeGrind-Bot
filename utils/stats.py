@@ -9,7 +9,6 @@ from models.server_model import Rankings, Server, UserRank
 from models.user_model import User, History, Submissions
 from utils.leaderboards import get_score
 from utils.questions import get_problems_solved_and_rank
-from utils.roles import give_milestone_role, give_streak_role, give_verified_role
 
 
 async def update_rankings(server: Server, now: datetime, timeframe: str) -> None:
@@ -127,11 +126,6 @@ async def update_stats(user: User, now: datetime, daily_reset: bool = False, wee
 
         # For the user in all servers, update their streak and milestone roles
         servers = await Server.find_all("users.id" == user.id).to_list()
-
-        for server in servers:
-            await give_verified_role(user, server.id)
-            await give_streak_role(user, server.id, user.scores.streak)
-            await give_milestone_role(user, server.id, user.submissions.total_score)
 
     if weekly_reset:
         user.scores.last_week_score = week_score

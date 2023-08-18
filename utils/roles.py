@@ -3,6 +3,7 @@ import discord
 from bot_globals import (MILESTONE_ROLES, STREAK_ROLES, VERIFIED_ROLE, client,
                          logger)
 from models.user_model import User
+from models.server_model import Server
 
 
 async def create_roles_from_string(guild: discord.Guild, role: str):
@@ -54,8 +55,15 @@ async def remove_roles_from_dict(guild: discord.Guild, roles: dict):
                 logger.exception(
                     "file: cogs/roles.py ~ remove_roles_from_dict ~ 403 Forbidden error")
 
+                
+async def update_roles(server: Server):
+    for user in server.users:
+        await give_verified_role(user, server.id)
+        await give_streak_role(user, server.id, user.scores.streak)
+        await give_milestone_role(user, server.id, user.submissions.total_score)
 
-async def give_verified_role(user: discord.User | User, guild_id: int) -> None:
+
+async def give_verified_role(user: discord.User, guild_id: int) -> None:
     guild = client.get_guild(guild_id)
 
     if not guild:

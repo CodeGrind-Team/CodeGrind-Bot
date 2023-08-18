@@ -55,6 +55,8 @@ async def send_daily_question_and_update_stats(force_update_stats: bool = True, 
     daily_reset = (now.hour == 0 and now.minute == 0) or force_daily_reset
     weekly_reset = (now.weekday() == 0 and now.hour ==
                     0 and now.minute == 0) or force_weekly_reset
+    
+    midday = (now.hour == 12 and now.minute == 0)
 
     if force_update_stats:
         async for user in User.all():
@@ -71,6 +73,9 @@ async def send_daily_question_and_update_stats(force_update_stats: bool = True, 
         if weekly_reset:
             await update_rankings(server, now, "weekly")
             await send_leaderboard_winners(server, "last_week")
+
+        if midday:
+            await update_roles(server)
 
     if daily_reset:
         embed = await daily_question_embed()
