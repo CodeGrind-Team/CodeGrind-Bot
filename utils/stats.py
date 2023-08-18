@@ -124,8 +124,6 @@ async def update_stats(user: User, now: datetime, daily_reset: bool = False, wee
         user.history.append(History(timestamp=now, submissions=Submissions(
             easy=easy, medium=medium, hard=hard, total_score=total_score), streak=user.scores.streak))
 
-        # For the user in all servers, update their streak and milestone roles
-        servers = await Server.find_all("users.id" == user.id).to_list()
 
     if weekly_reset:
         user.scores.last_week_score = week_score
