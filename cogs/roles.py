@@ -1,14 +1,14 @@
 import discord
 from discord.ext import commands
 
-from bot_globals import MILESTONE_ROLES, STREAK_ROLES, VERIFIED_ROLE, logger
+from bot_globals import logger
 from embeds.misc_embeds import error_embed
-from embeds.roles_embeds import roles_created_embed, roles_removed_embed
+from embeds.roles_embeds import (missing_manage_roles_permission_embed,
+                                 roles_created_embed, roles_removed_embed)
 from models.server_model import Server
 from utils.middleware import (admins_only, ensure_server_document,
                               track_analytics)
-from utils.roles import (create_roles_from_dict, create_roles_from_string,
-                         remove_roles_from_dict, remove_roles_from_string, update_roles)
+from utils.roles import create_roles, remove_roles, update_roles
 
 
 class Roles(commands.GroupCog, name="roles"):
@@ -29,12 +29,15 @@ class Roles(commands.GroupCog, name="roles"):
 
         await interaction.response.defer(ephemeral=True)
 
-        # Create the new roles
-        await create_roles_from_string(interaction.guild, VERIFIED_ROLE)
-        await create_roles_from_dict(interaction.guild, MILESTONE_ROLES)
-        await create_roles_from_dict(interaction.guild, STREAK_ROLES)
+        if not interaction.guild.me.guild_permissions.manage_roles:
+            embed = missing_manage_roles_permission_embed()
+            await interaction.followup.send(embed=embed)
+            return
 
-        server = await Server.find_one(Server.id == interaction.guild.id)
+        # Create the new roles
+        await create_roles(interaction.guild)
+
+        server = await Server.find_one(Server.id == interaction.guild.id, fetch_links=True)
         await update_roles(server)
 
         embed = roles_created_embed()
@@ -54,10 +57,13 @@ class Roles(commands.GroupCog, name="roles"):
 
         await interaction.response.defer(ephemeral=True)
 
+        if not interaction.guild.me.guild_permissions.manage_roles:
+            embed = missing_manage_roles_permission_embed()
+            await interaction.followup.send(embed=embed)
+            return
+
         # Delete the roles
-        await remove_roles_from_string(interaction.guild, VERIFIED_ROLE)
-        await remove_roles_from_dict(interaction.guild, MILESTONE_ROLES)
-        await remove_roles_from_dict(interaction.guild, STREAK_ROLES)
+        await remove_roles(interaction.guild)
 
         embed = roles_removed_embed()
         await interaction.followup.send(embed=embed)
