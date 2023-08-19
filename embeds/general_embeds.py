@@ -58,13 +58,42 @@ Note: stats for `daily` and `weekly` will only be calculated after an account is
 </rating:1125116535745286185>: Returns a random question of your specified difficulty level.
 >    - `question_id_or_title`: The LeetCode question ID or the question's name/title.""",
 
+                      "Roles": """
+## Roles
+
+If an admin has enabled this feature using </roles enable:1142272770131107952>, you will receive the following roles.
+
+`CodeGrind Verified`: Given to you if you've connected your account to the bot in this server using </add:1115756888185917542>.
+
+`Point milestones`: Given to you depending on your total score. Here are the different milestones you could reach:
+>    - Novice (1 pt)
+>    - Apprentice (100 pts)
+>    - Capable (300 pts)
+>    - Competent (500 pts)
+>    - Advanced (1000 pts)
+>    - Expert (2000 pts)
+>    - Master (4000 pts)
+>    - Legend (6000 pts)
+
+`New question streak`: Given to you depending on your new question streak. Your streak is incremented if you've completed a new leetcode question each day. Here are the different streaks you could get:
+>    - Streak Initiate (3 Days)
+>    - Streak Pursuer (7 Days)
+>    - Streak Adventurer (14 Days)
+>    - Streak Dominator (30 Days)
+>    - Streak Legend (90 Days)""",
+
                       "Admin": """
 # Admin commands
 These commands are only available to administrators of this server.
-## Settings
 
-</settings timezone:1127663038514876538>: Change the timezone of the server.
->    - `timezone`: A timezone (case sensitive) from the following list of timeones: https://gist.github.com/heyalexej/8bf688fd67d7199be4a1682b3eec7568 .
+## Roles
+
+</roles enable:1142272770131107952>: Create and give verified user, point milestones, and streak roles that will be automatically updated at midday (UTC).
+>    - `CodeGrind Verified`: Given to user's that have connected their LeetCode account to the bot in this server.
+>    - `Point milestones`: Given to user's depending on their total CodeGrind score.
+>    - `Streak`: Given to user's depending on their streak. Their streak is incremented each day if the user has completed a new LeetCode question (not necessarily the LeetCode daily question).
+
+</roles disable:1142272770131107952> Delete and remove verified user, point milestones, and streak roles.
 
 ## Notifications
 
@@ -74,7 +103,12 @@ These commands are only available to administrators of this server.
 
 >    - `channel` _(optional)_: The channel (e.g. "#home-channel"). Default is the channel where the command was ran.
 
-Note: please press the 'save' button twice"""}
+Note: please press the 'save' button twice
+
+## Settings
+
+</settings timezone:1127663038514876538>: Change the timezone of the server.
+>    - `timezone`: A timezone (case sensitive) from the following list of timeones: https://gist.github.com/heyalexej/8bf688fd67d7199be4a1682b3eec7568 ."""}
 
 
 def help_embed(description: str) -> discord.Embed:
