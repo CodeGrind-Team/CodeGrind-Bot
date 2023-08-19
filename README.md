@@ -10,7 +10,7 @@
     Get ready for an epic coding showdown with the CodeGrind Bot! Compare daily, weekly and all-time stats and conquer LeetCode together in the ultimate quest for coding glory.
     <br/>
     <br/>
-    <a href="https://discord.com/api/oauth2/authorize?client_id=1059122559066570885&permissions=397284604928&scope=bot%20applications.commands"><strong>Invite Me To Your Server »</strong></a>
+    <a href="https://discord.com/api/oauth2/authorize?client_id=1059122559066570885&permissions=947510175826&scope=bot%20applications.commands"><strong>Invite Me To Your Server »</strong></a>
     <br/>
     <br/>
     <a href="https://github.com/CodeGrind-Team/CodeGrind-Bot/wiki/commands">View Full List of Commands</a>
@@ -93,7 +93,7 @@ https://discord.com/oauth2/authorize?client_id=<YOUR_BOT_CLIENT_ID>&scope=bot&pe
 4. **Install Chrome:** Chrome needs to be installed on your local machine. Identify the path to your chrome executable. For example, on Windows, it might be `C:/Users/UserName/AppDataLocal/Google/Chrome/chrome.exe`, whereas on Linux, it might be `/usr/bin/chromium-browser`. Remember to convert all backslashes (`\`) to forward slashes (`/`). This path will be used for executing the `/stats` command.
 
 5. **Create a .env file:** Within the project's root directory, create a `.env` file and add the environment variables given below. Replace `<your_discord_bot_token>`, `<your_mongodb_uri>`, and `<path_to_chrome_executable>` with your specific values.
-   
+
    ```
    TOKEN=<your_discord_bot_token>
    MONGODB_URI=<your_mongodb_uri>
@@ -119,13 +119,13 @@ https://discord.com/oauth2/authorize?client_id=<YOUR_BOT_CLIENT_ID>&scope=bot&pe
      ```
 
    - For Unix or macOS:
-     
+
      ```
      source env/bin/activate
      ```
 
 8. **Install required libraries:** With the virtual environment activated, install all the necessary libraries using the following pip command:
-   
+
    ```
    pip install -r requirements.txt
    ```
@@ -133,7 +133,7 @@ https://discord.com/oauth2/authorize?client_id=<YOUR_BOT_CLIENT_ID>&scope=bot&pe
 ### Running the Bot
 
 9. **Run the bot:** With all the setup complete, run the following command:
-   
+
    ```
    python main.py
    ```
@@ -145,11 +145,11 @@ https://discord.com/oauth2/authorize?client_id=<YOUR_BOT_CLIENT_ID>&scope=bot&pe
 If you wish to run the database utils inside `/tests/database_utils`, follow the steps below:
 
 1. Open a terminal inside the root folder and run the following command:
-   
+
    ```
    python tests/database_utils/<name_of_file>.py
    ```
-   
+
 2. Provide the required data asked in the terminal.
 
 3. The util should now run successfully.
