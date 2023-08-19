@@ -10,7 +10,7 @@
     Get ready for an epic coding showdown with the CodeGrind Bot! Compare daily, weekly and all-time stats and conquer LeetCode together in the ultimate quest for coding glory.
     <br/>
     <br/>
-    <a href="https://discord.com/api/oauth2/authorize?client_id=1059122559066570885&permissions=947510175826&scope=bot%20applications.commands"><strong>Invite Me To Your Server »</strong></a>
+    <a href="https://discord.com/api/oauth2/authorize?client_id=1059122559066570885&permissions=947510175826&scope=bot%20applications.commands"><strong>Invite CodeGrind Bot to your Server »</strong></a>
     <br/>
     <br/>
     <a href="https://github.com/CodeGrind-Team/CodeGrind-Bot/wiki/commands">View Full List of Commands</a>
@@ -64,7 +64,6 @@ Contributions are what make the open source community such an amazing place to b
 
 - If you have suggestions, feel free to [open an issue](https://github.com/CodeGrind-Team/CodeGrind-Bot/issues/new) to discuss it, or directly create a pull request.
 - Create an individual PR for each suggestion.
-- Please also read through the [Code Of Conduct](https://github.com/CodeGrind-Team/CodeGrind-Bot/blob/main/CODE_OF_CONDUCT.md).
 
 ### Creating a Pull Request
 
