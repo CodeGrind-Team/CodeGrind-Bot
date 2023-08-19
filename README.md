@@ -1,7 +1,7 @@
 <br/>
 <p align="center">
   <a href="https://github.com/CodeGrind-Team/CodeGrind-Bot">
-    <img src="images/logo.png" alt="Logo" width="80" height="80">
+    <img src="https://images.discordapp.net/avatars/1059122559066570885/1a42aa8ca38253bdde72f08df71d6929.png?size=128&w=128&q=75" alt="Logo" width="80" height="80">
   </a>
 
   <h3 align="center">CodeGrind Bot</h3>
