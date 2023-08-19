@@ -10,6 +10,7 @@ from models.server_model import Server
 from models.user_model import User
 from utils.leaderboards import send_leaderboard_winners
 from utils.stats import update_rankings, update_stats
+from utils.roles import update_roles
 
 
 async def send_daily_question(server: Server, embed: discord.Embed) -> None:
@@ -30,7 +31,7 @@ async def send_daily_question(server: Server, embed: discord.Embed) -> None:
         # async for message in channel.history(limit=1):
         #     try:
         #         await message.pin()
-        #     except discord.errors.Forbidden:
+        #     except discord.errors.Forbidden as e:
         #         logger.exception(
         #             "file: utils/message_scheduler.py ~ send_daily ~ message not pinned due to missing permissions in channel %s", channel_id)
 
@@ -56,6 +57,8 @@ async def send_daily_question_and_update_stats(force_update_stats: bool = True, 
     weekly_reset = (now.weekday() == 0 and now.hour ==
                     0 and now.minute == 0) or force_weekly_reset
 
+    midday = (now.hour == 12 and now.minute == 0)
+
     if force_update_stats:
         async for user in User.all():
             await update_stats(user, now, daily_reset, weekly_reset)
@@ -71,6 +74,9 @@ async def send_daily_question_and_update_stats(force_update_stats: bool = True, 
         if weekly_reset:
             await update_rankings(server, now, "weekly")
             await send_leaderboard_winners(server, "last_week")
+
+        if daily_reset:
+            await update_roles(server)
 
     if daily_reset:
         embed = await daily_question_embed()

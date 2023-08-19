@@ -115,11 +115,14 @@ async def update_stats(user: User, now: datetime, daily_reset: bool = False, wee
         user.display_information[i].name = member.display_name
 
     if daily_reset:
+        # Increments the streak if the user has submitted a problem today
+        user.scores.streak += 1 if user.scores.day_score > 0 else 0
+
         user.scores.yesterday_score = day_score
         user.scores.day_score = 0
         user.scores.start_of_day_total_score = total_score
         user.history.append(History(timestamp=now, submissions=Submissions(
-            easy=easy, medium=medium, hard=hard, total_score=total_score)))
+            easy=easy, medium=medium, hard=hard, total_score=total_score), streak=user.scores.streak))
 
     if weekly_reset:
         user.scores.last_week_score = week_score

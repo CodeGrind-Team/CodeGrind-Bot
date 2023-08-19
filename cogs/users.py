@@ -8,7 +8,7 @@ from beanie.odm.operators.update.array import AddToSet, Pull
 from beanie.odm.operators.update.general import Set
 from discord.ext import commands
 
-from bot_globals import calculate_scores, logger
+from bot_globals import VERIFIED_ROLE, calculate_scores, logger
 from embeds.misc_embeds import error_embed
 from embeds.users_embeds import (account_not_found_embed,
                                  account_removed_embed,
@@ -22,6 +22,7 @@ from models.server_model import Server
 from models.user_model import DisplayInformation, Scores, Submissions, User
 from utils.middleware import ensure_server_document, track_analytics
 from utils.questions import get_problems_solved_and_rank
+from utils.roles import give_verified_role
 
 
 class Users(commands.Cog):
@@ -61,6 +62,8 @@ class Users(commands.Cog):
         user_exists = await User.find_one(User.id == user_id).project(IdProjection)
 
         if user_exists:
+            await give_verified_role(interaction.user, interaction.guild.id)
+
             display_information_exists = await User.find_one(User.id == user_id, User.display_information.server_id == server_id)
 
             if display_information_exists:
@@ -140,6 +143,8 @@ class Users(commands.Cog):
                 server = await Server.get(server_id)
                 # link rule to create a new document for the new link
                 await server.save(link_rule=WriteRules.WRITE)
+
+                await give_verified_role(interaction.user, interaction.guild.id)
 
                 logger.info(
                     'file: cogs/users.py ~ add ~ user has been added successfully ~ leetcode_username: %s', leetcode_username)
