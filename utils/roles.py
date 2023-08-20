@@ -140,9 +140,6 @@ async def give_streak_role(user: discord.User, guild_id: int, streak: int) -> No
         await discord_user.add_roles(role_to_assign)
         logger.info(
             "file: utils/roles.py ~ give_streak_role ~ assigned %s role to %s", role_to_assign.name, discord_user.display_name)
-    else:
-        logger.warning(
-            "file: utils/roles.py ~ give_streak_role ~ no suitable streak role found.")
 
 
 async def give_milestone_role(user: discord.User, guild_id: int, total_solved: int) -> None:
@@ -177,6 +174,3 @@ async def give_milestone_role(user: discord.User, guild_id: int, total_solved: i
         await discord_user.add_roles(role_to_assign)
         logger.info("file: utils/roles.py ~ give_milestone_role ~ assigned %s role to %s", role_to_assign.name,
                     discord_user.display_name)
-    else:
-        logger.warning(
-            "file: utils/roles.py ~ give_milestone_role ~ no suitable milestone role found.")

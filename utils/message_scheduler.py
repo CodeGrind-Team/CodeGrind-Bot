@@ -75,7 +75,7 @@ async def send_daily_question_and_update_stats(force_update_stats: bool = True, 
             await update_rankings(server, now, "weekly")
             await send_leaderboard_winners(server, "last_week")
 
-        if daily_reset:
+        if midday:
             await update_roles(server)
 
     if daily_reset:
