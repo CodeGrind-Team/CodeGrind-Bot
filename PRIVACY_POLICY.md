@@ -10,6 +10,11 @@ We take your privacy seriously. This section outlines how we handle user data wh
 
 - **Data Retention**: We retain user data only for as long as it is necessary for the bot's functionality. Once the data is no longer needed, it will be deleted.
 
+> We have the following data removal processes:
+>    - A user can run the `/remove permanently_delete=True` command which will delete all their data from the database.
+>    - On the first day of each month at 12:00 UTC, if a user is not connected to the bot in at least one server, all their data is automatically deleted from the database.
+>    - On the first day of each month at 12:00 UTC, if a server has been deleted or the bot has been kicked from the server, all the server's data is automatically deleted from the database.
+
 - **Anonymous Usage Data**: We may collect anonymous usage data to improve the bot's performance and features. This data does not contain personal information.
 
 Please note that while we take precautions to protect user data, no method of data transmission or storage can be guaranteed to be 100% secure. By using our bot, you acknowledge and accept the inherent risks associated with data transmission over the internet.
