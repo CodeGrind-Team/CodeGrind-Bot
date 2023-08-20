@@ -30,7 +30,7 @@ class Channels(commands.GroupCog, name="settings"):
             embed = invalid_timezone_embed()
             await interaction.response.send_message(embed=embed, ephemeral=True)
             return
-        
+
         await interaction.response.defer(ephemeral=True)
 
         server_id = interaction.guild.id

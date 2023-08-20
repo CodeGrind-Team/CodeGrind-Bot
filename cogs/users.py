@@ -8,9 +8,10 @@ from beanie.odm.operators.update.array import AddToSet, Pull
 from beanie.odm.operators.update.general import Set
 from discord.ext import commands
 
-from bot_globals import VERIFIED_ROLE, calculate_scores, logger
+from bot_globals import calculate_scores, logger
 from embeds.misc_embeds import error_embed
 from embeds.users_embeds import (account_not_found_embed,
+                                 account_permanently_deleted_embed,
                                  account_removed_embed,
                                  connect_account_instructions_embed,
                                  profile_added_embed,
@@ -200,7 +201,7 @@ class Users(commands.Cog):
     @discord.app_commands.command(name="remove", description="Remove your profile from this server's leaderboard")
     @ensure_server_document
     @track_analytics
-    async def remove(self, interaction: discord.Interaction) -> None:
+    async def remove(self, interaction: discord.Interaction, permanently_delete: bool = False) -> None:
         logger.info(
             'file: cogs/users.py ~ remove ~ run')
 
@@ -227,6 +228,15 @@ class Users(commands.Cog):
         user_exists = await User.find_one(User.id == user_id).project(IdProjection)
 
         if user_exists:
+            # delete the user
+            if permanently_delete:
+                await Server.find_one(Server.id == server_id).update(Pull({Server.users: {"$id": user_id}}))
+                await User.find_one(User.id == user_id).delete()
+                embed = account_permanently_deleted_embed()
+                await interaction.followup.send(embed=embed)
+                return
+
+            # unlink user from server(interaction, user_id)
             display_information = await User.find_one(
                 User.id == user_id, User.display_information.server_id == server_id)
 

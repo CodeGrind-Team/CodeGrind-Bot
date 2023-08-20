@@ -60,6 +60,13 @@ def account_removed_embed() -> discord.Embed:
     return embed
 
 
+def account_permanently_deleted_embed() -> discord.Embed:
+    embed = discord.Embed(title="Your account has been permanently deleted",
+                          color=discord.Color.green())
+
+    return embed
+
+
 def account_not_found_embed() -> discord.Embed:
     embed = discord.Embed(
         title="Account not found",
