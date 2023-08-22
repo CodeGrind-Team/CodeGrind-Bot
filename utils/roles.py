@@ -20,8 +20,8 @@ async def create_roles_from_string(guild: discord.Guild, role: str):
 async def create_roles_from_dict(guild: discord.Guild, roles: dict):
     for role in roles:
         role_name, role_color = roles[role]
-
-        if discord.utils.get(guild.roles, name=role_name) is None:
+        role_found = discord.utils.get(guild.roles, name=role_name)
+        if not role_found:
             try:
                 await guild.create_role(name=role_name, color=role_color,
                                         hoist=False, mentionable=False)
@@ -91,15 +91,15 @@ async def give_verified_role(user: discord.User, guild_id: int) -> None:
     if not discord_user:
         return
 
-    role_to_assign = discord.utils.get(guild.roles, name=VERIFIED_ROLE)
+    role = discord.utils.get(guild.roles, name=VERIFIED_ROLE)
 
     # Check if the role exists
-    if role_to_assign is None:
+    if not role:
         return
 
     try:
         # Attempt to assign the role to the user
-        await discord_user.add_roles(role_to_assign)
+        await discord_user.add_roles(role)
     except discord.errors.Forbidden as e:
         logger.exception(
             "file: cogs/roles.py ~ give_verified_role ~ run ~ 403 Forbidden error ~ error: %s", e)
@@ -124,6 +124,9 @@ async def give_streak_role(user: discord.User, guild_id: int, streak: int) -> No
 
     for role_streak, (role_name, _) in STREAK_ROLES.items():
         role = discord.utils.get(guild.roles, name=role_name)
+
+        if not role:
+            continue
 
         # Remove previous roles
         if role in discord_user.roles:
@@ -161,7 +164,7 @@ async def give_milestone_role(user: discord.User, guild_id: int, total_solved: i
     for role_milestone, _ in MILESTONE_ROLES.items():
         role_name, _ = MILESTONE_ROLES[role_milestone]
         role = discord.utils.get(guild.roles, name=role_name)
-        if role in discord_user.roles:
+        if role and role in discord_user.roles:
             await discord_user.remove_roles(role)
 
     if role_to_assign:
