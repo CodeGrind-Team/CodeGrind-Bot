@@ -1,3 +1,4 @@
+from http.client import ResponseNotReady
 import discord
 import requests
 
@@ -8,7 +9,7 @@ from utils.run_blocking import to_thread
 
 
 @to_thread
-def daily_question_embed() -> discord.Embed:
+def daily_question_embed(question_id_or_title: str) -> discord.Embed:
     logger.info(
         "file: embeds/questions_embeds.py ~ daily_question_embed ~ run")
 
@@ -18,22 +19,70 @@ def daily_question_embed() -> discord.Embed:
         'Content-Type': 'application/json',
     }
 
+    # data = {
+    #     'operationName': 'displayRanking',
+    #     'query':
+    #     '''
+    #     query displayRanking($username: String!) {
+    #         matchedUser(username: $username) {
+    #             profile {
+    #                 ranking
+    #             }
+    #         }
+    #     }
+    #     ''',
+    #     'variables': {"username": "axdeyy"}
+    # }
+
     data = {
-        'operationName': 'daily',
+        'operationName': 'problemsetQuestionList',
         'query':
         '''
-        query daily {
-            challenge: activeDailyCodingChallengeQuestion {
-                date
-                link
-                question {
+        query problemsetQuestionList($categorySlug: String, $limit: Int, $skip: Int, $filters: QuestionListFilterInput) {
+            problemsetQuestionList: questionList(categorySlug: $categorySlug limit: $limit skip: $skip filters: $filters) {
+            total: totalNum
+            questions: 
+                data {
+                    acRate
                     difficulty
+                    freqBar
+                    frontendQuestionId: questionFrontendId
+                    isFavor
+                    paidOnly: isPaidOnly
+                    status
                     title
+                    titleSlug
+                    topicTags {
+                        name
+                        id
+                        slug
+                    }  
+                    hasSolution
+                    hasVideoSolution
                 }
             }
         }
-    '''
+        ''',
+        'variables': {'categorySlug': "", 'skip': 0, 'limit': 5, 'filters': {'orderBy': "FRONTEND_ID", 'sortOrder': "ASCENDING", 'searchKeywords': question_id_or_title}}
+
     }
+
+    # data = {
+    #     'operationName': 'daily',
+    #     'query':
+    #     '''
+    #     query daily {
+    #         challenge: activeDailyCodingChallengeQuestion {
+    #             date
+    #             link
+    #             question {
+    #                 difficulty
+    #                 title
+    #             }
+    #         }
+    #     }
+    # '''
+    # }
 
     try:
         response = requests.post(url, json=data, headers=headers, timeout=10)
@@ -54,8 +103,16 @@ def daily_question_embed() -> discord.Embed:
 
     response_data = response.json()
 
-    question_title = response_data['data']['challenge']['question']['title']
-    difficulty = response_data['data']['challenge']['question']['difficulty']
+    # question_title = response_data['data']['challenge']['question']['title']
+    # difficulty = response_data['data']['challenge']['question']['difficulty']
+    question_title = 's'
+    difficulty  = 'hard'
+
+    print()
+    print(response_data['data']['problemsetQuestionList']['questions'][0]['title'])
+    print(question_id_or_title)
+
+
 
     link = f"https://leetcode.com{response_data['data']['challenge']['link']}"
 

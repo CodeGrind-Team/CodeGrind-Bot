@@ -19,12 +19,12 @@ class Questions(commands.Cog):
 
     @discord.app_commands.command(name="daily", description="Returns the daily problem")
     @track_analytics
-    async def daily(self, interaction: discord.Interaction) -> None:
+    async def daily(self, interaction: discord.Interaction, question_id_or_title: str) -> None:
         logger.info("file: cogs/questions.py ~ get_daily ~ run")
 
         await interaction.response.defer()
-
-        embed = await daily_question_embed()
+        print(question_id_or_title)
+        embed = await daily_question_embed(question_id_or_title)
 
         await interaction.followup.send(embed=embed)
 
