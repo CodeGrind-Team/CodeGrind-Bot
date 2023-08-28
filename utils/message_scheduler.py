@@ -20,7 +20,7 @@ async def send_daily_question(server: Server, embed: discord.Embed) -> None:
     for channel_id in server.channels.daily_question:
         channel = client.get_channel(channel_id)
 
-        if not isinstance(channel, discord.TextChannel):
+        if not channel or not isinstance(channel, discord.TextChannel):
             continue
 
         try:
