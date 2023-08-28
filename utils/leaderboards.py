@@ -131,10 +131,14 @@ async def send_leaderboard_winners(server: Server, timeframe: str) -> None:
     for channel_id in server.channels.winners:
         channel = client.get_channel(channel_id)
 
-        if not isinstance(channel, discord.TextChannel):
+        if not channel or not isinstance(channel, discord.TextChannel):
             continue
 
-        await display_leaderboard(channel.send, server.id, timeframe=timeframe, winners_only=True)
+        try:
+            await display_leaderboard(channel.send, server.id, timeframe=timeframe, winners_only=True)
+        except discord.errors.Forbidden as e:
+            logger.exception(
+                "file: utils/leaderboards.py ~ send_leaderboard_winners ~ missing permissions on channel id %s. Error: %s", channel.id, e)
 
     logger.info(
         "file: utils/leaderboards.py ~ send_leaderboard_winners ~ %s winners leaderboard sent to channels", timeframe)
