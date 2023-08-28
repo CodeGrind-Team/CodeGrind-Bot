@@ -4,7 +4,7 @@ import discord
 from discord.ext import tasks
 
 from bot_globals import client, logger
-from embeds.questions_embeds import daily_question_embed
+from utils.questions import get_daily_question
 from models.analytics_model import Analytics, AnalyticsHistory
 from models.server_model import Server
 from models.user_model import User
@@ -73,7 +73,7 @@ async def send_daily_question_and_update_stats(force_update_stats: bool = True, 
             await send_leaderboard_winners(server, "last_week")
 
     if daily_reset:
-        embed = await daily_question_embed()
+        embed = await get_daily_question()
 
         async for server in Server.all(fetch_links=True):
             await send_daily_question(server, embed)

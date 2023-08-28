@@ -1,129 +1,4 @@
-from http.client import ResponseNotReady
 import discord
-import requests
-
-from bot_globals import logger
-from embeds.misc_embeds import error_embed
-from utils.ratings import get_rating_data
-from utils.run_blocking import to_thread
-
-
-@to_thread
-def daily_question_embed(question_id_or_title: str) -> discord.Embed:
-    logger.info(
-        "file: embeds/questions_embeds.py ~ daily_question_embed ~ run")
-
-    url = 'https://leetcode.com/graphql'
-
-    headers = {
-        'Content-Type': 'application/json',
-    }
-
-    # data = {
-    #     'operationName': 'displayRanking',
-    #     'query':
-    #     '''
-    #     query displayRanking($username: String!) {
-    #         matchedUser(username: $username) {
-    #             profile {
-    #                 ranking
-    #             }
-    #         }
-    #     }
-    #     ''',
-    #     'variables': {"username": "axdeyy"}
-    # }
-
-    data = {
-        'operationName': 'problemsetQuestionList',
-        'query':
-        '''
-        query problemsetQuestionList($categorySlug: String, $limit: Int, $skip: Int, $filters: QuestionListFilterInput) {
-            problemsetQuestionList: questionList(categorySlug: $categorySlug limit: $limit skip: $skip filters: $filters) {
-            total: totalNum
-            questions: 
-                data {
-                    acRate
-                    difficulty
-                    freqBar
-                    frontendQuestionId: questionFrontendId
-                    isFavor
-                    paidOnly: isPaidOnly
-                    status
-                    title
-                    titleSlug
-                    topicTags {
-                        name
-                        id
-                        slug
-                    }  
-                    hasSolution
-                    hasVideoSolution
-                }
-            }
-        }
-        ''',
-        'variables': {'categorySlug': "", 'skip': 0, 'limit': 5, 'filters': {'orderBy': "FRONTEND_ID", 'sortOrder': "ASCENDING", 'searchKeywords': question_id_or_title}}
-
-    }
-
-    # data = {
-    #     'operationName': 'daily',
-    #     'query':
-    #     '''
-    #     query daily {
-    #         challenge: activeDailyCodingChallengeQuestion {
-    #             date
-    #             link
-    #             question {
-    #                 difficulty
-    #                 title
-    #             }
-    #         }
-    #     }
-    # '''
-    # }
-
-    try:
-        response = requests.post(url, json=data, headers=headers, timeout=10)
-
-    except Exception as e:
-        logger.exception(
-            "file: embeds/question_embeds.py ~ Daily problem could not be retrieved: %s", e)
-
-        embed = error_embed("Daily problem could not be retrieved")
-        return embed
-
-    if response.status_code != 200:
-        logger.exception(
-            "file: embeds/question_embeds.py ~ Daily problem could not be retrieved. Error code: %s", response.status_code)
-
-        embed = error_embed("Daily problem could not be retrieved")
-        return embed
-
-    response_data = response.json()
-
-    # question_title = response_data['data']['challenge']['question']['title']
-    # difficulty = response_data['data']['challenge']['question']['difficulty']
-    question_title = 's'
-    difficulty  = 'hard'
-
-    print()
-    print(response_data['data']['problemsetQuestionList']['questions'][0]['title'])
-    print(question_id_or_title)
-
-
-
-    link = f"https://leetcode.com{response_data['data']['challenge']['link']}"
-
-    rating_data = get_rating_data(question_title)
-
-    rating_text = "Doesn't exist"
-    if rating_data is not None:
-        rating_text = f"||{int(rating_data['rating'])}||"
-
-    return question_embed(difficulty, question_title, rating_text, link, daily_question=True)
-
 
 def daily_problem_unsuccessful_embed() -> discord.Embed:
     embed = discord.Embed(title="Daily problem",
@@ -133,25 +8,28 @@ def daily_problem_unsuccessful_embed() -> discord.Embed:
 
     return embed
 
-
-def question_embed(difficulty: str, question_title: str, rating_text: str, link: str, daily_question: bool = False) -> discord.Embed:
+def question_embed(question_id: str, question_content: str, question_constraints: str, question_difficulty: str, question_title: str, rating_text: str, question_link: str, question_total_accepted, question_total_submission, question_ac_rate, daily_question: bool = False) -> discord.Embed:
     if daily_question:
         question_title = "Daily Question: " + question_title
 
-    color_dict = {"easy": discord.Color.green(),
-                  "medium": discord.Color.orange(),
-                  "hard":  discord.Color.red()}
+    color_dict = {"Easy": discord.Color.green(),
+                  "Medium": discord.Color.orange(),
+                  "Hard":  discord.Color.red()}
 
-    color = color_dict[difficulty] if difficulty in color_dict else discord.Color.blue()
+    color = color_dict[question_difficulty] if question_difficulty in color_dict else discord.Color.blue()
 
-    embed = discord.Embed(title=question_title, color=color)
+    embed = discord.Embed(title=f"{question_id}. {question_title}", url=question_link, description=question_content, color=color)
+    
+    embed.add_field(name='Constraints: ', value=question_constraints, inline=False)
 
-    embed.add_field(name=difficulty.capitalize(), value=link, inline=False)
+    embed.add_field(name='Difficulty: ', value=question_difficulty, inline=True)
 
-    embed.add_field(name="Zerotrac Rating", value=rating_text, inline=False)
+    if rating_text != "Doesn't exist":
+        embed.add_field(name="Zerotrac Rating: ", value=rating_text, inline=True)
+
+    embed.set_footer(text=f"Accepted: {question_total_accepted}  |  Submissions: {question_total_submission}  |  Acceptance Rate: {question_ac_rate}")
 
     return embed
-
 
 def question_rating_embed(question_title: str, rating_text: str) -> discord.Embed:
     embed = discord.Embed(title="Zerotrac Rating",
@@ -162,7 +40,6 @@ def question_rating_embed(question_title: str, rating_text: str) -> discord.Embe
     embed.add_field(name="Rating", value=rating_text, inline=False)
 
     return embed
-
 
 def question_has_no_rating_embed() -> discord.Embed:
     embed = discord.Embed(title="Zerotrac Rating",
