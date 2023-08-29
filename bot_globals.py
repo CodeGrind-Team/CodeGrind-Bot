@@ -23,6 +23,7 @@ hti = Html2Image(
     browser_executable=os.environ["BROWSER_EXECUTABLE_PATH"])
 
 intents = discord.Intents().default()
+intents.members = True
 client = commands.Bot(command_prefix=',', intents=intents)
 
 DIFFICULTY_SCORE = {"easy": 1, "medium": 3, "hard": 7}
