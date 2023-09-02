@@ -2,6 +2,7 @@ from typing import List
 
 import discord
 from beanie.odm.operators.update.array import AddToSet, Pull
+
 from models.server_model import Server
 
 

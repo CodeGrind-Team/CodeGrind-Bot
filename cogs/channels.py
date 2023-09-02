@@ -1,6 +1,7 @@
 import discord
-from bot_globals import logger
 from discord.ext import commands
+
+from bot_globals import logger
 from embeds.channels_embeds import (
     channel_receiving_all_notification_types_embed,
     channel_receiving_no_notification_types_embed,

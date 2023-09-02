@@ -6,8 +6,9 @@ import discord
 from beanie.odm.fields import WriteRules
 from beanie.odm.operators.update.array import AddToSet, Pull
 from beanie.odm.operators.update.general import Set
-from bot_globals import calculate_scores, logger
 from discord.ext import commands
+
+from bot_globals import calculate_scores, logger
 from embeds.misc_embeds import error_embed
 from embeds.users_embeds import (account_not_found_embed,
                                  account_removed_embed,

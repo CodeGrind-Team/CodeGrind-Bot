@@ -1,5 +1,6 @@
 import discord
 import pytz
+
 from bot_globals import DIFFICULTY_SCORE
 from models.server_model import Server
 

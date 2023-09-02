@@ -5,9 +5,9 @@ from typing import Any, List, Union
 
 import discord
 import requests
+
 from bot_globals import logger
 from embeds.misc_embeds import error_embed
-
 from utils.ratings import get_rating_data
 from utils.run_blocking import to_thread
 
@@ -30,10 +30,8 @@ async def get_random_question(difficulty: str) -> str:
     if response.status_code != 200:
         logger.exception(
             "file: cogs/questions.py ~ An error occurred while trying to get the question from LeetCode. Error code: %s", response.status_code)
-        
 
     data = response.json()
-
 
     difficulty_dict = {"easy": 1, "medium": 2, "hard": 3}
 
@@ -102,10 +100,11 @@ def get_daily_question() -> str:
 
     return question_title_slug
 
+
 async def get_question_info_from_title(question_title_slug: str) -> List[Union[int, str]]:
     logger.info(
         "file: utils/questions.py ~ get_question_info_from_title ~ run")
-    
+
     url = 'https://leetcode.com/graphql'
 
     headers = {
@@ -154,33 +153,35 @@ async def get_question_info_from_title(question_title_slug: str) -> List[Union[i
     # Extracting question details from content
     response_data = response.json()
     difficulty = response_data['data']['question']['difficulty']
-    frontendId = response_data['data']['question']['questionFrontendId']
+    question_id = response_data['data']['question']['questionFrontendId']
     title = response_data['data']['question']['title']
     question_content = response_data['data']['question']['content']
     link = f'https://leetcode.com/problems/{question_title_slug}'
-    question_stats = ast.literal_eval(response_data['data']['question']['stats'])
+    question_stats = ast.literal_eval(
+        response_data['data']['question']['stats'])
     total_accepted = question_stats['totalAccepted']
     total_submission = question_stats['totalSubmission']
     ac_rate = question_stats['acRate']
     premium = response_data['data']['question']['isPaidOnly']
 
     if premium:
-        return [premium, frontendId, '', '', '', title, '', link, '', '', '']
+        return [premium, question_id, '', '', '', title, '', link, '', '', '']
 
     rating_data = get_rating_data(title)
 
     question_rating = None
     if rating_data is not None:
         question_rating = f"||{int(rating_data['rating'])}||"
-    
-    example_position = question_content.find('<p>&nbsp;</p>\n<p><strong class="example">')
+
+    example_position = question_content.find(
+        '<p>&nbsp;</p>\n<p><strong class="example">')
     constraint_query_string = '<p><strong>Constraints:</strong></p>'
     constraints_position = question_content.find(constraint_query_string)
 
-
     description = question_content[:example_position]
-    
-    constraints = question_content[constraints_position + len(constraint_query_string):]
+
+    constraints = question_content[constraints_position +
+                                   len(constraint_query_string):]
 
     subsitutions = [
         (r'\*', r'\\*'),
@@ -225,10 +226,11 @@ async def get_question_info_from_title(question_title_slug: str) -> List[Union[i
         description = re.sub(pattern, replacement, description)
         constraints = re.sub(pattern, replacement, constraints)
 
-    question_info = [premium, frontendId, description, constraints, difficulty, title, question_rating, link, total_accepted, total_submission, ac_rate]
-
+    question_info = [premium, question_id, description, constraints, difficulty,
+                     title, question_rating, link, total_accepted, total_submission, ac_rate]
 
     return question_info
+
 
 async def search_for_question(question_name_or_id: str) -> str:
     logger.info(
@@ -278,6 +280,7 @@ async def search_for_question(question_name_or_id: str) -> str:
     question_title_slug = response_data['data']['problemsetQuestionList']['questions'][0]['titleSlug']
 
     return question_title_slug
+
 
 def get_problems_solved_and_rank(leetcode_username: str) -> dict[str, Any] | None:
     logger.info(

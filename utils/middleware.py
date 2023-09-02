@@ -2,6 +2,7 @@ from functools import wraps
 from typing import Callable
 
 import discord
+
 from embeds.general_embeds import not_admin_embed
 from embeds.misc_embeds import error_embed
 from models.analytics_model import Analytics

@@ -1,7 +1,6 @@
 from typing import Dict
 
 from bot_globals import RATINGS
-
 from utils.run_blocking import to_thread
 
 

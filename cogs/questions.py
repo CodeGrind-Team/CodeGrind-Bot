@@ -1,6 +1,7 @@
 import discord
-from bot_globals import logger
 from discord.ext import commands
+
+from bot_globals import logger
 from embeds.questions_embeds import daily_question_embed, question_embed
 from utils.middleware import track_analytics
 from utils.questions import get_daily_question, get_random_question
@@ -21,7 +22,6 @@ class Questions(commands.Cog):
         embed = await question_embed(question_id_or_title)
 
         await interaction.followup.send(embed=embed)
-
 
     @discord.app_commands.command(name="daily-question", description="Get the daily question")
     @track_analytics

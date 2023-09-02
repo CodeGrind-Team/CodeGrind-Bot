@@ -1,4 +1,5 @@
 import discord
+
 from bot_globals import DIFFICULTY_SCORE
 
 COMMAND_CATEGORIES = {"Home": f"""

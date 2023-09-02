@@ -1,6 +1,7 @@
 import discord
-from bot_globals import logger
 from discord.ext import commands
+
+from bot_globals import logger
 from embeds.misc_embeds import error_embed
 from embeds.stats_embeds import account_hidden_embed, stats_embed
 from embeds.users_embeds import account_not_found_embed
