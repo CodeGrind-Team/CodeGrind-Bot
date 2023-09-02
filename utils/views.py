@@ -91,6 +91,8 @@ class NotificationTypeSelect(discord.ui.Select):
                          max_values=len(options), min_values=1, options=options)
 
     async def callback(self, interaction: discord.Interaction) -> None:
+        await interaction.response.defer()
+
         for label, notification_type in self.label_to_type.items():
             if label in self.values:
                 self.selected_options.append(notification_type)

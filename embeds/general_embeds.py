@@ -57,6 +57,8 @@ Note: stats for `daily` and `weekly` will only be calculated after an account is
 
 </search-question:1147609257735364668>: Returns the question according to the name, ID, or URL given
 >    - `name_id_or_url` : The LeetCode question name, ID, or URL.
+
+Credit to [Aalaap](<https://www.linkedin.com/in/aalaap-d-969703239/>) for contributing this feature.
 """,
 
                       "Roles": """
@@ -81,7 +83,9 @@ If an admin has enabled this feature using </roles enable:1142272770131107952>, 
 >    - Streak Pursuer (7 Days)
 >    - Streak Adventurer (14 Days)
 >    - Streak Dominator (30 Days)
->    - Streak Legend (90 Days)""",
+>    - Streak Legend (90 Days)
+
+Credit to [Shaan](<https://github.com/ShaanCoding>) for contributing this feature.""",
 
                       "Admin": """
 # Admin commands
@@ -98,9 +102,9 @@ These commands are only available to administrators of this server.
 
 ## Notifications
 
-</notifychannel enable:1127663038514876541>: Set what notifications the channel receives.
+</notify-channel enable:1127663038514876541>: Set what notifications the channel receives.
 
-</notifychannel disable:1127663038514876541>: Stop channel from receiving selected notifications.
+</notify-channel disable:1127663038514876541>: Stop channel from receiving selected notifications.
 
 >    - `channel` _(optional)_: The channel (e.g. "#home-channel"). Default is the channel where the command was ran.
 
