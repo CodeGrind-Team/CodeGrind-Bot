@@ -5,11 +5,11 @@ from beanie.odm.operators.update.array import Pull
 from discord.ext import tasks
 
 from bot_globals import client, logger
-from embeds.questions_embeds import daily_question_embed
 from models.analytics_model import Analytics, AnalyticsHistory
 from models.server_model import Server
 from models.user_model import User
 from utils.leaderboards import send_leaderboard_winners
+from utils.questions import get_daily_question
 from utils.roles import update_roles
 from utils.stats import update_rankings, update_stats
 
@@ -81,7 +81,7 @@ async def send_daily_question_and_update_stats(force_update_stats: bool = True, 
             await update_roles(server)
 
     if daily_reset:
-        embed = await daily_question_embed()
+        embed = await get_daily_question()
 
         async for server in Server.all(fetch_links=True):
             await send_daily_question(server, embed)

@@ -8,7 +8,8 @@ from embeds.channels_embeds import (
     set_channels_instructions_embed)
 from embeds.misc_embeds import error_embed
 from models.server_model import Server
-from utils.middleware import admins_only, ensure_server_document, track_analytics
+from utils.middleware import (admins_only, ensure_server_document,
+                              track_analytics)
 from utils.views import ChannelsSelectView
 
 
