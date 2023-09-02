@@ -1,5 +1,4 @@
 import discord
-
 from bot_globals import DIFFICULTY_SCORE
 
 COMMAND_CATEGORIES = {"Home": f"""
@@ -55,7 +54,7 @@ Note: stats for `daily` and `weekly` will only be calculated after an account is
 </random-question:1115756888185917545>: Returns a random question (difficulty can be specified).
 >    - `difficulty` _(optional)_: A difficulty level ('easy', 'medium' or 'hard'). Default is a 'random' difficulty level.
 
-</search-question:aalaap>: Returns the question according to the id/name given
+</search-question:aalaap>: Returns the question according to the name or ID given
 >    - `name_or_id` : The LeetCode question ID or the question's name.
 """,
 

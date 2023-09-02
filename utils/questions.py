@@ -1,18 +1,18 @@
-from typing import Any
-
-import requests
+import ast
 import random
+import re
+from typing import Any, List, Union
 
+import discord
+import requests
 from bot_globals import logger
 from embeds.misc_embeds import error_embed
-from embeds.questions_embeds import question_embed
-from utils.run_blocking import to_thread
-from utils.ratings import get_rating_data
-import re
-import ast
 
-@to_thread
-def get_random_question(difficulty):
+from utils.ratings import get_rating_data
+from utils.run_blocking import to_thread
+
+
+async def get_random_question(difficulty: str) -> str:
     logger.info(
         "file: utils/questions.py ~ get_random_question ~ run")
 
@@ -49,11 +49,11 @@ def get_random_question(difficulty):
 
     question_title_slug = question['stat']['question__title_slug']
 
-    return get_question_info_from_title(question_title_slug)
+    return question_title_slug
 
 
 @to_thread
-def get_daily_question():
+def get_daily_question() -> str:
     logger.info(
         "file: utils/questions.py ~ get_daily_question ~ run")
 
@@ -72,8 +72,6 @@ def get_daily_question():
                 date
                 link
                 question {
-                    difficulty
-                    title
                     titleSlug
                 }
             }
@@ -86,25 +84,25 @@ def get_daily_question():
 
     except Exception as e:
         logger.exception(
-            "file: embeds/question_embeds.py ~ Daily problem could not be retrieved: %s", e)
+            "file: cogs/questions.py ~ Daily problem could not be retrieved: %s", e)
 
         embed = error_embed("Daily problem could not be retrieved")
         return embed
 
     if response.status_code != 200:
         logger.exception(
-            "file: embeds/question_embeds.py ~ Daily problem could not be retrieved. Error code: %s", response.status_code)
+            "file: cogs/questions.py ~ Daily problem could not be retrieved. Error code: %s", response.status_code)
 
         embed = error_embed("Daily problem could not be retrieved")
         return embed
 
     response_data = response.json()
 
-    question_title = response_data['data']['challenge']['question']['titleSlug']
+    question_title_slug = response_data['data']['challenge']['question']['titleSlug']
 
-    return get_question_info_from_title(question_title)
+    return question_title_slug
 
-def get_question_info_from_title(question_title_slug):
+async def get_question_info_from_title(question_title_slug: str) -> List[Union[int, str]]:
     logger.info(
         "file: utils/questions.py ~ get_question_info_from_title ~ run")
     
@@ -128,6 +126,7 @@ def get_question_info_from_title(question_title_slug):
                 likes
                 dislikes
                 stats
+                isPaidOnly
             }
         }
         ''',
@@ -140,61 +139,72 @@ def get_question_info_from_title(question_title_slug):
 
     except Exception as e:
         logger.exception(
-            "file: embeds/question_embeds.py ~ Question could not be retrieved: %s", e)
+            "file: cogs/questions.py ~ Question could not be retrieved: %s", e)
 
         embed = error_embed("Question could not be retrieved")
         return embed
 
     if response.status_code != 200:
         logger.exception(
-            "file: embeds/question_embeds.py ~ Question could not be retrieved. Error code: %s", response.status_code)
+            "file: cogs/questions.py ~ Question could not be retrieved. Error code: %s", response.status_code)
 
         embed = error_embed("Question could not be retrieved")
         return embed
 
+    # Extracting question details from content
     response_data = response.json()
-    question_difficulty = response_data['data']['question']['difficulty']
-    question_id = response_data['data']['question']['questionFrontendId']
-    question_title = response_data['data']['question']['title']
+    difficulty = response_data['data']['question']['difficulty']
+    frontendId = response_data['data']['question']['questionFrontendId']
+    title = response_data['data']['question']['title']
     question_content = response_data['data']['question']['content']
-    question_link = f'https://leetcode.com/problems/{question_title_slug}'
+    link = f'https://leetcode.com/problems/{question_title_slug}'
     question_stats = ast.literal_eval(response_data['data']['question']['stats'])
-    question_total_accepted = question_stats['totalAccepted']
-    question_total_submission = question_stats['totalSubmission']
-    question_ac_rate = question_stats['acRate']
+    total_accepted = question_stats['totalAccepted']
+    total_submission = question_stats['totalSubmission']
+    ac_rate = question_stats['acRate']
+    premium = response_data['data']['question']['isPaidOnly']
 
-    rating_data = get_rating_data(question_title)
+    if premium:
+        return [premium, frontendId, '', '', '', title, '', link, '', '', '']
 
-    rating_text = "Doesn't exist"
+    rating_data = get_rating_data(title)
+
+    question_rating = None
     if rating_data is not None:
-        rating_text = f"||{int(rating_data['rating'])}||"
-
+        question_rating = f"||{int(rating_data['rating'])}||"
+    
     example_position = question_content.find('<p>&nbsp;</p>\n<p><strong class="example">')
     constraint_query_string = '<p><strong>Constraints:</strong></p>'
     constraints_position = question_content.find(constraint_query_string)
 
-    question_description = question_content[:example_position]
+
+    description = question_content[:example_position]
     
-    question_constraints = question_content[constraints_position + len(constraint_query_string):]
+    constraints = question_content[constraints_position + len(constraint_query_string):]
 
     subsitutions = [
         (r'\*', r'\\*'),
         (r'<p>', ''),
         (r'</p>', ''),
+        (r'<a href="([^"]+)" target="_blank">([^<]+)</a>', r'[\2](\1)'),
+        (r'<b>', '**'),
+        (r'</b>', '**'),
+        (r'<em>', '_'),
+        (r'</em>', '_'),
         (r'<code>', '`'),
         (r'</code>', '`'),
         (r'<strong>', '**'),
         (r'</strong>', '**'),
-        (r'<b>', '**'),
-        (r'</b>', '**'),
-        (r'<em>', '*'),
-        (r'</em>', '*'),
+        (r'<u>', '__'),
+        (r'</u>', '__'),
         (r'<span[^>]*>', ''),
         (r'</span>', ''),
         (r'&nbsp;', ' '),
         (r'<pre>', '```'),
         (r'</pre>', '```'),
         (r'&quot;', '"'),
+        (r'&ldquo;', '"'),
+        (r'&rdquo;', '"'),
         (r'<sub>', '_'),
         (r'</sub>', ''),
         (r'&gt;', '>'),
@@ -208,16 +218,19 @@ def get_question_info_from_title(question_title_slug):
         (r'</li>', ''),
         (r'<font[^>]*>', ''),
         (r'</font>', ''),
+        (r'`([^`]+)\*([^`]+)`', r'`\1\2`')
     ]
 
     for pattern, replacement in subsitutions:
-        question_description = re.sub(pattern, replacement, question_description)
-        question_constraints = re.sub(pattern, replacement, question_constraints)
+        description = re.sub(pattern, replacement, description)
+        constraints = re.sub(pattern, replacement, constraints)
+
+    question_info = [premium, frontendId, description, constraints, difficulty, title, question_rating, link, total_accepted, total_submission, ac_rate]
 
 
-    return question_embed(question_id, question_description, question_constraints, question_difficulty, question_title, rating_text, question_link, question_total_accepted, question_total_submission, question_ac_rate, daily_question=False)
+    return question_info
 
-async def search_for_question(question_id_or_title):
+async def search_for_question(question_name_or_id: str) -> str:
     logger.info(
         "file: utils/questions.py ~ search_for_question ~ run")
 
@@ -233,30 +246,14 @@ async def search_for_question(question_id_or_title):
         '''
         query problemsetQuestionList($categorySlug: String, $limit: Int, $skip: Int, $filters: QuestionListFilterInput) {
             problemsetQuestionList: questionList(categorySlug: $categorySlug limit: $limit skip: $skip filters: $filters) {
-            total: totalNum
             questions: 
                 data {
-                    acRate
-                    difficulty
-                    freqBar
-                    frontendQuestionId: questionFrontendId
-                    isFavor
-                    paidOnly: isPaidOnly
-                    status
-                    title
                     titleSlug
-                    topicTags {
-                        name
-                        id
-                        slug
-                    }  
-                    hasSolution
-                    hasVideoSolution
                 }
             }
         }
         ''',
-        'variables': {'categorySlug': "", 'skip': 0, 'limit': 5, 'filters': {'searchKeywords': question_id_or_title}}
+        'variables': {'categorySlug': "", 'skip': 0, 'limit': 1, 'filters': {'searchKeywords': question_name_or_id}}
     }
 
     try:
@@ -280,7 +277,7 @@ async def search_for_question(question_id_or_title):
 
     question_title_slug = response_data['data']['problemsetQuestionList']['questions'][0]['titleSlug']
 
-    return get_question_info_from_title(question_title_slug)
+    return question_title_slug
 
 def get_problems_solved_and_rank(leetcode_username: str) -> dict[str, Any] | None:
     logger.info(

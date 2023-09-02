@@ -1,9 +1,8 @@
 import discord
-from discord.ext import commands
-
 from bot_globals import logger
+from discord.ext import commands
 from embeds.misc_embeds import error_embed
-from embeds.stats_embeds import stats_embed, account_hidden_embed
+from embeds.stats_embeds import account_hidden_embed, stats_embed
 from embeds.users_embeds import account_not_found_embed
 from models.user_model import User
 from utils.middleware import track_analytics

@@ -1,14 +1,14 @@
 import discord
-from discord.ext import commands
-
 from bot_globals import logger
+from discord.ext import commands
 from embeds.channels_embeds import (
     channel_receiving_all_notification_types_embed,
     channel_receiving_no_notification_types_embed,
     set_channels_instructions_embed)
 from embeds.misc_embeds import error_embed
 from models.server_model import Server
-from utils.middleware import admins_only, ensure_server_document, track_analytics
+from utils.middleware import (admins_only, ensure_server_document,
+                              track_analytics)
 from utils.views import ChannelsSelectView
 
 

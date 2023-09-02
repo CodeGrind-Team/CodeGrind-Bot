@@ -1,13 +1,13 @@
 import discord
 import pytz
 from beanie.odm.operators.update.general import Set
-from discord.ext import commands
-
 from bot_globals import logger
+from discord.ext import commands
 from embeds.admin_embeds import invalid_timezone_embed, timezone_updated_embed
 from embeds.misc_embeds import error_embed
 from models.server_model import Server
-from utils.middleware import admins_only, ensure_server_document, track_analytics
+from utils.middleware import (admins_only, ensure_server_document,
+                              track_analytics)
 
 
 class Channels(commands.GroupCog, name="settings"):

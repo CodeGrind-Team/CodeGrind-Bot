@@ -1,7 +1,6 @@
 import discord
-from discord.ext import commands
-
 from bot_globals import logger
+from discord.ext import commands
 from embeds.general_embeds import COMMAND_CATEGORIES, help_embed
 from utils.middleware import track_analytics
 from utils.views import CommandTypeSelectView

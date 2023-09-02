@@ -1,14 +1,14 @@
 from datetime import datetime, time
 
 import discord
-from discord.ext import tasks
-
 from bot_globals import client, logger
-from utils.questions import get_daily_question
+from discord.ext import tasks
 from models.analytics_model import Analytics, AnalyticsHistory
 from models.server_model import Server
 from models.user_model import User
+
 from utils.leaderboards import send_leaderboard_winners
+from utils.questions import get_daily_question
 from utils.stats import update_rankings, update_stats
 
 

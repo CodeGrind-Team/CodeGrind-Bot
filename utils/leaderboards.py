@@ -2,12 +2,12 @@ from collections import Counter
 from datetime import datetime, timedelta
 
 import discord
-
 from bot_globals import RANK_EMOJI, TIMEFRAME_TITLE, client, logger
 from embeds.leaderboards_embeds import (empty_leaderboard_embed,
                                         leaderboard_embed)
 from models.server_model import Server
 from models.user_model import User
+
 from utils.views import Pagination
 
 
