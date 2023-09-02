@@ -245,14 +245,18 @@ def html_to_markdown(html):
         # Replace image tag with the url src of that image
         (r'<img.*?src="(.*?)".*?>', r'\1'),
         (r'<style.*?>.*?</style>', r''),
-        (r'\r\n', r''),
-        (r'\n', r''),
+        (r'&nbsp;', r' ')
     ]
 
     for pattern, replacement in subsitutions:
         html = re.sub(pattern, replacement, html, flags=re.DOTALL)
 
-    return markdownify.markdownify(html, heading_style="ATX")
+    markdown = markdownify.markdownify(html, heading_style="ATX")
+
+    # Remove unnecessary extra lines
+    markdown = re.sub(r'\n\n', '\n', markdown)
+
+    return markdown
 
 
 def get_problems_solved_and_rank(leetcode_username: str) -> dict[str, Any] | None:
