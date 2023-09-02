@@ -147,6 +147,8 @@ class CommandTypeSelect(discord.ui.Select):
                                  description="Statistics commands"),
             discord.SelectOption(label="LeetCode Questions",
                                  description="LeetCode Questions commands"),
+            discord.SelectOption(label="Roles",
+                                 description="CodeGrind roles"),
             discord.SelectOption(label="Admin", description="Admin commands")
         ]
 
@@ -154,24 +156,8 @@ class CommandTypeSelect(discord.ui.Select):
                          max_values=1, min_values=1,  options=options)
 
     async def callback(self, interaction: discord.Interaction) -> None:
-        if self.values[0] == "Home":
-            embed = help_embed(self.command_categories["Home"])
-
-        elif self.values[0] == "Account":
-            embed = help_embed(self.command_categories["Account"])
-
-        elif self.values[0] == "Leaderboard":
-            embed = help_embed(self.command_categories["Leaderboard"])
-
-        elif self.values[0] == "Statistics":
-            embed = help_embed(self.command_categories["Statistics"])
-
-        elif self.values[0] == "LeetCode Questions":
-            embed = help_embed(
-                self.command_categories["LeetCode Questions"])
-
-        elif self.values[0] == "Admin":
-            embed = help_embed(self.command_categories["Admin"])
+        if self.values[0] in ["Home", "Account", "Leaderboard", "Statistics", "LeetCode Questions", "Roles", "Admin"]:
+            embed = help_embed(self.command_categories[self.values[0]])
 
         else:
             embed = error_embed()
