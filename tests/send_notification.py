@@ -1,11 +1,3 @@
-from models.user_model import User
-from models.server_model import Server
-from bot_globals import client
-from motor.motor_asyncio import AsyncIOMotorClient
-from dotenv import load_dotenv
-from beanie import init_beanie
-import discord
-import asyncio
 import os
 import sys
 
@@ -14,6 +6,14 @@ current_path = os.path.dirname(__file__)
 parent_path = os.path.abspath(os.path.join(current_path, '..'))
 sys.path.append(parent_path)
 
+from models.user_model import User
+from models.server_model import Server
+from bot_globals import client
+from motor.motor_asyncio import AsyncIOMotorClient
+from dotenv import load_dotenv
+from beanie import init_beanie
+import discord
+import asyncio
 
 load_dotenv()
 
@@ -21,17 +21,20 @@ load_dotenv()
 @client.event
 async def on_ready() -> None:
     # Global variables
-    message = """## CodeGrind Bot Update (14/08/2023): Improved </stats:1115756888664060014>
+    message = """## CodeGrind Bot Update (02/09/2023): Overhauled LeetCode Question Commands!
 
-Hello everyone! We have overhauled the stats command with more statistics and a massively improved design.
-Credit to github.com/JacobLinCool/LeetCode-Stats-Card for the LeetCode Stats Card endpoint!
+Hello everyone! We're excited to share the new </search-question:1147609257735364668>, </daily-question:1147609257735364669>, and </search-question:1147609257735364668> commands that will display
+all the crucial information about the chosen LeetCode question directly in Discord.
 
-Using </stats:1115756888664060014>, you can now easily select a specific user from the server if they've already connected their account to the server and their `include_url` setting is set to on.
+Thank you to Aalaap (<https://www.linkedin.com/in/aalaap-d-969703239/>) for contributing this feature.
 
-Here's an example of how it now looks like:"""
+Note:
+- /question, /random, and /rating commands have been removed in replace of the new question commands.
+
+Here's an example of how it now looks:"""
 
     # Don't include a file by setting this to None
-    image_path = "C:/Users/kevro/Downloads/image.png"
+    image_path = "D:/Pictures/LeetCode Bot/question_commands.png"
 
     # The notification type(s) to send the message to. One from: "maintenance", "daily_question", "winner"
     notification_type = "maintenance"
