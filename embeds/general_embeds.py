@@ -50,13 +50,13 @@ Note: stats for `daily` and `weekly` will only be calculated after an account is
                       "LeetCode Questions": """
 ## LeetCode Questions
 
-</daily-question:1115756888185917544>: Returns the LeetCode daily question.
+</daily-question:1147609257735364669>: Returns the LeetCode daily question.
 
-</random-question:1115756888185917545>: Returns a random question (difficulty can be specified).
+</random-question:1147609257735364670>: Returns a random question (difficulty can be specified).
 >    - `difficulty` _(optional)_: A difficulty level ('easy', 'medium' or 'hard'). Default is a 'random' difficulty level.
 
-</search-question:aalaap>: Returns the question according to the name or ID given
->    - `name_or_id` : The LeetCode question ID or the question's name.
+</search-question:1147609257735364668>: Returns the question according to the name, ID, or URL given
+>    - `name_id_or_url` : The LeetCode question name, ID, or URL.
 """,
 
                       "Admin": """

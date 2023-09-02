@@ -2,9 +2,8 @@ import discord
 from discord.ext import commands
 
 from bot_globals import logger
-from embeds.questions_embeds import daily_question_embed, question_embed
+from embeds.questions_embeds import daily_question_embed, search_question_embed, random_question_embed
 from utils.middleware import track_analytics
-from utils.questions import get_daily_question, get_random_question
 
 
 class Questions(commands.Cog):
@@ -13,13 +12,12 @@ class Questions(commands.Cog):
 
     @discord.app_commands.command(name="search-question", description="Search for a LeetCode question")
     @track_analytics
-    async def display_question(self, interaction: discord.Interaction, question_id_or_title: str) -> None:
+    async def display_question(self, interaction: discord.Interaction, name_id_or_url: str) -> None:
         logger.info("file: cogs/questions.py ~ display_question ~ run")
 
         await interaction.response.defer()
 
-        # embed = await search_for_question(question_id_or_title)
-        embed = await question_embed(question_id_or_title)
+        embed = await search_question_embed(name_id_or_url)
 
         await interaction.followup.send(embed=embed)
 
@@ -30,7 +28,6 @@ class Questions(commands.Cog):
 
         await interaction.response.defer()
 
-        # embed = await get_daily_question()
         embed = await daily_question_embed()
 
         await interaction.followup.send(embed=embed)
@@ -45,7 +42,7 @@ class Questions(commands.Cog):
 
         await interaction.response.defer()
 
-        embed = await question_embed(random=True, difficulty=difficulty)
+        embed = await random_question_embed(difficulty)
 
         await interaction.followup.send(embed=embed)
 

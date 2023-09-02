@@ -1,18 +1,18 @@
 import ast
 import random
 import re
-from typing import Any, List, Union
+from typing import Any, List
 
-import discord
+import markdownify
 import requests
 
 from bot_globals import logger
-from embeds.misc_embeds import error_embed
 from utils.ratings import get_rating_data
 from utils.run_blocking import to_thread
 
 
-async def get_random_question(difficulty: str) -> str:
+@to_thread
+def get_random_question(difficulty: str) -> str | None:
     logger.info(
         "file: utils/questions.py ~ get_random_question ~ run")
 
@@ -24,8 +24,7 @@ async def get_random_question(difficulty: str) -> str:
         logger.exception(
             "file: cogs/questions.py ~ An error occurred while trying to get the question from LeetCode: %s", e)
 
-        embed = error_embed("Random problem could not be retrieved")
-        return embed
+        return
 
     if response.status_code != 200:
         logger.exception(
@@ -51,7 +50,7 @@ async def get_random_question(difficulty: str) -> str:
 
 
 @to_thread
-def get_daily_question() -> str:
+def get_daily_question() -> str | None:
     logger.info(
         "file: utils/questions.py ~ get_daily_question ~ run")
 
@@ -84,15 +83,13 @@ def get_daily_question() -> str:
         logger.exception(
             "file: cogs/questions.py ~ Daily problem could not be retrieved: %s", e)
 
-        embed = error_embed("Daily problem could not be retrieved")
-        return embed
+        return
 
     if response.status_code != 200:
         logger.exception(
             "file: cogs/questions.py ~ Daily problem could not be retrieved. Error code: %s", response.status_code)
 
-        embed = error_embed("Daily problem could not be retrieved")
-        return embed
+        return
 
     response_data = response.json()
 
@@ -101,7 +98,57 @@ def get_daily_question() -> str:
     return question_title_slug
 
 
-async def get_question_info_from_title(question_title_slug: str) -> List[Union[int, str]]:
+@to_thread
+def search_question(text: str) -> str | None:
+    logger.info(
+        "file: utils/questions.py ~ search_question ~ run")
+
+    url = 'https://leetcode.com/graphql'
+
+    headers = {
+        'Content-Type': 'application/json',
+    }
+
+    data = {
+        'operationName': 'problemsetQuestionList',
+        'query':
+        '''
+        query problemsetQuestionList($categorySlug: String, $limit: Int, $skip: Int, $filters: QuestionListFilterInput) {
+            problemsetQuestionList: questionList(categorySlug: $categorySlug limit: $limit skip: $skip filters: $filters) {
+            questions: 
+                data {
+                    titleSlug
+                }
+            }
+        }
+        ''',
+        'variables': {'categorySlug': "", 'skip': 0, 'limit': 1, 'filters': {'searchKeywords': text}}
+    }
+
+    try:
+        response = requests.post(url, json=data, headers=headers, timeout=10)
+
+    except Exception as e:
+        logger.exception(
+            "file: embeds/question_embeds.py ~ Daily problem could not be retrieved: %s", e)
+
+        return
+
+    if response.status_code != 200:
+        logger.exception(
+            "file: embeds/question_embeds.py ~ Daily problem could not be retrieved. Error code: %s", response.status_code)
+
+        return
+
+    response_data = response.json()
+
+    question_title_slug = response_data['data']['problemsetQuestionList']['questions'][0]['titleSlug']
+
+    return question_title_slug
+
+
+@to_thread
+def get_question_info_from_title(question_title_slug: str) -> List[int | str] | None:
     logger.info(
         "file: utils/questions.py ~ get_question_info_from_title ~ run")
 
@@ -140,15 +187,13 @@ async def get_question_info_from_title(question_title_slug: str) -> List[Union[i
         logger.exception(
             "file: cogs/questions.py ~ Question could not be retrieved: %s", e)
 
-        embed = error_embed("Question could not be retrieved")
-        return embed
+        return
 
     if response.status_code != 200:
         logger.exception(
             "file: cogs/questions.py ~ Question could not be retrieved. Error code: %s", response.status_code)
 
-        embed = error_embed("Question could not be retrieved")
-        return embed
+        return
 
     # Extracting question details from content
     response_data = response.json()
@@ -165,7 +210,7 @@ async def get_question_info_from_title(question_title_slug: str) -> List[Union[i
     premium = response_data['data']['question']['isPaidOnly']
 
     if premium:
-        return [premium, question_id, '', '', '', title, '', link, '', '', '']
+        return premium, question_id, difficulty, title, link, total_accepted, total_submission, ac_rate, None, None, None
 
     rating_data = get_rating_data(title)
 
@@ -174,7 +219,7 @@ async def get_question_info_from_title(question_title_slug: str) -> List[Union[i
         question_rating = f"||{int(rating_data['rating'])}||"
 
     example_position = question_content.find(
-        '<p>&nbsp;</p>\n<p><strong class="example">')
+        '<strong class="example">')
     constraint_query_string = '<p><strong>Constraints:</strong></p>'
     constraints_position = question_content.find(constraint_query_string)
 
@@ -183,103 +228,31 @@ async def get_question_info_from_title(question_title_slug: str) -> List[Union[i
     constraints = question_content[constraints_position +
                                    len(constraint_query_string):]
 
+    description = html_to_markdown(description)
+    constraints = html_to_markdown(constraints)
+
+    return premium, question_id, difficulty, title, link, total_accepted, total_submission, ac_rate, question_rating, description, constraints
+
+
+def html_to_markdown(html):
+    # Remove all bold, italics, and underlines from code blocks as markdowns doesn't support this.
+    html = re.sub(r'(<code>|<pre>)(.*?)(<[/]code>|<[/]pre>)', lambda m: m.group(0).replace('<b>', '').replace('</b>', '').replace(
+        '<em>', '').replace('</em>', '').replace('<strong>', '').replace('</strong>', '').replace('<u>', '').replace('</u>', ''), html, flags=re.DOTALL)
+
     subsitutions = [
-        (r'\*', r'\\*'),
-        (r'<p>', ''),
-        (r'</p>', ''),
-        (r'<a href="([^"]+)" target="_blank">([^<]+)</a>', r'[\2](\1)'),
-        (r'<b>', '**'),
-        (r'</b>', '**'),
-        (r'<em>', '_'),
-        (r'</em>', '_'),
-        (r'<code>', '`'),
-        (r'</code>', '`'),
-        (r'<strong>', '**'),
-        (r'</strong>', '**'),
-        (r'<u>', '__'),
-        (r'</u>', '__'),
-        (r'<span[^>]*>', ''),
-        (r'</span>', ''),
-        (r'&nbsp;', ' '),
-        (r'<pre>', '```'),
-        (r'</pre>', '```'),
-        (r'&quot;', '"'),
-        (r'&ldquo;', '"'),
-        (r'&rdquo;', '"'),
-        (r'<sub>', '_'),
-        (r'</sub>', ''),
-        (r'&gt;', '>'),
-        (r'&lt;', '<'),
-        (r'<sup>', '^'),
-        (r'</sup>', ''),
-        (r'&#39;', "'"),
-        (r'<ul>', ''),
-        (r'</ul>', ''),
-        (r'\t<li>', '- '),
-        (r'</li>', ''),
-        (r'<font[^>]*>', ''),
-        (r'</font>', ''),
-        (r'`([^`]+)\*([^`]+)`', r'`\1\2`')
+        (r'<sup>', r'^'),
+        (r'</sup>', r''),
+        # Replace image tag with the url src of that image
+        (r'<img.*?src="(.*?)".*?>', r'\1'),
+        (r'<style.*?>.*?</style>', r''),
+        (r'\r\n', r''),
+        (r'\n', r''),
     ]
 
     for pattern, replacement in subsitutions:
-        description = re.sub(pattern, replacement, description)
-        constraints = re.sub(pattern, replacement, constraints)
+        html = re.sub(pattern, replacement, html, flags=re.DOTALL)
 
-    question_info = [premium, question_id, description, constraints, difficulty,
-                     title, question_rating, link, total_accepted, total_submission, ac_rate]
-
-    return question_info
-
-
-async def search_for_question(question_name_or_id: str) -> str:
-    logger.info(
-        "file: utils/questions.py ~ search_for_question ~ run")
-
-    url = 'https://leetcode.com/graphql'
-
-    headers = {
-        'Content-Type': 'application/json',
-    }
-
-    data = {
-        'operationName': 'problemsetQuestionList',
-        'query':
-        '''
-        query problemsetQuestionList($categorySlug: String, $limit: Int, $skip: Int, $filters: QuestionListFilterInput) {
-            problemsetQuestionList: questionList(categorySlug: $categorySlug limit: $limit skip: $skip filters: $filters) {
-            questions: 
-                data {
-                    titleSlug
-                }
-            }
-        }
-        ''',
-        'variables': {'categorySlug': "", 'skip': 0, 'limit': 1, 'filters': {'searchKeywords': question_name_or_id}}
-    }
-
-    try:
-        response = requests.post(url, json=data, headers=headers, timeout=10)
-
-    except Exception as e:
-        logger.exception(
-            "file: embeds/question_embeds.py ~ Daily problem could not be retrieved: %s", e)
-
-        embed = error_embed("Daily problem could not be retrieved")
-        return embed
-
-    if response.status_code != 200:
-        logger.exception(
-            "file: embeds/question_embeds.py ~ Daily problem could not be retrieved. Error code: %s", response.status_code)
-
-        embed = error_embed("Daily problem could not be retrieved")
-        return embed
-
-    response_data = response.json()
-
-    question_title_slug = response_data['data']['problemsetQuestionList']['questions'][0]['titleSlug']
-
-    return question_title_slug
+    return markdownify.markdownify(html, heading_style="ATX")
 
 
 def get_problems_solved_and_rank(leetcode_username: str) -> dict[str, Any] | None:
