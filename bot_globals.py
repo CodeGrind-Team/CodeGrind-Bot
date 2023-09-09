@@ -24,6 +24,7 @@ hti = Html2Image(
 
 intents = discord.Intents().default()
 intents.members = True
+intents.message_content = True
 client = commands.Bot(command_prefix=',', intents=intents)
 
 DIFFICULTY_SCORE = {"easy": 1, "medium": 3, "hard": 7}

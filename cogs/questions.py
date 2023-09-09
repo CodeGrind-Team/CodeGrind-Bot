@@ -51,5 +51,25 @@ class Questions(commands.GroupCog, name="question"):
         await interaction.followup.send(embed=embed)
 
 
+@client.event
+async def on_message(message: discord.Message):
+    pattern = r'https://leetcode.com/problems/([\w-]+)/'
+    match = re.search(pattern, message.content)
+
+    if match:
+        # group(1) will return the 1st capture (stuff within the brackets).
+        question_title = match.group(1)
+
+        logger.info(
+            "file: cogs/questions.py ~ on_message ~ match found: %s", question_title)
+
+        embed = await search_question_embed(question_title)
+        await message.edit(suppress=True)
+        await message.channel.send(embed=embed, silent=True, reference=message)
+
+        logger.info(
+            "file: cogs/questions.py ~ on_message ~ question sent successfully: %s", question_title)
+
+
 async def setup(client: commands.Bot) -> None:
     await client.add_cog(Questions(client))
