@@ -150,7 +150,7 @@ def search_question(text: str) -> str | None:
 @to_thread
 def get_question_info_from_title(question_title_slug: str) -> List[int | str] | None:
     logger.info(
-        "file: utils/questions.py ~ get_question_info_from_title ~ run")
+        "file: utils/questions.py ~ get_question_info_from_title ~ run ~ question_title_slug: %s", question_title_slug)
 
     url = 'https://leetcode.com/graphql'
 

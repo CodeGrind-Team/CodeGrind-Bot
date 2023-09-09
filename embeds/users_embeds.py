@@ -22,7 +22,7 @@ def user_already_added_in_server_embed() -> discord.Embed:
 def connect_account_instructions_embed(generated_string: str, leetcode_username: str) -> discord.Embed:
     embed = discord.Embed(title="Instructions",
                           color=discord.Color.orange())
-    embed.description = "Please change your LeetCode Profile Name to the generated sequence:"
+    embed.description = "Please temorarily change your LeetCode Account **Name** to the following generated sequence:"
 
     embed.add_field(name="Generated Sequence",
                     value=f"{generated_string}",
@@ -32,8 +32,8 @@ def connect_account_instructions_embed(generated_string: str, leetcode_username:
                     value=f"{leetcode_username}", inline=False)
 
     embed.add_field(
-        name="Profile Name Change",
-        value="You can do this by clicking [here](https://leetcode.com/profile/) and changing your Name.",
+        name="Account Name Change",
+        value="You can do this by clicking [here](https://leetcode.com/profile/) and changing your **Name** (not your **LeetCode ID**).",
         inline=False)
 
     embed.add_field(
