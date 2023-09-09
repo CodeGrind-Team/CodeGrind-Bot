@@ -52,12 +52,12 @@ Credit to [LeetCode Stats Card](https://github.com/JacobLinCool/LeetCode-Stats-C
                       "LeetCode Questions": """
 ## LeetCode Questions
 
-</question daily:1150085730572447835>: Returns the LeetCode daily question.
+</question daily:1150096353133875251>: Returns the LeetCode daily question.
 
-</question random:1150085730572447835>: Returns a random question (difficulty can be specified).
+</question random:1150096353133875251>: Returns a random question (difficulty can be specified).
 >    - `difficulty` _(optional)_: A difficulty level ('easy', 'medium' or 'hard'). Default is a 'random' difficulty level.
 
-</question search:1150085730572447835>: Returns the question according to the name, ID, or URL given
+</question search:1150096353133875251>: Returns the question according to the name, ID, or URL given
 >    - `name_id_or_url` : The LeetCode question name, ID, or URL.
 
 Credit to [Aalaap](<https://www.linkedin.com/in/aalaap-d-969703239/>) for contributing this feature.
