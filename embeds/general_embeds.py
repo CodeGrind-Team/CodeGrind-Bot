@@ -21,7 +21,7 @@ Please select a category from the dropdown to be shown all the commands related 
 ## Account
 
 </add:1115756888185917542>: Adds your LeetCode account onto this server's leaderboards. 
->    - `leetcode_username`: Your permanent LeetCode username.
+>    - `leetcode_id`: Your permanent LeetCode ID you can find at https://leetcode.com/profile/account/.
 >    - `include_url` _(optional)_: Decide whether you want leaderboards in this server to include a hyperlink to your LeetCode profile or not. Default is 'True'.
 
 </update:1127716432168362004>: Updates your account preferences for this server.
@@ -52,12 +52,12 @@ Credit to [LeetCode Stats Card](https://github.com/JacobLinCool/LeetCode-Stats-C
                       "LeetCode Questions": """
 ## LeetCode Questions
 
-</daily-question:1147609257735364669>: Returns the LeetCode daily question.
+</question daily:1150085730572447835>: Returns the LeetCode daily question.
 
-</random-question:1147609257735364670>: Returns a random question (difficulty can be specified).
+</question random:1150085730572447835>: Returns a random question (difficulty can be specified).
 >    - `difficulty` _(optional)_: A difficulty level ('easy', 'medium' or 'hard'). Default is a 'random' difficulty level.
 
-</search-question:1147609257735364668>: Returns the question according to the name, ID, or URL given
+</question search:1150085730572447835>: Returns the question according to the name, ID, or URL given
 >    - `name_id_or_url` : The LeetCode question name, ID, or URL.
 
 Credit to [Aalaap](<https://www.linkedin.com/in/aalaap-d-969703239/>) for contributing this feature.
