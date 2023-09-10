@@ -7,6 +7,7 @@ from bot_globals import client, logger
 from embeds.questions_embeds import (daily_question_embed,
                                      random_question_embed,
                                      search_question_embed)
+from embeds.stats_embeds import stats_embed
 from utils.middleware import track_analytics
 
 
@@ -53,15 +54,15 @@ class Questions(commands.GroupCog, name="question"):
 
 @client.event
 async def on_message(message: discord.Message):
-    pattern = r'https://leetcode.com/problems/([\w-]+)/'
-    match = re.search(pattern, message.content)
+    question_pattern = r'https://leetcode.com/problems/([\w-]+)/'
+    profile_pattern = r'https://leetcode.com/([\w-]+)/(?:\s|$)'
 
-    if match:
+    if question_match := re.search(question_pattern, message.content):
         # group(1) will return the 1st capture (stuff within the brackets).
-        question_title = match.group(1)
+        question_title = question_match.group(1)
 
         logger.info(
-            "file: cogs/questions.py ~ on_message ~ match found: %s", question_title)
+            "file: cogs/questions.py ~ on_message ~ question match found: %s", question_title)
 
         embed = await search_question_embed(question_title)
         await message.edit(suppress=True)
@@ -69,6 +70,21 @@ async def on_message(message: discord.Message):
 
         logger.info(
             "file: cogs/questions.py ~ on_message ~ question sent successfully: %s", question_title)
+
+    elif profile_match := re.search(profile_pattern, message.content):
+        leetcode_id = profile_match.group(1)
+
+        embed, file = await stats_embed(leetcode_id, leetcode_id)
+
+        await message.edit(suppress=True)
+
+        if file is None:
+            await message.channel.send(embed=embed, silent=True, reference=message)
+        else:
+            await message.channel.send(embed=embed, file=file, silent=True, reference=message)
+
+        logger.info(
+            "file: cogs/questions.py ~ on_message ~ profile sent successfully: %s", leetcode_id)
 
 
 async def setup(client: commands.Bot) -> None:
