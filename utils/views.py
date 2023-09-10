@@ -140,25 +140,37 @@ class CommandTypeSelect(discord.ui.Select):
 
         options = [
             discord.SelectOption(
-                label="Home", emoji="🏠", description="Return to main page"),
-            discord.SelectOption(
-                label="Account", description="Account commands"),
+                                label="Home", 
+                                emoji="🏠", 
+                                description="Return to main page"),
+            discord.SelectOption( label="Account", 
+                                emoji="👤",
+                                description="Account commands"),
             discord.SelectOption(label="Leaderboard",
-                                 description="Leaderboard commands"),
+                                emoji="📈",
+                                description="Leaderboard commands"),
             discord.SelectOption(label="Statistics",
+                                    emoji="📊",
                                  description="Statistics commands"),
             discord.SelectOption(label="LeetCode Questions",
+                                    emoji="📝",
                                  description="LeetCode Questions commands"),
             discord.SelectOption(label="Roles",
+                                emoji="🎭",
                                  description="CodeGrind roles"),
-            discord.SelectOption(label="Admin", description="Admin commands")
+            discord.SelectOption(label="Admin", 
+                                emoji="🔒",
+                                 description="Admin commands"),
+            discord.SelectOption(label="CodeGrind Team", 
+                                emoji="👨‍💻",
+                                 description="CodeGrind Team commands")
         ]
 
         super().__init__(placeholder="Select command category",
                          max_values=1, min_values=1,  options=options)
 
     async def callback(self, interaction: discord.Interaction) -> None:
-        if self.values[0] in ["Home", "Account", "Leaderboard", "Statistics", "LeetCode Questions", "Roles", "Admin"]:
+        if self.values[0] in ["Home", "Account", "Leaderboard", "Statistics", "LeetCode Questions", "Roles", "Admin", "CodeGrind Team"]:
             embed = help_embed(self.command_categories[self.values[0]])
 
         else:

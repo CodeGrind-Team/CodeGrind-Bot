@@ -115,7 +115,18 @@ Note: please press the 'save' button twice
 ## Settings
 
 </settings timezone:1127663038514876538>: Change the timezone of the server.
->    - `timezone`: A timezone (case sensitive) from the following list of timeones: https://gist.github.com/heyalexej/8bf688fd67d7199be4a1682b3eec7568 ."""}
+>    - `timezone`: A timezone (case sensitive) from the following list of timeones: https://gist.github.com/heyalexej/8bf688fd67d7199be4a1682b3eec7568 .
+
+## CodeGrind Team
+
+### Developers:
+Nano: <@814656377188384810> 
+Kevin: <@335154148976885770>
+
+### Contributors:
+Aalaap: <@635232267458969631> - Worked on the </search-question:1147609257735364668> command
+Shaan: <@199662959964848128> - Worked on the </roles:1142272770131107952> command
+"""}
 
 
 def help_embed(description: str) -> discord.Embed:
