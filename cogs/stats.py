@@ -48,7 +48,7 @@ class Stats(commands.Cog):
         # Needed because if user already has connected their account to the bot
         # but hasn't connected their account to the corresponding server,
         # then display_information is None.
-        embed, file = await stats_embed(user.leetcode_username, user.leetcode_username if display_information is None else display_information.name, heatmap)
+        embed, file = await stats_embed(user.leetcode_username, user.leetcode_username if display_information is None else display_information.name, "heatmap" if heatmap else "activity")
 
         if file is None:
             await interaction.followup.send(embed=embed)

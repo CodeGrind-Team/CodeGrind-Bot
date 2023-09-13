@@ -11,18 +11,22 @@ from utils.run_blocking import to_thread
 
 
 @to_thread
-def stats_embed(leetcode_username: str, display_name: str, heatmap: bool) -> Tuple[discord.Embed, discord.File | None]:
+def stats_embed(leetcode_username: str, display_name: str, extension: str = None) -> Tuple[discord.Embed, discord.File | None]:
     embed = discord.Embed(title=display_name,
                           url=f"https://leetcode.com/{leetcode_username}", color=discord.Color.orange())
     embed.set_footer(
         text="Credit to github.com/JacobLinCool/LeetCode-Stats-Card")
 
     width = 500
-    height = 400
-    extension = "activity"
-    if heatmap:
-        height = 350
-        extension = "heatmap"
+    height = 200
+    if extension:
+        if extension == "activity":
+            height = 400
+        elif extension == "heatmap":
+            height = 350
+
+    
+
 
     url = f"https://leetcard.jacoblin.cool/{leetcode_username}?theme=dark&animation=false&width={width}&height={height}&ext={extension}"
 
