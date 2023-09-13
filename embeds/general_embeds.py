@@ -16,7 +16,13 @@ Here is how much each question difficulty is worth:
 >    - Hard questions are worth {DIFFICULTY_SCORE['hard']} points
 
 ## Commands
-Please select a category from the dropdown to be shown all the commands related to the selected category.""",
+Please select a category from the dropdown to be shown all the commands related to the selected category.
+
+## Privacy Policy:
+Please click [here](https://github.com/CodeGrind-Team/CodeGrind-Bot/blob/main/PRIVACY_POLICY.md) to view our privacy policy.
+""",
+
+
                       "Account": """
 ## Account
 
