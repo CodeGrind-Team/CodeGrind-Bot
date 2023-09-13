@@ -14,8 +14,6 @@ from utils.run_blocking import to_thread
 def stats_embed(leetcode_username: str, display_name: str, extension: str = None) -> Tuple[discord.Embed, discord.File | None]:
     embed = discord.Embed(title=display_name,
                           url=f"https://leetcode.com/{leetcode_username}", color=discord.Color.orange())
-    embed.set_footer(
-        text="Credit to github.com/JacobLinCool/LeetCode-Stats-Card")
 
     width = 500
     height = 200

@@ -8,11 +8,12 @@ from embeds.channels_embeds import (
     set_channels_instructions_embed)
 from embeds.misc_embeds import error_embed
 from models.server_model import Server
-from utils.middleware import admins_only, ensure_server_document, track_analytics
+from utils.middleware import (admins_only, ensure_server_document,
+                              track_analytics)
 from utils.views import ChannelsSelectView
 
 
-class Channels(commands.GroupCog, name="notifychannel"):
+class Channels(commands.GroupCog, name="notify-channel"):
     def __init__(self, client: commands.Bot):
         self.client = client
 
@@ -21,7 +22,7 @@ class Channels(commands.GroupCog, name="notifychannel"):
     @admins_only
     @track_analytics
     async def enable(self, interaction: discord.Interaction, channel: discord.TextChannel | None = None) -> None:
-        logger.info("file: cogs/channels.py ~ notify enable ~ run")
+        logger.info("file: cogs/channels.py ~ notify-channel enable ~ run")
 
         if not interaction.guild or not isinstance(interaction.channel, discord.TextChannel) or not isinstance(interaction.user, discord.Member):
             embed = error_embed()
@@ -32,7 +33,7 @@ class Channels(commands.GroupCog, name="notifychannel"):
             channel = interaction.channel
 
         logger.info(
-            "file: cogs/channels.py ~ notify enable ~ channel id: %s", channel.id)
+            "file: cogs/channels.py ~ notify-channel enable ~ channel id: %s", channel.id)
 
         server_id = interaction.guild.id
 
@@ -55,7 +56,7 @@ class Channels(commands.GroupCog, name="notifychannel"):
     @admins_only
     @track_analytics
     async def disable(self, interaction: discord.Interaction, channel: discord.TextChannel | None = None) -> None:
-        logger.info("file: cogs/channels.py ~ notify disable ~ run")
+        logger.info("file: cogs/channels.py ~ notify-channel disable ~ run")
 
         if not interaction.guild or not isinstance(interaction.channel, discord.TextChannel) or not isinstance(interaction.user, discord.Member):
             embed = error_embed()
@@ -66,7 +67,7 @@ class Channels(commands.GroupCog, name="notifychannel"):
             channel = interaction.channel
 
         logger.info(
-            "file: cogs/channels.py ~ notify disable ~ channel id: %s", channel.id)
+            "file: cogs/channels.py ~ notify-channel disable ~ channel id: %s", channel.id)
 
         server_id = interaction.guild.id
 

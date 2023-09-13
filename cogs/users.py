@@ -36,7 +36,9 @@ class Users(commands.Cog):
     )
     @ensure_server_document
     @track_analytics
-    async def add(self, interaction: discord.Interaction, leetcode_username: str, include_url: bool = True) -> None:
+    async def add(self, interaction: discord.Interaction, leetcode_id: str, include_url: bool = True) -> None:
+        leetcode_username = leetcode_id
+
         logger.info(
             'file: cogs/users.py ~ add ~ run ~ leetcode_username: %s, include_url: %s', leetcode_username, include_url)
 
