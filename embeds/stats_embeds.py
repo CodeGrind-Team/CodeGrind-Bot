@@ -11,14 +11,19 @@ from utils.run_blocking import to_thread
 
 
 @to_thread
-def stats_embed(leetcode_username: str, display_name: str) -> Tuple[discord.Embed, discord.File | None]:
+def stats_embed(leetcode_username: str, display_name: str, extension: str | None = None) -> Tuple[discord.Embed, discord.File | None]:
     embed = discord.Embed(title=display_name,
                           url=f"https://leetcode.com/{leetcode_username}", color=discord.Color.orange())
 
     width = 500
-    height = 400
+    height = 200
+    if extension is not None:
+        if extension == "activity":
+            height = 400
+        elif extension == "heatmap":
+            height = 350
 
-    url = f"https://leetcard.jacoblin.cool/{leetcode_username}?theme=dark&animation=false&width={width}&height={height}&ext=activity"
+    url = f"https://leetcard.jacoblin.cool/{leetcode_username}?theme=dark&animation=false&width={width}&height={height}&ext={extension}"
 
     # Making sure the website is reachable before running hti.screenshot()
     # as the method will stall if url isn't reachable.

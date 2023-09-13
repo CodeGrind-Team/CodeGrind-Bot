@@ -46,6 +46,7 @@ Note: stats for `daily` and `weekly` will only be calculated after an account is
 </stats:1115756888664060014>: Returns the statistics of your or someone else's LeetCode account.
 >    - `user` _(optional)_: A user from the server. Default is your account.
 >    - `display_publicly` _(optional)_: Whether you want everyone in the server to see the stats. Default is 'True'
+>    - `heatmap` _(optional)_: Whether to display a heatmap of the user's submissions rather than the user's latest activity. Default is `False`.
 
 Credit to [LeetCode Stats Card](https://github.com/JacobLinCool/LeetCode-Stats-Card) for generating the visuals.""",
 
