@@ -18,11 +18,9 @@ Here is how much each question difficulty is worth:
 ## Commands
 Please select a category from the dropdown to be shown all the commands related to the selected category.
 
-## Privacy Policy:
-Please click [here](https://github.com/CodeGrind-Team/CodeGrind-Bot/blob/main/PRIVACY_POLICY.md) to view our privacy policy.
+## Privacy Policy
+You can view our Privacy Policy [here](https://github.com/CodeGrind-Team/CodeGrind-Bot/blob/main/PRIVACY_POLICY.md).
 """,
-
-
                       "Account": """
 ## Account
 
