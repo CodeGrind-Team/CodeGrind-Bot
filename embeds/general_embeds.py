@@ -21,7 +21,7 @@ Please select a category from the dropdown to be shown all the commands related 
 ## Account
 
 </add:1115756888185917542>: Adds your LeetCode account onto this server's leaderboards. 
->    - `leetcode_username`: Your permanent LeetCode username.
+>    - `leetcode_id`: Your permanent LeetCode ID you can find at https://leetcode.com/profile/account/.
 >    - `include_url` _(optional)_: Decide whether you want leaderboards in this server to include a hyperlink to your LeetCode profile or not. Default is 'True'.
 
 </update:1127716432168362004>: Updates your account preferences for this server.
@@ -45,23 +45,25 @@ Note: stats for `daily` and `weekly` will only be calculated after an account is
 
 </stats:1115756888664060014>: Returns the statistics of your or someone else's LeetCode account.
 >    - `user` _(optional)_: A user from the server. Default is your account.
->    - `display_publicly` _(optional)_: Whether you want everyone in the server to see the stats. Default is 'True'""",
+>    - `display_publicly` _(optional)_: Whether you want everyone in the server to see the stats. Default is 'True'
+
+Credit to [LeetCode Stats Card](https://github.com/JacobLinCool/LeetCode-Stats-Card) for generating the visuals.""",
 
                       "LeetCode Questions": """
 ## LeetCode Questions
 
-</daily:1115756888185917544>: Returns the LeetCode daily question.
+</question daily:1150096353133875251>: Returns the LeetCode daily question.
 
-</question:1115756888185917545>: Returns the Zerotrac rating of the given question.
+</question random:1150096353133875251>: Returns a random question (difficulty can be specified).
 >    - `difficulty` _(optional)_: A difficulty level ('easy', 'medium' or 'hard'). Default is a 'random' difficulty level.
 
-</rating:1125116535745286185>: Returns a random question of your specified difficulty level.
->    - `question_id_or_title`: The LeetCode question ID or the question's name/title.""",
+</question search:1150096353133875251>: Returns the question according to the name, ID, or URL given
+>    - `name_id_or_url` : The LeetCode question name, ID, or URL.""",
 
                       "Roles": """
 ## Roles
 
-If an admin has enabled this feature using </roles enable:1142272770131107952>, you will receive the following roles.
+If an admin has enabled this feature using </roles enable:1147624135850197033>, you will receive the following roles.
 
 `CodeGrind Verified`: Given to you if you've connected your account to the bot in this server using </add:1115756888185917542>.
 
@@ -88,18 +90,18 @@ These commands are only available to administrators of this server.
 
 ## Roles
 
-</roles enable:1142272770131107952>: Create and give verified user, point milestones, and streak roles that will be automatically updated at midday (UTC).
+</roles enable:1147624135850197033>: Create and give verified user, point milestones, and streak roles that will be automatically updated at midday (UTC).
 >    - `CodeGrind Verified`: Given to user's that have connected their LeetCode account to the bot in this server.
 >    - `Point milestones`: Given to user's depending on their total CodeGrind score.
 >    - `Streak`: Given to user's depending on their streak. Their streak is incremented each day if the user has completed a new LeetCode question (not necessarily the LeetCode daily question).
 
-</roles disable:1142272770131107952> Delete and remove verified user, point milestones, and streak roles.
+</roles disable:1147624135850197033> Delete and remove verified user, point milestones, and streak roles.
 
 ## Notifications
 
-</notifychannel enable:1127663038514876541>: Set what notifications the channel receives.
+</notify-channel enable:1147630083704635392>: Set what notifications the channel receives.
 
-</notifychannel disable:1127663038514876541>: Stop channel from receiving selected notifications.
+</notify-channel disable:1147630083704635392>: Stop channel from receiving selected notifications.
 
 >    - `channel` _(optional)_: The channel (e.g. "#home-channel"). Default is the channel where the command was ran.
 
@@ -108,7 +110,20 @@ Note: please press the 'save' button twice
 ## Settings
 
 </settings timezone:1127663038514876538>: Change the timezone of the server.
->    - `timezone`: A timezone (case sensitive) from the following list of timeones: https://gist.github.com/heyalexej/8bf688fd67d7199be4a1682b3eec7568 ."""}
+>    - `timezone`: A timezone (case sensitive) from the following list of timeones: https://gist.github.com/heyalexej/8bf688fd67d7199be4a1682b3eec7568 .""",
+
+                      "CodeGrind Team": """
+## CodeGrind Team
+
+### Developers
+Nano (<@814656377188384810>)
+Kevin (<@335154148976885770>)
+
+### Contributors
+[Shaan](<https://github.com/ShaanCoding>) (<@199662959964848128>): Created the </roles enable:1147624135850197033> and </roles disable:1147624135850197033> commands.
+[Aalaap](<https://www.linkedin.com/in/aalaap-d-969703239/>) (<@635232267458969631>): Created the </question daily:1150096353133875251>, </question random:1150096353133875251>, and </question search:1150096353133875251> commands. 
+
+Thank you to all the contributors for helping improve CodeGrind Bot!"""}
 
 
 def help_embed(description: str) -> discord.Embed:

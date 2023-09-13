@@ -1,116 +1,82 @@
 import discord
-import requests
 
-from bot_globals import logger
-from embeds.misc_embeds import error_embed
-from utils.ratings import get_rating_data
-from utils.run_blocking import to_thread
+from utils.questions import (get_daily_question, get_question_info_from_title,
+                             get_random_question, search_question)
 
 
-@to_thread
-def daily_question_embed() -> discord.Embed:
-    logger.info(
-        "file: embeds/questions_embeds.py ~ daily_question_embed ~ run")
+async def daily_question_embed() -> discord.Embed:
+    question_title = await get_daily_question()
 
-    url = 'https://leetcode.com/graphql'
+    if not question_title:
+        return question_error_embed()
 
-    headers = {
-        'Content-Type': 'application/json',
-    }
-
-    data = {
-        'operationName': 'daily',
-        'query':
-        '''
-        query daily {
-            challenge: activeDailyCodingChallengeQuestion {
-                date
-                link
-                question {
-                    difficulty
-                    title
-                }
-            }
-        }
-    '''
-    }
-
-    try:
-        response = requests.post(url, json=data, headers=headers, timeout=10)
-
-    except Exception as e:
-        logger.exception(
-            "file: embeds/question_embeds.py ~ Daily problem could not be retrieved: %s", e)
-
-        embed = error_embed("Daily problem could not be retrieved")
-        return embed
-
-    if response.status_code != 200:
-        logger.exception(
-            "file: embeds/question_embeds.py ~ Daily problem could not be retrieved. Error code: %s", response.status_code)
-
-        embed = error_embed("Daily problem could not be retrieved")
-        return embed
-
-    response_data = response.json()
-
-    question_title = response_data['data']['challenge']['question']['title']
-    difficulty = response_data['data']['challenge']['question']['difficulty']
-
-    link = f"https://leetcode.com{response_data['data']['challenge']['link']}"
-
-    rating_data = get_rating_data(question_title)
-
-    rating_text = "Doesn't exist"
-    if rating_data is not None:
-        rating_text = f"||{int(rating_data['rating'])}||"
-
-    return question_embed(difficulty, question_title, rating_text, link, daily_question=True)
-
-
-def daily_problem_unsuccessful_embed() -> discord.Embed:
-    embed = discord.Embed(title="Daily problem",
-                          color=discord.Color.red())
-
-    embed.description = "Daily problem could not be retrieved"
-
+    embed = await question_embed(question_title)
     return embed
 
 
-def question_embed(difficulty: str, question_title: str, rating_text: str, link: str, daily_question: bool = False) -> discord.Embed:
-    if daily_question:
-        question_title = "Daily Question: " + question_title
+async def search_question_embed(search_text) -> discord.Embed:
+    question_title = await search_question(search_text)
 
-    color_dict = {"easy": discord.Color.green(),
-                  "medium": discord.Color.orange(),
-                  "hard":  discord.Color.red()}
+    if not question_title:
+        return question_error_embed()
 
+    embed = await question_embed(question_title)
+    return embed
+
+
+async def random_question_embed(difficulty: str) -> discord.Embed:
+    question_title = await get_random_question(difficulty)
+
+    if not question_title:
+        return question_error_embed()
+
+    embed = await question_embed(question_title)
+    return embed
+
+
+async def question_embed(question_title: str) -> discord.Embed:
+    info = await get_question_info_from_title(question_title)
+
+    if not info:
+        return question_error_embed()
+
+    premium, question_id, difficulty, title, link, total_accepted, total_submission, ac_rate, question_rating, description, constraints = info
+
+    color_dict = {"Easy": discord.Color.green(),
+                  "Medium": discord.Color.orange(),
+                  "Hard":  discord.Color.red()}
     color = color_dict[difficulty] if difficulty in color_dict else discord.Color.blue()
 
-    embed = discord.Embed(title=question_title, color=color)
+    if premium:
+        return premium_question_embed(question_id, title, link, color)
 
-    embed.add_field(name=difficulty.capitalize(), value=link, inline=False)
+    embed = discord.Embed(
+        title=f"{question_id}. {title}", url=link, description=description, color=color)
 
-    embed.add_field(name="Zerotrac Rating", value=rating_text, inline=False)
+    embed.add_field(name='Constraints: ', value=constraints, inline=False)
+
+    embed.add_field(name='Difficulty: ', value=difficulty, inline=True)
+
+    if question_rating is not None:
+        embed.add_field(name="Zerotrac Rating: ",
+                        value=question_rating, inline=True)
+
+    embed.set_footer(
+        text=f"Accepted: {total_accepted}  |  Submissions: {total_submission}  |  Acceptance Rate: {ac_rate}")
 
     return embed
 
 
-def question_rating_embed(question_title: str, rating_text: str) -> discord.Embed:
-    embed = discord.Embed(title="Zerotrac Rating",
-                          color=discord.Color.magenta())
+def premium_question_embed(question_id, title, link, color: discord.Color) -> discord.Embed:
+    embed = discord.Embed(
+        title=f"{question_id}. {title}", url=link, color=color)
 
-    embed.add_field(name="Question Name",
-                    value=question_title.title(), inline=False)
-    embed.add_field(name="Rating", value=rating_text, inline=False)
+    embed.description = 'Cannot display premium questions'
 
     return embed
 
 
-def question_has_no_rating_embed() -> discord.Embed:
-    embed = discord.Embed(title="Zerotrac Rating",
-                          color=discord.Color.red())
-
-    embed.description = "This question doesn't have a Zerotrac rating"
-
+def question_error_embed() -> discord.Embed:
+    embed = discord.Embed(
+        title="Question could not be retrieved", color=discord.Color.red())
     return embed

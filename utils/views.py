@@ -1,9 +1,9 @@
-from typing import List, Dict
+from typing import Dict, List
 
 import discord
 
 from embeds.channels_embeds import channel_remove_embed, channel_set_embed
-from embeds.general_embeds import not_creator_embed, help_embed
+from embeds.general_embeds import help_embed, not_creator_embed
 from embeds.misc_embeds import error_embed
 from utils.channels import get_options, save_channel_options
 
@@ -91,6 +91,8 @@ class NotificationTypeSelect(discord.ui.Select):
                          max_values=len(options), min_values=1, options=options)
 
     async def callback(self, interaction: discord.Interaction) -> None:
+        await interaction.response.defer()
+
         for label, notification_type in self.label_to_type.items():
             if label in self.values:
                 self.selected_options.append(notification_type)
@@ -138,25 +140,37 @@ class CommandTypeSelect(discord.ui.Select):
 
         options = [
             discord.SelectOption(
-                label="Home", emoji="🏠", description="Return to main page"),
-            discord.SelectOption(
-                label="Account", description="Account commands"),
+                                label="Home", 
+                                emoji="🏠", 
+                                description="Return to main page"),
+            discord.SelectOption( label="Account", 
+                                emoji="👤",
+                                description="Account commands"),
             discord.SelectOption(label="Leaderboard",
-                                 description="Leaderboard commands"),
+                                emoji="📈",
+                                description="Leaderboard commands"),
             discord.SelectOption(label="Statistics",
+                                    emoji="📊",
                                  description="Statistics commands"),
             discord.SelectOption(label="LeetCode Questions",
+                                    emoji="📝",
                                  description="LeetCode Questions commands"),
             discord.SelectOption(label="Roles",
+                                emoji="🎭",
                                  description="CodeGrind roles"),
-            discord.SelectOption(label="Admin", description="Admin commands")
+            discord.SelectOption(label="Admin", 
+                                emoji="🔒",
+                                 description="Admin commands"),
+            discord.SelectOption(label="CodeGrind Team", 
+                                emoji="👨‍💻",
+                                 description="CodeGrind Team commands")
         ]
 
         super().__init__(placeholder="Select command category",
                          max_values=1, min_values=1,  options=options)
 
     async def callback(self, interaction: discord.Interaction) -> None:
-        if self.values[0] in ["Home", "Account", "Leaderboard", "Statistics", "LeetCode Questions", "Roles", "Admin"]:
+        if self.values[0] in ["Home", "Account", "Leaderboard", "Statistics", "LeetCode Questions", "Roles", "Admin", "CodeGrind Team"]:
             embed = help_embed(self.command_categories[self.values[0]])
 
         else:
