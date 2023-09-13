@@ -15,7 +15,7 @@ class Stats(commands.Cog):
 
     @discord.app_commands.command(name="stats", description="Displays a user's stats")
     @track_analytics
-    async def stats(self, interaction: discord.Interaction, user: discord.Member | None = None, display_publicly: bool = True) -> None:
+    async def stats(self, interaction: discord.Interaction, user: discord.Member | None = None, display_publicly: bool = True, heatmap: bool = False) -> None:
         logger.info('file: cogs/stats.py ~ stats ~ run')
 
         await interaction.response.defer(ephemeral=not display_publicly)
@@ -48,7 +48,7 @@ class Stats(commands.Cog):
         # Needed because if user already has connected their account to the bot
         # but hasn't connected their account to the corresponding server,
         # then display_information is None.
-        embed, file = await stats_embed(user.leetcode_username, user.leetcode_username if display_information is None else display_information.name)
+        embed, file = await stats_embed(user.leetcode_username, user.leetcode_username if display_information is None else display_information.name, heatmap)
 
         if file is None:
             await interaction.followup.send(embed=embed)
