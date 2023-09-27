@@ -115,7 +115,10 @@ async def update_stats(user: User, now: datetime, daily_reset: bool = False, wee
 
     if daily_reset:
         # Increments the streak if the user has submitted a problem today
-        user.scores.streak += 1 if user.scores.day_score > 0 else 0
+        if user.scores.day_score > 0:
+            user.scores.streak += 1
+        else:
+            user.scores.streak = 0
 
         user.scores.yesterday_score = day_score
         user.scores.day_score = 0
