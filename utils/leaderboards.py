@@ -37,11 +37,12 @@ def get_score(user: User, timeframe: str | None = None) -> int:
             return start_of_day_total_score if start_of_day_total_score is not None else user.submissions.total_score
 
 
-async def display_leaderboard(send_message, server_id, user_id=None, timeframe: str = "alltime", page: int = 1, winners_only: bool = False, users_per_page: int = 10) -> None:
+async def display_leaderboard(send_message, server_id: int = 0, user_id: int | None = None, timeframe: str = "alltime", page: int = 1, winners_only: bool = False, users_per_page: int = 10, global_leaderboard: bool = False) -> None:
     logger.info(
         "file: cogs/leaderboards.py ~ display_leaderboard ~ run ~ guild id: %s", server_id)
 
     # TODO: Project
+    # Server ID of 0 is the global leaderboard
     server = await Server.find_one(Server.id == server_id, fetch_links=True)
 
     if not server:
@@ -76,6 +77,7 @@ async def display_leaderboard(send_message, server_id, user_id=None, timeframe: 
 
             name = display_information.name
             url = display_information.url
+            private = display_information.private
             total_score = get_score(user, timeframe)
 
             if winners_only and (total_score == 0 or place == 3):
@@ -88,17 +90,19 @@ async def display_leaderboard(send_message, server_id, user_id=None, timeframe: 
             prev_score = total_score
 
             number_rank = f"{place}\."
-            name_with_link = f"[{name}]({profile_link})"
+
+            display_name = "Private User" if private and global_leaderboard else (
+                f"[{name}]({profile_link})"if url else name)
 
             wins = user_to_wins[user.id]
 
             wins_text = f"({str(wins)} wins) "
             # wins won't be displayed for alltime timeframe as wins !> 0
             leaderboard.append(
-                f"**{RANK_EMOJI[place] if place in RANK_EMOJI and total_score != 0 else number_rank} {name_with_link if url else name}** {wins_text if  wins > 0 else ''}- **{total_score}** pts"
+                f"**{RANK_EMOJI[place] if place in RANK_EMOJI and total_score != 0 else number_rank} {display_name}** {wins_text if  wins > 0 else ''}- **{total_score}** pts"
             )
 
-        title = f"{TIMEFRAME_TITLE[timeframe]['title']} Leaderboard"
+        title = f"{'Global ' if global_leaderboard else ''}{TIMEFRAME_TITLE[timeframe]['title']} Leaderboard"
         if winners_only:
             if timeframe == "yesterday":
                 title = f"{TIMEFRAME_TITLE[timeframe]['title']} Winners ({(datetime.utcnow() - timedelta(days=1)).strftime('%d/%m/%Y')})"

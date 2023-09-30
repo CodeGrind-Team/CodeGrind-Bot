@@ -88,6 +88,6 @@ def no_changes_provided_embed() -> discord.Embed:
     embed = discord.Embed(
         title="No changes were provided", color=discord.Color.red())
 
-    embed.description = "You haven't provided a new name or whether you want to change if the leaderboard should include a hyperlink to your LeetCode profile"
+    embed.description = "Please provide some changes"
 
     return embed

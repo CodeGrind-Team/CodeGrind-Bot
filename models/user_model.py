@@ -9,6 +9,7 @@ class DisplayInformation(BaseModel):
     server_id: Indexed(int)
     name: str
     url: Optional[bool] = True
+    private: Optional[bool] = True
 
 
 class Scores(BaseModel):

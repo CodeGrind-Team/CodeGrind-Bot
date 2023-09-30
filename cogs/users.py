@@ -14,6 +14,7 @@ from embeds.users_embeds import (account_not_found_embed,
                                  account_permanently_deleted_embed,
                                  account_removed_embed,
                                  connect_account_instructions_embed,
+                                 no_changes_provided_embed,
                                  profile_added_embed,
                                  profile_details_updated_embed,
                                  synced_existing_user_embed,
@@ -36,11 +37,11 @@ class Users(commands.Cog):
     )
     @ensure_server_document
     @track_analytics
-    async def add(self, interaction: discord.Interaction, leetcode_id: str, include_url: bool = True) -> None:
+    async def add(self, interaction: discord.Interaction, leetcode_id: str, include_lc_profile: bool = True, include_lc_profile_globally: bool = False, private: bool = True) -> None:
         leetcode_username = leetcode_id
 
         logger.info(
-            'file: cogs/users.py ~ add ~ run ~ leetcode_username: %s, include_url: %s', leetcode_username, include_url)
+            'file: cogs/users.py ~ add ~ run ~ leetcode_username: %s, include_lc_profile: %s, include_lc_profile_globally: %s, private: %s', leetcode_username, include_lc_profile, include_lc_profile_globally, private)
 
         if not interaction.guild:
             embed = error_embed()
@@ -60,7 +61,7 @@ class Users(commands.Cog):
             return
 
         display_information = DisplayInformation(
-            server_id=server_id, name=interaction.user.display_name, url=include_url)
+            server_id=server_id, name=interaction.user.display_name, url=include_lc_profile)
 
         user_exists = await User.find_one(User.id == user_id).project(IdProjection)
 
@@ -140,12 +141,19 @@ class Users(commands.Cog):
                                 start_of_day_total_score=total_score)
 
                 user = User(id=user_id, leetcode_username=leetcode_username, rank=rank, display_information=[
-                            display_information], submissions=submissions, scores=scores)
+                            display_information, DisplayInformation(server_id=0, name=interaction.user.name, url=include_lc_profile_globally, private=private)], submissions=submissions, scores=scores)
 
                 await Server.find_one(Server.id == server_id).update(AddToSet({Server.users: user}))
                 server = await Server.get(server_id)
                 # link rule to create a new document for the new link
                 await server.save(link_rule=WriteRules.WRITE)
+
+                # Add to the global leaderboard.
+                await Server.find_one(Server.id == 0).update(AddToSet({Server.users: user_id}))
+                # Have to fetch and save document in order to convert user_id to a reference
+                # TODO: ask on beanie repo for the correct method of doing this
+                server = await Server.get(0)
+                await server.save()
 
                 await give_verified_role(interaction.user, interaction.guild.id)
 
@@ -164,13 +172,18 @@ class Users(commands.Cog):
     @discord.app_commands.command(name="update", description="Update your profile on this server's leaderboards")
     @ensure_server_document
     @track_analytics
-    async def update(self, interaction: discord.Interaction, include_url: bool = True) -> None:
+    async def update(self, interaction: discord.Interaction, include_lc_profile: bool | None = None, include_lc_profile_globally: bool | None = None, private: bool | None = None) -> None:
         logger.info(
-            'file: cogs/users.py ~ update ~ run ~ include_url: %s', include_url)
+            'file: cogs/users.py ~ update ~ run ~ include_lc_profile: %s, include_lc_profile_globally: %s, private: %s', include_lc_profile, include_lc_profile_globally, private)
 
         if not interaction.guild:
             embed = error_embed()
             await interaction.response.send_message(embed=embed, ephemeral=True)
+            return
+
+        if include_lc_profile is include_lc_profile_globally is private is None:
+            embed = no_changes_provided_embed()
+            await interaction.followup.send(embed=embed)
             return
 
         server_id = interaction.guild.id
@@ -188,9 +201,16 @@ class Users(commands.Cog):
         user = await User.find_one(User.id == user_id)
 
         if user:
-            await User.find_one(User.id == user.id, User.display_information.server_id == server_id).update(Set({"display_information.$.url": include_url}))
-            embed = profile_details_updated_embed()
+            if include_lc_profile is not None:
+                await User.find_one(User.id == user.id, User.display_information.server_id == server_id).update(Set({"display_information.$.url": include_lc_profile}))
 
+            if include_lc_profile_globally is not None:
+                await User.find_one(User.id == user.id, User.display_information.server_id == 0).update(Set({"display_information.$.url": include_lc_profile_globally}))
+
+            if private is not None:
+                await User.find_one(User.id == user.id, User.display_information.server_id == 0).update(Set({"display_information.$.private": private}))
+
+            embed = profile_details_updated_embed()
             await interaction.followup.send(embed=embed)
             return
 
@@ -233,6 +253,9 @@ class Users(commands.Cog):
             # delete the user
             if permanently_delete:
                 await Server.find_one(Server.id == server_id).update(Pull({Server.users: {"$id": user_id}}))
+                # Global leaderboard
+                # TODO: create global_leaderboard_id enum
+                await Server.find_one(Server.id == 0).update(Pull({Server.users: {"$id": user_id}}))
                 await User.find_one(User.id == user_id).delete()
                 embed = account_permanently_deleted_embed()
                 await interaction.followup.send(embed=embed)

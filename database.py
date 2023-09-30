@@ -14,6 +14,12 @@ async def init_mongodb_conn() -> None:
     await init_beanie(database=mongodb_client.bot,
                       document_models=[Server, User, Analytics])
 
+    # Create global leaderboard 'server' with id 0.
+    server = await Server.get(0)
+    if not server:
+        server = Server(id=0)
+        await server.create()
+
 if __name__ == "__main__":
     import asyncio
     asyncio.run(init_mongodb_conn())
