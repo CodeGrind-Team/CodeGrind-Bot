@@ -26,21 +26,34 @@ You can view our Privacy Policy [here](https://github.com/CodeGrind-Team/CodeGri
 
 </add:1115756888185917542>: Adds your LeetCode account onto this server's leaderboards. 
 >    - `leetcode_id`: Your permanent LeetCode ID you can find at https://leetcode.com/profile/account/.
->    - `include_url` _(optional)_: Decide whether you want leaderboards in this server to include a hyperlink to your LeetCode profile or not. Default is 'True'.
+>    - `include_lc_profile` _(optional)_: Decide whether you want leaderboards in this server to include a hyperlink to your LeetCode profile or not. Default is 'True'.
+>    - `include_lc_profile_globally` _(optional)_: Decide whether you want Global leaderboards to include a hyperlink to your LeetCode profile or not. Default is 'False'.
+>    - `private` _(optional)_: Decide whether you want to be shown as a 'Private User' or not in Global leaderboards. Default is 'True'.
 
 </update:1127716432168362004>: Updates your account preferences for this server.
->    - `include_url` _(optional)_: Decide whether you want leaderboards in this server to include a hyperlink to your LeetCode profile or not. Default is 'True'.
+>    - `include_lc_profile` _(optional)_: Decide whether you want leaderboards in this server to include a hyperlink to your LeetCode profile or not. Default is 'True'.
+>    - `include_lc_profile_globally` _(optional)_: Decide whether you want Global leaderboards to include a hyperlink to your LeetCode profile or not. Default is 'False'.
+>    - `private` _(optional)_: Decide whether you want to be shown as a 'Private User' or not in Global leaderboards. Default is 'True'.
 
-</remove:1127663038514876540>: Removes your LeetCode account from this server.""",
+</remove:1127663038514876540>: Removes your LeetCode account from this server.
+>    - `permanently_delete` _(optional)_: Permanently delete all your CodeGrind information from all servers and unlink your LeetCode account from the bot.""",
 
                       "Leaderboard": """
 ## Leaderboard
 
+### Server leaderboard
 </leaderboard daily:1115756888664060015>: Returns today's leaderboard stats which resets at midnight (UTC)
 
 </leaderboard weekly:1115756888664060015>: Returns the week's leaderboard stats which resets on Sunday at midnight (UTC)
 
 </leaderboard alltime:1115756888664060015>: Returns the all-time leaderboard stats
+
+### Global leaderboard
+</leaderboard global-daily:1115756888664060015>: Returns today's leaderboard stats which resets at midnight (UTC)
+
+</leaderboard global-weekly:1115756888664060015>: Returns the week's leaderboard stats which resets on Sunday at midnight (UTC)
+
+</leaderboard global-alltime:1115756888664060015>: Returns the all-time leaderboard stats
 
 Note: stats for `daily` and `weekly` will only be calculated after an account is created. Any previous questions done that day or that week will not be calculated.""",
 

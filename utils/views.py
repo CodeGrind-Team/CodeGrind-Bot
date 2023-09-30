@@ -22,12 +22,29 @@ class Pagination(discord.ui.View):
         self.max_page = len(self.pages) - 1
 
         if self.page == 0:
-            self.previous.style = discord.ButtonStyle.gray
-            self.previous.disabled = True
+            self.previous.disabled, self.previous.style = True, discord.ButtonStyle.gray
+            self.start.disabled, self.start.style = True, discord.ButtonStyle.gray
 
         if self.page == self.max_page:
-            self.next.style = discord.ButtonStyle.gray
-            self.next.disabled = True
+            self.next.disabled, self.next.style = True, discord.ButtonStyle.gray
+            self.end.disabled, self.end.style = True, discord.ButtonStyle.gray
+
+    @discord.ui.button(label='<<', style=discord.ButtonStyle.blurple)
+    async def start(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
+        if self.user_id is None or interaction.user.id != self.user_id or interaction.message is None:
+            embed = not_creator_embed()
+            await interaction.response.send_message(embed=embed, ephemeral=True)
+            return
+
+        self.page = 0
+        await interaction.message.edit(embed=self.pages[self.page])
+
+        button.disabled, button.style = True, discord.ButtonStyle.gray
+        self.previous.disabled, self.previous.style = True, discord.ButtonStyle.gray
+        self.next.disabled, self.next.style = False, discord.ButtonStyle.blurple
+        self.end.disabled, self.end.style = False, discord.ButtonStyle.blurple
+
+        await interaction.response.edit_message(view=self)
 
     @discord.ui.button(label='<', style=discord.ButtonStyle.blurple)
     async def previous(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
@@ -41,11 +58,11 @@ class Pagination(discord.ui.View):
             await interaction.message.edit(embed=self.pages[self.page])
 
             if self.page == 0:
-                button.style = discord.ButtonStyle.gray
-                button.disabled = True
+                button.disabled, button.style = True, discord.ButtonStyle.gray
+                self.start.disabled, self.start.style = True, discord.ButtonStyle.gray
 
-        self.next.style = discord.ButtonStyle.blurple
-        self.next.disabled = False
+        self.next.disabled, self.next.style = False, discord.ButtonStyle.blurple
+        self.end.disabled, self.end.style = False, discord.ButtonStyle.blurple
 
         await interaction.response.edit_message(view=self)
 
@@ -61,11 +78,28 @@ class Pagination(discord.ui.View):
             await interaction.message.edit(embed=self.pages[self.page])
 
             if self.page == self.max_page:
-                button.style = discord.ButtonStyle.gray
-                button.disabled = True
+                button.disabled, button.style = True, discord.ButtonStyle.gray
+                self.end.disabled, self.end.style = True, discord.ButtonStyle.gray
 
-        self.previous.style = discord.ButtonStyle.blurple
-        self.previous.disabled = False
+        self.previous.disabled, self.previous.style = False, discord.ButtonStyle.blurple
+        self.start.disabled, self.start.style = False, discord.ButtonStyle.blurple
+
+        await interaction.response.edit_message(view=self)
+
+    @discord.ui.button(label='>>', style=discord.ButtonStyle.blurple)
+    async def end(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
+        if self.user_id is None or interaction.user.id != self.user_id or interaction.message is None:
+            embed = not_creator_embed()
+            await interaction.response.send_message(embed=embed, ephemeral=True)
+            return
+
+        self.page = self.max_page
+        await interaction.message.edit(embed=self.pages[self.page])
+
+        button.disabled, button.style = True, discord.ButtonStyle.gray
+        self.next.disabled, self.next.style = False, discord.ButtonStyle.gray
+        self.previous.disabled, self.previous.style = False, discord.ButtonStyle.blurple
+        self.start.disabled, self.start.style = False, discord.ButtonStyle.blurple
 
         await interaction.response.edit_message(view=self)
 
@@ -140,29 +174,29 @@ class CommandTypeSelect(discord.ui.Select):
 
         options = [
             discord.SelectOption(
-                                label="Home", 
-                                emoji="🏠", 
-                                description="Return to main page"),
-            discord.SelectOption( label="Account", 
-                                emoji="👤",
-                                description="Account commands"),
+                label="Home",
+                emoji="🏠",
+                description="Return to main page"),
+            discord.SelectOption(label="Account",
+                                 emoji="👤",
+                                 description="Account commands"),
             discord.SelectOption(label="Leaderboard",
-                                emoji="📈",
-                                description="Leaderboard commands"),
+                                 emoji="📈",
+                                 description="Leaderboard commands"),
             discord.SelectOption(label="Statistics",
-                                    emoji="📊",
+                                 emoji="📊",
                                  description="Statistics commands"),
             discord.SelectOption(label="LeetCode Questions",
-                                    emoji="📝",
+                                 emoji="📝",
                                  description="LeetCode Questions commands"),
             discord.SelectOption(label="Roles",
-                                emoji="🎭",
+                                 emoji="🎭",
                                  description="CodeGrind roles"),
-            discord.SelectOption(label="Admin", 
-                                emoji="🔒",
+            discord.SelectOption(label="Admin",
+                                 emoji="🔒",
                                  description="Admin commands"),
-            discord.SelectOption(label="CodeGrind Team", 
-                                emoji="👨‍💻",
+            discord.SelectOption(label="CodeGrind Team",
+                                 emoji="👨‍💻",
                                  description="CodeGrind Team commands")
         ]
 
