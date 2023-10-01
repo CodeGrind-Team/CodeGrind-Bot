@@ -108,7 +108,7 @@ class Users(commands.Cog):
 
             # Check if the profile name matches the generated string
             for _ in range(60 // check_interval):
-                stats = get_problems_solved_and_rank(leetcode_username)
+                stats = await get_problems_solved_and_rank(leetcode_username)
 
                 if not stats:
                     break
@@ -122,7 +122,7 @@ class Users(commands.Cog):
                 await asyncio.sleep(check_interval)
 
             if profile_name == generated_string:
-                stats = get_problems_solved_and_rank(leetcode_username)
+                stats = await get_problems_solved_and_rank(leetcode_username)
 
                 if not stats:
                     return
