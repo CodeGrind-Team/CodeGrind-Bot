@@ -259,6 +259,7 @@ def html_to_markdown(html):
     return markdown
 
 
+@to_thread
 def get_problems_solved_and_rank(leetcode_username: str) -> dict[str, Any] | None:
     logger.info(
         "file: utils/questions.py ~ get_problems_solved_and_rank ~ run ~ leetcode_username: %s", leetcode_username)

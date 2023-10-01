@@ -56,7 +56,7 @@ async def update_stats(user: User, now: datetime, daily_reset: bool = False, wee
 
     leetcode_username = user.leetcode_username
 
-    submissions_and_rank = get_problems_solved_and_rank(
+    submissions_and_rank = await get_problems_solved_and_rank(
         leetcode_username)
 
     if submissions_and_rank is None:
