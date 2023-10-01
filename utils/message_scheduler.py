@@ -105,6 +105,10 @@ async def send_daily_question_and_update_stats(force_update_stats: bool = True, 
     # Data removal process
     if remove_unneeded_data:
         async for server in Server.all():
+            # Make exception for global leaderboard server.
+            if server.id == 0:
+                continue
+
             # So that we can access user.id
             await server.fetch_all_links()
 
