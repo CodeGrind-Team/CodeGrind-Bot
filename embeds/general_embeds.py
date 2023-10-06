@@ -48,7 +48,7 @@ You can view our Privacy Policy [here](https://github.com/CodeGrind-Team/CodeGri
 
 </leaderboard alltime:1115756888664060015>: Returns the all-time leaderboard stats
 
-### Global leaderboard
+### Global leaderboard (must vote on top.gg first, use </vote:1122529789056647198>)
 </leaderboard global-daily:1115756888664060015>: Returns today's leaderboard stats which resets at midnight (UTC)
 
 </leaderboard global-weekly:1115756888664060015>: Returns the week's leaderboard stats which resets on Sunday at midnight (UTC)
