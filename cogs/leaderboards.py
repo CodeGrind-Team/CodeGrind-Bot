@@ -4,7 +4,7 @@ from discord.ext import commands
 from bot_globals import logger
 from embeds.misc_embeds import error_embed
 from utils.leaderboards import display_leaderboard
-from utils.middleware import ensure_server_document, track_analytics
+from utils.middleware import ensure_server_document, track_analytics, topgg_vote_required
 
 
 class Leaderboards(commands.GroupCog, name="leaderboard"):
@@ -58,6 +58,7 @@ class Leaderboards(commands.GroupCog, name="leaderboard"):
         await display_leaderboard(interaction.followup.send, interaction.guild.id, interaction.user.id, "daily", page)
 
     @discord.app_commands.command(name="global-alltime", description="View the Global All-Time leaderboard")
+    @topgg_vote_required
     @track_analytics
     async def global_alltime(self, interaction: discord.Interaction, page: int = 1) -> None:
         logger.info("file: cogs/leaderboards.py ~ global_alltime ~ run")
@@ -73,6 +74,7 @@ class Leaderboards(commands.GroupCog, name="leaderboard"):
         await display_leaderboard(interaction.followup.send, user_id=interaction.user.id, timeframe="alltime", page=page, global_leaderboard=True)
 
     @discord.app_commands.command(name="global-weekly", description="View the Global Weekly leaderboard")
+    @topgg_vote_required
     @track_analytics
     async def global_weekly(self, interaction: discord.Interaction, page: int = 1) -> None:
         logger.info("file: cogs/leaderboards.py ~ global_weekly ~ run")
@@ -88,6 +90,7 @@ class Leaderboards(commands.GroupCog, name="leaderboard"):
         await display_leaderboard(interaction.followup.send, user_id=interaction.user.id, timeframe="weekly", page=page, global_leaderboard=True)
 
     @discord.app_commands.command(name="global-daily", description="View the Global Daily leaderboard")
+    @topgg_vote_required
     @track_analytics
     async def global_daily(self, interaction: discord.Interaction, page: int = 1) -> None:
         logger.info("file: cogs/leaderboards.py ~ global_daily ~ run")

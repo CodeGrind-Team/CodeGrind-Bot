@@ -3,8 +3,10 @@ from typing import Callable
 
 import discord
 
+from bot_globals import client
 from embeds.general_embeds import not_admin_embed
 from embeds.misc_embeds import error_embed
+from embeds.topgg_embeds import topgg_not_voted
 from models.analytics_model import Analytics
 from models.server_model import Server
 
@@ -71,6 +73,26 @@ def track_analytics(func: Callable) -> Callable:
 
         analytics.command_count_today += 1
         await analytics.save()
+
+        return await func(self, interaction, *args, **kwargs)
+
+    return wrapper
+
+
+def topgg_vote_required(func: Callable) -> Callable:
+    @wraps(func)
+    async def wrapper(self, interaction: discord.Interaction, *args, **kwargs):
+        if not interaction.guild or not isinstance(interaction.channel, discord.TextChannel) or not isinstance(interaction.user, discord.Member):
+            embed = error_embed()
+            await interaction.response.send_message(embed=embed, ephemeral=True)
+            return
+
+        voted = await client.topggpy.get_user_vote(interaction.user.id)
+
+        if not voted:
+            embed = topgg_not_voted()
+            await interaction.response.send_message(embed=embed, ephemeral=True)
+            return
 
         return await func(self, interaction, *args, **kwargs)
 
