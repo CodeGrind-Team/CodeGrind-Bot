@@ -13,12 +13,7 @@ from models.server_model import Server
 
 def ensure_server_document(func: Callable) -> Callable:
     @wraps(func)
-    async def wrapper(self, interaction: discord.Interaction, *args, **kwargs):
-        if not interaction.guild:
-            embed = error_embed()
-            await interaction.response.send_message(embed=embed, ephemeral=True)
-            return
-
+    async def wrapper(self, interaction: discord.Interaction, *args, **kwargs) -> Callable | None:
         server_id = interaction.guild.id
         server = await Server.get(server_id)
 
@@ -33,15 +28,10 @@ def ensure_server_document(func: Callable) -> Callable:
 
 def admins_only(func: Callable) -> Callable:
     @wraps(func)
-    async def wrapper(self, interaction: discord.Interaction, *args, **kwargs):
-        if not interaction.guild or not isinstance(interaction.channel, discord.TextChannel) or not isinstance(interaction.user, discord.Member):
-            embed = error_embed()
-            await interaction.response.send_message(embed=embed, ephemeral=True)
-            return
-
+    async def wrapper(self, interaction: discord.Interaction, *args, **kwargs) -> Callable | None:
         if not interaction.user.guild_permissions.administrator:
             embed = not_admin_embed()
-            await interaction.response.send_message(embed=embed, ephemeral=True)
+            await interaction.followup.send(embed=embed)
             return
 
         return await func(self, interaction, *args, **kwargs)
@@ -51,12 +41,7 @@ def admins_only(func: Callable) -> Callable:
 
 def track_analytics(func: Callable) -> Callable:
     @wraps(func)
-    async def wrapper(self, interaction: discord.Interaction, *args, **kwargs):
-        if not interaction.guild or not isinstance(interaction.channel, discord.TextChannel) or not isinstance(interaction.user, discord.Member):
-            embed = error_embed()
-            await interaction.response.send_message(embed=embed, ephemeral=True)
-            return
-
+    async def wrapper(self, interaction: discord.Interaction, *args, **kwargs) -> Callable | None:
         analytics = await Analytics.find_all().to_list()
 
         if not analytics:
@@ -81,19 +66,36 @@ def track_analytics(func: Callable) -> Callable:
 
 def topgg_vote_required(func: Callable) -> Callable:
     @wraps(func)
-    async def wrapper(self, interaction: discord.Interaction, *args, **kwargs):
-        if not interaction.guild or not isinstance(interaction.channel, discord.TextChannel) or not isinstance(interaction.user, discord.Member):
-            embed = error_embed()
-            await interaction.response.send_message(embed=embed, ephemeral=True)
-            return
-
+    async def wrapper(self, interaction: discord.Interaction, *args, **kwargs) -> Callable | None:
         voted = await client.topggpy.get_user_vote(interaction.user.id)
 
-        if not voted:
+        if voted:
             embed = topgg_not_voted()
-            await interaction.response.send_message(embed=embed, ephemeral=True)
+            await interaction.followup.send(embed=embed)
             return
 
         return await func(self, interaction, *args, **kwargs)
 
     return wrapper
+
+
+def defer_interaction(ephemeral_default: bool = False) -> Callable:
+    def ephemeral_response(func: Callable) -> Callable:
+        @wraps(func)
+        async def wrapper(self, interaction: discord.Interaction, *args, **kwargs) -> Callable | None:
+            display_publicly: bool | None = kwargs.get(
+                'display_publicly', None)
+
+            ephemeral = not display_publicly if display_publicly is not None else ephemeral_default
+
+            await interaction.response.defer(ephemeral=ephemeral)
+
+            if not interaction.guild or not isinstance(interaction.channel, discord.TextChannel) or not isinstance(interaction.user, discord.Member):
+                embed = error_embed()
+                await interaction.followup.send(embed=embed)
+                return
+
+            return await func(self, interaction, *args, **kwargs)
+
+        return wrapper
+    return ephemeral_response

@@ -3,7 +3,7 @@ from discord.ext import commands
 
 from bot_globals import logger
 from embeds.general_embeds import COMMAND_CATEGORIES, help_embed
-from utils.middleware import track_analytics
+from utils.middleware import defer_interaction, track_analytics
 from utils.views import CommandTypeSelectView
 
 
@@ -12,6 +12,7 @@ class General(commands.Cog):
         self.client = client
 
     @discord.app_commands.command(name="help", description="Help for CodeGrind Bot")
+    @defer_interaction(ephemeral_default=True)
     @track_analytics
     async def help(self, interaction: discord.Interaction) -> None:
         logger.info("file: cogs/help.py ~ help ~ run")
@@ -20,15 +21,17 @@ class General(commands.Cog):
         embed.set_footer(
             text="Love our bot? Vote on top.gg using /vote")
 
-        await interaction.response.send_message(embed=embed, view=CommandTypeSelectView(COMMAND_CATEGORIES), ephemeral=True)
+        await interaction.followup.send(embed=embed, view=CommandTypeSelectView(COMMAND_CATEGORIES))
 
     @discord.app_commands.command(name="vote", description="Vote for the bot on top.gg")
+    @defer_interaction(ephemeral_default=True)
     @track_analytics
     async def vote(self, interaction: discord.Interaction) -> None:
-        embed = discord.Embed(title="Vote for the bot on top.gg: ",
+        embed = discord.Embed(title="Vote for CodeGrind Bot on top.gg ",
                               description="https://top.gg/bot/1059122559066570885/vote",
-                              color=discord.Color.blue())
-        await interaction.response.send_message(embed=embed, ephemeral=True)
+                              color=discord.Color.purple())
+
+        await interaction.followup.send(embed=embed)
 
 
 async def setup(client: commands.Bot):

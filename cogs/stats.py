@@ -2,11 +2,10 @@ import discord
 from discord.ext import commands
 
 from bot_globals import logger
-from embeds.misc_embeds import error_embed
 from embeds.stats_embeds import account_hidden_embed, stats_embed
 from embeds.users_embeds import account_not_found_embed
 from models.user_model import User
-from utils.middleware import track_analytics
+from utils.middleware import defer_interaction, track_analytics
 
 
 class Stats(commands.Cog):
@@ -14,16 +13,10 @@ class Stats(commands.Cog):
         self.client = client
 
     @discord.app_commands.command(name="stats", description="Displays a user's stats")
+    @defer_interaction()
     @track_analytics
-    async def stats(self, interaction: discord.Interaction, user: discord.Member | None = None, display_publicly: bool = True, heatmap: bool = False) -> None:
+    async def stats(self, interaction: discord.Interaction, user: discord.Member | None = None, display_publicly: bool | None = None, heatmap: bool = False) -> None:
         logger.info('file: cogs/stats.py ~ stats ~ run')
-
-        await interaction.response.defer(ephemeral=not display_publicly)
-
-        if not interaction.guild:
-            embed = error_embed()
-            await interaction.response.send_message(embed=embed, ephemeral=True)
-            return
 
         if user:
             user_id = user.id

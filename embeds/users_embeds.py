@@ -45,10 +45,9 @@ def connect_account_instructions_embed(generated_string: str, leetcode_username:
 
 
 def profile_added_embed(leetcode_username: str, added: bool = True) -> discord.Embed:
-    embed = discord.Embed(title=f"Profile {'' if added else 'not '}added",
+    embed = discord.Embed(title=f"LeetCode account {'' if added else 'not '}added",
                           color=discord.Color.green() if added else discord.Color.red())
-    embed.add_field(name="Username:",
-                    value=f"{leetcode_username}", inline=False)
+    embed.description = f"**LeetCode ID**: {leetcode_username}\n\nYou can now revert or change your LeetCode Name to whatever you desire."
 
     return embed
 

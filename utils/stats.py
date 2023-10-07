@@ -109,6 +109,8 @@ async def update_stats(user: User, now: datetime, daily_reset: bool = False, wee
         if not member:
             await Server.find_one(Server.id == user.display_information[i].server_id).update(Pull({"users": {"$id": user.id}}))
             del user.display_information[i]
+            logger.info(
+                "file: utils/stats.py ~ update_stats ~ user unlinked from server ~ user_id: %s, server_id: %s", user.id, guild.id)
             continue
 
         user.display_information[i].name = member.display_name
