@@ -142,7 +142,12 @@ def search_question(text: str) -> str | None:
 
     response_data = response.json()
 
-    question_title_slug = response_data['data']['problemsetQuestionList']['questions'][0]['titleSlug']
+    questions_matched_list = response_data['data']['problemsetQuestionList']
+
+    if not questions_matched_list:
+        return
+
+    question_title_slug = questions_matched_list['questions'][0]['titleSlug']
 
     return question_title_slug
 

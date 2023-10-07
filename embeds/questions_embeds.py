@@ -78,5 +78,5 @@ def premium_question_embed(question_id, title, link, color: discord.Color) -> di
 
 def question_error_embed() -> discord.Embed:
     embed = discord.Embed(
-        title="Question could not be retrieved", color=discord.Color.red())
+        title="Question could not be found", color=discord.Color.red())
     return embed

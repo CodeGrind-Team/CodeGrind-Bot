@@ -22,7 +22,8 @@ from embeds.users_embeds import (account_not_found_embed,
 from models.projections import IdProjection
 from models.server_model import Server
 from models.user_model import DisplayInformation, Scores, Submissions, User
-from utils.middleware import ensure_server_document, track_analytics
+from utils.middleware import (defer_interaction, ensure_server_document,
+                              track_analytics)
 from utils.questions import get_problems_solved_and_rank
 from utils.roles import give_verified_role
 
@@ -35,6 +36,7 @@ class Users(commands.Cog):
         name="add",
         description="Connect your LeetCode account to this server"
     )
+    @defer_interaction(ephemeral_default=True)
     @ensure_server_document
     @track_analytics
     async def add(self, interaction: discord.Interaction, leetcode_id: str, include_lc_profile: bool = True, include_lc_profile_globally: bool = False, private: bool = True) -> None:
@@ -42,13 +44,6 @@ class Users(commands.Cog):
 
         logger.info(
             'file: cogs/users.py ~ add ~ run ~ leetcode_username: %s, include_lc_profile: %s, include_lc_profile_globally: %s, private: %s', leetcode_username, include_lc_profile, include_lc_profile_globally, private)
-
-        if not interaction.guild:
-            embed = error_embed()
-            await interaction.response.send_message(embed=embed, ephemeral=True)
-            return
-
-        await interaction.response.defer(ephemeral=True)
 
         server_id = interaction.guild.id
         user_id = interaction.user.id
@@ -101,7 +96,7 @@ class Users(commands.Cog):
 
             embed = connect_account_instructions_embed(
                 generated_string, leetcode_username)
-            await interaction.followup.send(embed=embed, ephemeral=True)
+            await interaction.followup.send(embed=embed)
 
             profile_name = None
             check_interval = 5  # seconds
@@ -170,16 +165,12 @@ class Users(commands.Cog):
                 await interaction.edit_original_response(embed=embed)
 
     @discord.app_commands.command(name="update", description="Update your profile on this server's leaderboards")
+    @defer_interaction(ephemeral_default=True)
     @ensure_server_document
     @track_analytics
     async def update(self, interaction: discord.Interaction, include_lc_profile: bool | None = None, include_lc_profile_globally: bool | None = None, private: bool | None = None) -> None:
         logger.info(
             'file: cogs/users.py ~ update ~ run ~ include_lc_profile: %s, include_lc_profile_globally: %s, private: %s', include_lc_profile, include_lc_profile_globally, private)
-
-        if not interaction.guild:
-            embed = error_embed()
-            await interaction.response.send_message(embed=embed, ephemeral=True)
-            return
 
         if include_lc_profile is include_lc_profile_globally is private is None:
             embed = no_changes_provided_embed()
@@ -188,8 +179,6 @@ class Users(commands.Cog):
 
         server_id = interaction.guild.id
         user_id = interaction.user.id
-
-        await interaction.response.defer(ephemeral=True)
 
         server_exists = await Server.find_one(Server.id == server_id).project(IdProjection)
 
@@ -221,21 +210,15 @@ class Users(commands.Cog):
         await interaction.followup.send(embed=embed)
 
     @discord.app_commands.command(name="remove", description="Remove your profile from this server's leaderboard")
+    @defer_interaction(ephemeral_default=True)
     @ensure_server_document
     @track_analytics
     async def remove(self, interaction: discord.Interaction, permanently_delete: bool = False) -> None:
         logger.info(
             'file: cogs/users.py ~ remove ~ run')
 
-        if not interaction.guild:
-            embed = error_embed()
-            await interaction.response.send_message(embed=embed, ephemeral=True)
-            return
-
         server_id = interaction.guild.id
         user_id = interaction.user.id
-
-        await interaction.response.defer(ephemeral=True)
 
         server_exists = await Server.find_one(Server.id == server_id).project(IdProjection)
 
