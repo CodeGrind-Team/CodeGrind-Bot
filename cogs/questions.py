@@ -65,7 +65,11 @@ async def on_message(message: discord.Message):
             "file: cogs/questions.py ~ on_message ~ question match found: %s", question_title)
 
         embed = await search_question_embed(question_title)
-        await message.edit(suppress=True)
+
+        # Only surpress message if it only contains the url.
+        if question_match == message.content:
+            await message.edit(suppress=True)
+
         await message.channel.send(embed=embed, silent=True, reference=message)
 
         logger.info(
@@ -76,7 +80,9 @@ async def on_message(message: discord.Message):
 
         embed, file = await stats_embed(leetcode_id, leetcode_id)
 
-        await message.edit(suppress=True)
+        # Only surpress message if it only contains the url.
+        if question_match == message.content:
+            await message.edit(suppress=True)
 
         if file is None:
             await message.channel.send(embed=embed, silent=True, reference=message)
