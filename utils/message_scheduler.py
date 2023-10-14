@@ -1,3 +1,4 @@
+import asyncio
 from datetime import datetime, time
 
 import discord
@@ -62,8 +63,11 @@ async def send_daily_question_and_update_stats(force_update_stats: bool = True, 
                             12 and now.minute == 0)
 
     if force_update_stats:
+        tasks = []
         async for user in User.all():
-            await update_stats(user, now, daily_reset, weekly_reset)
+            tasks.append(update_stats(user, now, daily_reset, weekly_reset))
+
+        await asyncio.gather(*tasks, return_exceptions=True)
 
     async for server in Server.all(fetch_links=True):
         server.last_updated = now
