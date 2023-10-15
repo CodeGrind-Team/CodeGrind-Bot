@@ -20,6 +20,9 @@ async def on_autopost_success():
     logger.info("Posted server count (%s), shard count (%s)",
                 client.topggpy.guild_count, client.shard_count)
 
+    logger.info("Total bot member count (%s)",
+                len(set(client.get_all_members())))
+
 
 @client.event
 async def on_ready() -> None:
