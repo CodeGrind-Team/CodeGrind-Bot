@@ -6,6 +6,7 @@ import discord
 from beanie.odm.fields import WriteRules
 from beanie.odm.operators.update.array import AddToSet, Pull
 from beanie.odm.operators.update.general import Set
+from bson import DBRef
 from discord.ext import commands
 
 from bot_globals import calculate_scores, logger
@@ -79,12 +80,7 @@ class Users(commands.Cog):
 
                 # Add user's display information for this server
                 await User.find_one(User.id == user_id).update(AddToSet({User.display_information: display_information}))
-
-                await Server.find_one(Server.id == server_id).update(AddToSet({Server.users: user_id}))
-                # Have to fetch and save document in order to convert user_id to a reference
-                # TODO: ask on beanie repo for the correct method of doing this
-                server = await Server.get(server_id)
-                await server.save()
+                await Server.find_one(Server.id == server_id).update(AddToSet({Server.users: DBRef("users", user_id)}))
 
                 embed = synced_existing_user_embed()
                 await interaction.followup.send(embed=embed)
@@ -144,10 +140,7 @@ class Users(commands.Cog):
                 await server.save(link_rule=WriteRules.WRITE)
 
                 # Add to the global leaderboard.
-                await Server.find_one(Server.id == 0).update(AddToSet({Server.users: user_id}))
-                # Have to fetch and save document in order to convert user_id to a reference
-                # TODO: ask on beanie repo for the correct method of doing this
-                server = await Server.get(0)
+                await Server.find_one(Server.id == 0).update(AddToSet({Server.users: DBRef("users", user_id)}))
                 await server.save()
 
                 await give_verified_role(interaction.user, interaction.guild.id)

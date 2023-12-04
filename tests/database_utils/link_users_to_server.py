@@ -25,7 +25,4 @@ async def link_user_to_server(user: User, server_id: int = 0) -> None:
         server_id=server_id, name=discord_user.name, url=False)
 
     await User.find_one(User.id == user.id).update(AddToSet({User.display_information: display_information}))
-    await Server.find_one(Server.id == server_id).update(AddToSet({Server.users: user.id}))
-    server = await Server.get(server_id)
-    # link rule to create a new document for the new link
-    await server.save()
+    await Server.find_one(Server.id == server_id).update(AddToSet({Server.users: DBRef("users",  user.id)}))
