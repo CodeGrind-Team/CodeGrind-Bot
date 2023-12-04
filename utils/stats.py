@@ -98,6 +98,15 @@ async def update_stats(user: User, now: datetime, daily_reset: bool = False, wee
     user.submissions.total_score = total_score
 
     for i in range(len(user.display_information)-1, -1, -1):
+        if display_information[i].server_id == 0:
+            discord_user = await client.fetch_user(user.id)
+
+            if discord_user is None:
+                continue
+
+            user.display_information[i].name = discord_user.name
+            continue
+
         guild = client.get_guild(user.display_information[i].server_id)
 
         if not guild:

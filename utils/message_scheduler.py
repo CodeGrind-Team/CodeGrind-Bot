@@ -59,8 +59,8 @@ async def send_daily_question_and_update_stats(force_update_stats: bool = True, 
     weekly_reset = (now.weekday() == 0 and now.hour ==
                     0 and now.minute == 0) or force_weekly_reset
     midday = (now.hour == 12 and now.minute == 0)
-    remove_unneeded_data = (now.day == 1 and now.hour ==
-                            12 and now.minute == 0)
+    monthly = (now.day == 1 and now.hour ==
+               12 and now.minute == 0)
 
     if force_update_stats:
         tasks = []
@@ -76,6 +76,7 @@ async def send_daily_question_and_update_stats(force_update_stats: bool = True, 
         if daily_reset:
             await update_rankings(server, now, "daily")
             await send_leaderboard_winners(server, "yesterday")
+            # TODO AddToSet global leaderboard all users
 
         if weekly_reset:
             await update_rankings(server, now, "weekly")
@@ -107,46 +108,53 @@ async def send_daily_question_and_update_stats(force_update_stats: bool = True, 
         await analytics.save()
 
     # Data removal process
-    if remove_unneeded_data:
-        async for server in Server.all():
-            # Make exception for global leaderboard server.
-            if server.id == 0:
-                continue
-
-            # So that we can access user.id
-            await server.fetch_all_links()
-
-            guild = client.get_guild(server.id)
-
-            # Delete server document if the bot isn't in the server anymore
-            if not guild or guild not in client.guilds:
-                await server.delete()
-
-                logger.info(
-                    "file: utils/message_scheduler.py ~ send_daily_question_and_update_stats ~ server document deleted ~ id: %s", server.id)
-
-            for user in server.users:
-                # unlink user if server was deleted or if bot not in the server anymore
-                unlink_user = not guild or not guild.get_member(
-                    user.id)
-
-                # Unlink user from server if they're not in the server anymore
-                if unlink_user:
-                    await User.find_one(User.id == user.id).update(Pull({User.display_information: {"server_id": server.id}}))
-                    await Server.find_one(Server.id == server.id).update(Pull({Server.users: {"$id": user.id}}))
-
-                    logger.info(
-                        "file: utils/message_scheduler.py ~ send_daily_question_and_update_stats ~ user unlinked from server ~ user_id: %s, server_id: %s", user.id, server.id)
-
-        async for user in User.all():
-            # Delete user document if they're not in any server with the bot in it
-            if len(user.display_information) == 0:
-                await User.find_one(User.id == user.id).delete()
-
-                logger.info(
-                    "file: utils/message_scheduler.py ~ send_daily_question_and_update_stats ~ user document deleted ~ id: %s", user.id)
-
-                continue
+    if monthly:
+        await remove_inactive_users()
 
     logger.info(
         "file: utils/message_scheduler.py ~ send_daily_question_and_update_stats ~ ended")
+
+
+async def remove_inactive_users():
+    async for server in Server.all():
+        # Make exception for global leaderboard server.
+        if server.id == 0:
+            continue
+
+        # So that we can access user.id
+        await server.fetch_all_links()
+
+        guild = client.get_guild(server.id)
+
+        delete_server = False
+        # Delete server document if the bot isn't in the server anymore
+        if not guild or guild not in client.guilds:
+            delete_server = True
+
+        for user in server.users:
+            # unlink user if server was deleted or if bot not in the server anymore
+            unlink_user = not guild or not guild.get_member(
+                user.id) or delete_server
+
+            # Unlink user from server if they're not in the server anymore
+            if unlink_user:
+                await User.find_one(User.id == user.id).update(Pull({User.display_information: {"server_id": server.id}}))
+                await Server.find_one(Server.id == server.id).update(Pull({Server.users: {"$id": user.id}}))
+
+                logger.info(
+                    "file: utils/remove_inactive_users.py ~ send_daily_question_and_update_stats ~ user unlinked from server ~ user_id: %s, server_id: %s", user.id, server.id)
+
+        if delete_server:
+            await server.delete()
+
+            logger.info(
+                "file: utils/remove_inactive_users.py ~ send_daily_question_and_update_stats ~ server document deleted ~ id: %s", server.id)
+
+    async for user in User.all():
+        # Delete user document if they're not in any server with the bot in it except the global leaderboard
+        if len(user.display_information) == 1:
+            await Server.find_one(Server.id == 0).update(Pull({Server.users: {"$id": user.id}}))
+            await user.delete()
+
+            logger.info(
+                "file: utils/remove_inactive_users.py ~ send_daily_question_and_update_stats ~ user document deleted ~ id: %s", user.id)
