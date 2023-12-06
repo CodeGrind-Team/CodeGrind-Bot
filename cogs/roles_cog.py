@@ -4,10 +4,10 @@ from discord.ext import commands
 from bot_globals import logger
 from embeds.roles_embeds import (missing_manage_roles_permission_embed,
                                  roles_created_embed, roles_removed_embed)
-from models.server_model import Server
-from utils.middleware import (admins_only, defer_interaction,
-                              ensure_server_document, track_analytics)
-from utils.roles import create_roles, remove_roles, update_roles
+from database.models.server_model import Server
+from middleware import (admins_only, defer_interaction,
+                        ensure_server_document, track_analytics)
+from utils.roles_utils import create_roles, remove_roles, update_roles
 
 
 class Roles(commands.GroupCog, name="roles"):

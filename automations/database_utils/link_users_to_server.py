@@ -1,8 +1,8 @@
 from beanie.odm.operators.update.array import AddToSet
 
 from bot_globals import client, logger
-from models.server_model import Server
-from models.user_model import DisplayInformation, User
+from database.models.server_model import Server
+from database.models.user_model import DisplayInformation, User
 
 
 async def link_all_users_to_server():

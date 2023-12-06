@@ -2,7 +2,7 @@ import discord
 
 from bot_globals import (MILESTONE_ROLES, STREAK_ROLES, VERIFIED_ROLE, client,
                          logger)
-from models.server_model import Server
+from database.models.server_model import Server
 
 
 async def create_roles_from_string(guild: discord.Guild, role: str):

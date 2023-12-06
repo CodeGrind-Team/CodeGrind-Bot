@@ -1,7 +1,7 @@
 import discord
 
-from utils.questions import (get_daily_question, get_question_info_from_title,
-                             get_random_question, search_question)
+from utils.questions_utils import (get_daily_question, get_question_info_from_title,
+                                   get_random_question, search_question)
 
 
 async def daily_question_embed() -> discord.Embed:

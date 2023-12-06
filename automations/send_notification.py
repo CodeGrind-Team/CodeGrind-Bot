@@ -1,3 +1,11 @@
+import asyncio
+import discord
+from beanie import init_beanie
+from dotenv import load_dotenv
+from motor.motor_asyncio import AsyncIOMotorClient
+from bot_globals import client
+from database.models.server_model import Server
+from database.models.user_model import User
 import os
 import sys
 
@@ -6,14 +14,6 @@ current_path = os.path.dirname(__file__)
 parent_path = os.path.abspath(os.path.join(current_path, '..'))
 sys.path.append(parent_path)
 
-from models.user_model import User
-from models.server_model import Server
-from bot_globals import client
-from motor.motor_asyncio import AsyncIOMotorClient
-from dotenv import load_dotenv
-from beanie import init_beanie
-import discord
-import asyncio
 
 load_dotenv()
 

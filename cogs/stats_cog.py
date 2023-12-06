@@ -2,10 +2,10 @@ import discord
 from discord.ext import commands
 
 from bot_globals import logger
+from database.models.user_model import User
 from embeds.stats_embeds import account_hidden_embed, stats_embed
 from embeds.users_embeds import account_not_found_embed
-from models.user_model import User
-from utils.middleware import defer_interaction, track_analytics
+from middleware import defer_interaction, track_analytics
 
 
 class Stats(commands.Cog):

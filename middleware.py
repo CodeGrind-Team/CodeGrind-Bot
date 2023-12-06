@@ -4,11 +4,11 @@ from typing import Callable
 import discord
 
 from bot_globals import client
+from database.models.analytics_model import Analytics
+from database.models.server_model import Server
 from embeds.general_embeds import not_admin_embed
 from embeds.misc_embeds import error_embed
 from embeds.topgg_embeds import topgg_not_voted
-from models.analytics_model import Analytics
-from models.server_model import Server
 
 
 def ensure_server_document(func: Callable) -> Callable:

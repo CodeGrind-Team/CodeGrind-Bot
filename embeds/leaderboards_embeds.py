@@ -2,7 +2,7 @@ import discord
 import pytz
 
 from bot_globals import DIFFICULTY_SCORE
-from models.server_model import Server
+from database.models.server_model import Server
 
 
 def empty_leaderboard_embed() -> discord.Embed:

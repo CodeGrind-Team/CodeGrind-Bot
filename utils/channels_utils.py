@@ -3,7 +3,7 @@ from typing import List
 import discord
 from beanie.odm.operators.update.array import AddToSet, Pull
 
-from models.server_model import Server
+from database.models.server_model import Server
 
 
 def get_options(available_types: List[str]) -> List[discord.SelectOption]:

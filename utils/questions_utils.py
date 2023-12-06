@@ -7,8 +7,8 @@ import markdownify
 import requests
 
 from bot_globals import logger
-from utils.ratings import get_rating_data
-from utils.run_blocking import to_thread
+from utils.common_utils import to_thread
+from utils.ratings_utils import get_rating_data
 
 
 @to_thread

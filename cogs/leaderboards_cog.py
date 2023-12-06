@@ -2,9 +2,9 @@ import discord
 from discord.ext import commands
 
 from bot_globals import logger
-from utils.leaderboards import display_leaderboard
-from utils.middleware import (defer_interaction, ensure_server_document,
-                              topgg_vote_required, track_analytics)
+from middleware import (defer_interaction, ensure_server_document,
+                        topgg_vote_required, track_analytics)
+from utils.leaderboards_utils import display_leaderboard
 
 
 class Leaderboards(commands.GroupCog, name="leaderboard"):

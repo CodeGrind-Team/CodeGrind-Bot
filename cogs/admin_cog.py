@@ -4,10 +4,10 @@ from beanie.odm.operators.update.general import Set
 from discord.ext import commands
 
 from bot_globals import logger
+from database.models.server_model import Server
 from embeds.admin_embeds import invalid_timezone_embed, timezone_updated_embed
-from models.server_model import Server
-from utils.middleware import (admins_only, defer_interaction,
-                              ensure_server_document, track_analytics)
+from middleware import (admins_only, defer_interaction, ensure_server_document,
+                        track_analytics)
 
 
 class Channels(commands.GroupCog, name="settings"):

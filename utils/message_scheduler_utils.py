@@ -6,13 +6,13 @@ from beanie.odm.operators.update.array import Pull
 from discord.ext import tasks
 
 from bot_globals import client, logger
+from database.models.analytics_model import Analytics, AnalyticsHistory
+from database.models.server_model import Server
+from database.models.user_model import User
 from embeds.questions_embeds import daily_question_embed
-from models.analytics_model import Analytics, AnalyticsHistory
-from models.server_model import Server
-from models.user_model import User
-from utils.leaderboards import send_leaderboard_winners
-from utils.roles import update_roles
-from utils.stats import update_rankings, update_stats
+from utils.leaderboards_utils import send_leaderboard_winners
+from utils.roles_utils import update_roles
+from utils.stats_utils import update_rankings, update_stats
 
 
 async def send_daily_question(server: Server, embed: discord.Embed) -> None:
