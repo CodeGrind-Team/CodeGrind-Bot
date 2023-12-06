@@ -106,10 +106,10 @@ async def display_leaderboard(send_message, server_id: int = 0, user_id: int | N
         title = f"{'Global ' if global_leaderboard else ''}{TIMEFRAME_TITLE[timeframe]['title']} Leaderboard"
         if winners_only:
             if timeframe == "yesterday":
-                title = f"{TIMEFRAME_TITLE[timeframe]['title']} Winners ({strftime_with_suffix('{S} %B %Y', datetime.utcnow() - timedelta(days=1))})"
+                title = f"{TIMEFRAME_TITLE[timeframe]['title']} Winners ({strftime_with_suffix('{S} %b %Y', datetime.utcnow() - timedelta(days=1))})"
 
             elif timeframe == "last_week":
-                title = f"{TIMEFRAME_TITLE[timeframe]['title']} Winners ({strftime_with_suffix('{S} %B %Y', datetime.utcnow() - timedelta(days=7))} - {strftime_with_suffix('{S} %B %Y', datetime.utcnow() - timedelta(days=1))})"
+                title = f"{TIMEFRAME_TITLE[timeframe]['title']} Winners ({strftime_with_suffix('{S} %b %Y', datetime.utcnow() - timedelta(days=7))} - {strftime_with_suffix('{S} %b %Y', datetime.utcnow() - timedelta(days=1))})"
 
         embed = leaderboard_embed(
             server, page_i, page_count, title, leaderboard)

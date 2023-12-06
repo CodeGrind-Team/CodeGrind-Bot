@@ -21,7 +21,7 @@ def leaderboard_embed(server: Server, page_i: int, page_count: int, title: str, 
 
     embed.description = "\n".join(leaderboard)
 
-    last_updated = strftime_with_suffix("{S} %B %Y at %H:%M %Z", pytz.timezone("UTC").localize(
+    last_updated = strftime_with_suffix("{S} %b %Y at %H:%M %Z", pytz.timezone("UTC").localize(
         server.last_updated).astimezone(pytz.timezone(server.timezone)))
 
     embed.set_footer(
