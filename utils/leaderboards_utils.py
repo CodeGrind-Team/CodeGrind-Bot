@@ -128,7 +128,7 @@ async def display_leaderboard(send_message, server_id: int = 0, user_id: int | N
         await send_message(embed=pages[page], view=view)
     except discord.errors.Forbidden as e:
         logger.exception(
-            "file: utils/leaderboards.py ~ display_leaderboard ~ missing permissions on server id %s. Error: %s", server_id, e)
+            "file: utils/leaderboards_utils.py ~ display_leaderboard ~ missing permissions on server id %s. Error: %s", server_id, e)
 
 
 async def send_leaderboard_winners(server: Server, timeframe: str) -> None:
@@ -142,7 +142,7 @@ async def send_leaderboard_winners(server: Server, timeframe: str) -> None:
             await display_leaderboard(channel.send, server.id, timeframe=timeframe, winners_only=True)
         except discord.errors.Forbidden as e:
             logger.exception(
-                "file: utils/leaderboards.py ~ send_leaderboard_winners ~ missing permissions on channel id %s. Error: %s", channel.id, e)
+                "file: utils/leaderboards_utils.py ~ send_leaderboard_winners ~ missing permissions on channel id %s. Error: %s", channel.id, e)
 
     logger.info(
-        "file: utils/leaderboards.py ~ send_leaderboard_winners ~ %s winners leaderboard sent to channels", timeframe)
+        "file: utils/leaderboards_utils.py ~ send_leaderboard_winners ~ %s winners leaderboard sent to channels", timeframe)
