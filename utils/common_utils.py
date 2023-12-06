@@ -1,6 +1,7 @@
 import asyncio
 import functools
 from typing import Callable
+from bot_globals import DIFFICULTY_SCORE
 
 
 # https://stackoverflow.com/questions/65881761/discord-gateway-warning-shard-id-none-heartbeat-blocked-for-more-than-10-second

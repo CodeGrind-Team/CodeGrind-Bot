@@ -9,7 +9,7 @@ from beanie.odm.operators.update.general import Set
 from bson import DBRef
 from discord.ext import commands
 
-from utils.common_utils import calculate_scores, logger
+from bot_globals import logger
 from database.models.projections import IdProjection
 from database.models.server_model import Server
 from database.models.user_model import (DisplayInformation, Scores,
@@ -26,6 +26,7 @@ from embeds.users_embeds import (account_not_found_embed,
                                  user_already_added_in_server_embed)
 from middleware import (defer_interaction, ensure_server_document,
                         track_analytics)
+from utils.common_utils import calculate_scores
 from utils.questions_utils import get_problems_solved_and_rank
 from utils.roles_utils import give_verified_role
 

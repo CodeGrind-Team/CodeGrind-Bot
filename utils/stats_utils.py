@@ -3,9 +3,10 @@ from datetime import datetime
 from beanie.odm.operators.update.array import AddToSet, Pull
 from beanie.odm.operators.update.general import Set
 
-from utils.common_utils import calculate_scores, client, logger
+from bot_globals import client, logger
 from database.models.server_model import Rankings, Server, UserRank
 from database.models.user_model import History, Submissions, User
+from utils.common_utils import calculate_scores
 from utils.leaderboards_utils import get_score
 from utils.questions_utils import get_problems_solved_and_rank
 
