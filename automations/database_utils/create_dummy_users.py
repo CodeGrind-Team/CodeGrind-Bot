@@ -1,6 +1,6 @@
 from database.models.user_model import DisplayInformation, Scores, Submissions, User
 from database.models.server_model import Server
-from bot_globals import calculate_scores
+from utils.common_utils import calculate_scores
 from motor.motor_asyncio import AsyncIOMotorClient
 from dotenv import load_dotenv
 from beanie.odm.operators.update.array import AddToSet
