@@ -8,6 +8,7 @@ from database.models.server_model import Server
 from database.models.user_model import User
 from embeds.leaderboards_embeds import (empty_leaderboard_embed,
                                         leaderboard_embed)
+from utils.common_utils import strftime_with_suffix
 from utils.views_utils import Pagination
 
 
@@ -105,10 +106,10 @@ async def display_leaderboard(send_message, server_id: int = 0, user_id: int | N
         title = f"{'Global ' if global_leaderboard else ''}{TIMEFRAME_TITLE[timeframe]['title']} Leaderboard"
         if winners_only:
             if timeframe == "yesterday":
-                title = f"{TIMEFRAME_TITLE[timeframe]['title']} Winners ({(datetime.utcnow() - timedelta(days=1)).strftime('%d/%m/%Y')})"
+                title = f"{TIMEFRAME_TITLE[timeframe]['title']} Winners ({strftime_with_suffix('{S} %B %Y', datetime.utcnow() - timedelta(days=1))})"
 
             elif timeframe == "last_week":
-                title = f"{TIMEFRAME_TITLE[timeframe]['title']} Winners ({(datetime.utcnow() - timedelta(days=7)).strftime('%d/%m/%Y')} - {(datetime.utcnow() - timedelta(days=1)).strftime('%d/%m/%Y')})"
+                title = f"{TIMEFRAME_TITLE[timeframe]['title']} Winners ({strftime_with_suffix('{S} %B %Y', datetime.utcnow() - timedelta(days=7))} - {strftime_with_suffix('{S} %B %Y', datetime.utcnow() - timedelta(days=1))})"
 
         embed = leaderboard_embed(
             server, page_i, page_count, title, leaderboard)

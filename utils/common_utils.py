@@ -1,6 +1,8 @@
 import asyncio
 import functools
+from datetime import datetime
 from typing import Callable
+
 from bot_globals import DIFFICULTY_SCORE
 
 
@@ -14,3 +16,9 @@ def to_thread(func: Callable) -> Callable:
 
 def calculate_scores(easy: int = 0, medium: int = 0, hard: int = 0) -> int:
     return easy * DIFFICULTY_SCORE['easy'] + medium * DIFFICULTY_SCORE['medium'] + hard * DIFFICULTY_SCORE['hard']
+
+
+def strftime_with_suffix(format: str, t: datetime) -> str:
+    def suffix(d):
+        return {1: 'st', 2: 'nd', 3: 'rd'}.get(d % 20, 'th')
+    return t.strftime(format).replace('{S}', str(t.day) + suffix(t.day))
