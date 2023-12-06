@@ -1,5 +1,6 @@
 from pydantic import BaseModel, Field
-from models.user_model import Submissions
+
+from database.models.user_model import Submissions
 
 
 class IdProjection(BaseModel):

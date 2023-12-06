@@ -3,8 +3,8 @@ from discord.ext import commands
 
 from bot_globals import logger
 from embeds.general_embeds import COMMAND_CATEGORIES, help_embed
-from utils.middleware import defer_interaction, track_analytics
-from utils.views import CommandTypeSelectView
+from middleware import defer_interaction, track_analytics
+from utils.views_utils import CommandTypeSelectView
 
 
 class General(commands.Cog):

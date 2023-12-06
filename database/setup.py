@@ -3,9 +3,9 @@ import os
 from beanie import init_beanie
 from motor.motor_asyncio import AsyncIOMotorClient
 
-from models.server_model import Server
-from models.user_model import User
-from models.analytics_model import Analytics
+from database.models.analytics_model import Analytics
+from database.models.server_model import Server
+from database.models.user_model import User
 
 
 async def init_mongodb_conn() -> None:

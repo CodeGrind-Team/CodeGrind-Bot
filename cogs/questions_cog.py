@@ -7,7 +7,7 @@ from bot_globals import logger
 from embeds.questions_embeds import (daily_question_embed,
                                      random_question_embed,
                                      search_question_embed)
-from utils.middleware import track_analytics, defer_interaction
+from middleware import track_analytics, defer_interaction
 
 
 class Questions(commands.GroupCog, name="question"):

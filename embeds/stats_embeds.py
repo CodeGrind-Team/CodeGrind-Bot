@@ -7,7 +7,7 @@ import requests
 
 from bot_globals import hti
 from embeds.misc_embeds import error_embed
-from utils.run_blocking import to_thread
+from utils.common_utils import to_thread
 
 
 @to_thread

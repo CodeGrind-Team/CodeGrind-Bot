@@ -6,11 +6,11 @@ import topgg
 from dotenv import load_dotenv
 
 from bot_globals import client, logger
-from database import init_mongodb_conn
-from utils.message_scheduler import (
+from database.setup import init_mongodb_conn
+from utils.notifications_utils import (
     send_daily_question_and_update_stats,
     send_daily_question_and_update_stats_schedule)
-from utils.ratings import read_ratings_txt
+from utils.ratings_utils import read_ratings_txt
 
 load_dotenv()
 
@@ -57,7 +57,7 @@ async def setup_hook() -> None:
 
 async def load_extensions() -> None:
     for filename in os.listdir("./cogs"):
-        if filename.endswith(".py"):
+        if filename.endswith("cog.py"):
             # cut off the .py from the file name
             await client.load_extension(f"cogs.{filename[:-3]}")
 

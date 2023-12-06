@@ -7,14 +7,14 @@ import markdownify
 import requests
 
 from bot_globals import logger
-from utils.ratings import get_rating_data
-from utils.run_blocking import to_thread
+from utils.common_utils import to_thread
+from utils.ratings_utils import get_rating_data
 
 
 @to_thread
 def get_random_question(difficulty: str) -> str | None:
     logger.info(
-        "file: utils/questions.py ~ get_random_question ~ run")
+        "file: utils/questions_utils.py ~ get_random_question ~ run")
 
     try:
         response = requests.get(
@@ -52,7 +52,7 @@ def get_random_question(difficulty: str) -> str | None:
 @to_thread
 def get_daily_question() -> str | None:
     logger.info(
-        "file: utils/questions.py ~ get_daily_question ~ run")
+        "file: utils/questions_utils.py ~ get_daily_question ~ run")
 
     url = 'https://leetcode.com/graphql'
 
@@ -101,7 +101,7 @@ def get_daily_question() -> str | None:
 @to_thread
 def search_question(text: str) -> str | None:
     logger.info(
-        "file: utils/questions.py ~ search_question ~ run")
+        "file: utils/questions_utils.py ~ search_question ~ run")
 
     url = 'https://leetcode.com/graphql'
 
@@ -155,7 +155,7 @@ def search_question(text: str) -> str | None:
 @to_thread
 def get_question_info_from_title(question_title_slug: str) -> List[int | str] | None:
     logger.info(
-        "file: utils/questions.py ~ get_question_info_from_title ~ run ~ question_title_slug: %s", question_title_slug)
+        "file: utils/questions_utils.py ~ get_question_info_from_title ~ run ~ question_title_slug: %s", question_title_slug)
 
     url = 'https://leetcode.com/graphql'
 
@@ -267,7 +267,7 @@ def html_to_markdown(html):
 @to_thread
 def get_problems_solved_and_rank(leetcode_username: str) -> dict[str, Any] | None:
     logger.info(
-        "file: utils/questions.py ~ get_problems_solved_and_rank ~ run ~ leetcode_username: %s", leetcode_username)
+        "file: utils/questions_utils.py ~ get_problems_solved_and_rank ~ run ~ leetcode_username: %s", leetcode_username)
 
     url = 'https://leetcode.com/graphql'
 
@@ -297,20 +297,20 @@ def get_problems_solved_and_rank(leetcode_username: str) -> dict[str, Any] | Non
     }
 
     logger.info(
-        "file: utils/questions.py ~ get_problems_solved_and_rank ~ data requesting ~ https://leetcode.com/%s", leetcode_username)
+        "file: utils/questions_utils.py ~ get_problems_solved_and_rank ~ data requesting ~ https://leetcode.com/%s", leetcode_username)
 
     try:
         response = requests.post(url, json=data, headers=headers, timeout=10)
 
     except Exception as e:
         logger.exception(
-            "file: utils/questions.py ~ get_problems_solved_and_rank ~ exception: %s", e)
+            "file: utils/questions_utils.py ~ get_problems_solved_and_rank ~ exception: %s", e)
 
         return
 
     if response.status_code != 200:
         logger.exception(
-            "file: utils/questions.py ~ get_problems_solved_and_rank ~ Error code: %s", response.status_code)
+            "file: utils/questions_utils.py ~ get_problems_solved_and_rank ~ Error code: %s", response.status_code)
 
         return
 
@@ -318,11 +318,11 @@ def get_problems_solved_and_rank(leetcode_username: str) -> dict[str, Any] | Non
 
     if response_data["data"]["matchedUser"] is None:
         logger.warning(
-            "file: utils/questions.py ~ get_problems_solved_and_rank ~ user not found ~ https://leetcode.com/%s", leetcode_username)
+            "file: utils/questions_utils.py ~ get_problems_solved_and_rank ~ user not found ~ https://leetcode.com/%s", leetcode_username)
         return
 
     logger.info(
-        "file: utils/questions.py ~ get_problems_solved_and_rank ~ data requested successfully ~ https://leetcode.com/%s", leetcode_username)
+        "file: utils/questions_utils.py ~ get_problems_solved_and_rank ~ data requested successfully ~ https://leetcode.com/%s", leetcode_username)
 
     stats = response_data["data"]["matchedUser"]
 

@@ -2,20 +2,21 @@ from datetime import datetime
 
 from beanie.odm.operators.update.array import AddToSet, Pull
 from beanie.odm.operators.update.general import Set
-from bot_globals import calculate_scores, client, logger
-from models.server_model import Rankings, Server, UserRank
-from models.user_model import History, Submissions, User
 
-from utils.leaderboards import get_score
-from utils.questions import get_problems_solved_and_rank
+from bot_globals import client, logger
+from database.models.server_model import Rankings, Server, UserRank
+from database.models.user_model import History, Submissions, User
+from utils.common_utils import calculate_scores
+from utils.leaderboards_utils import get_score
+from utils.questions_utils import get_problems_solved_and_rank
 
 
 async def update_rankings(server: Server, now: datetime, timeframe: str) -> None:
     logger.info(
-        "file: cogs/stats.py ~ update_rankings ~ run ~ timeframe: %s", timeframe)
+        "file: cogs/stats_utils.py ~ update_rankings ~ run ~ timeframe: %s", timeframe)
 
     logger.info(
-        'file: cogs/stats.py ~ update_rankings ~ current server ID: %s', server.id)
+        'file: cogs/stats_utils.py ~ update_rankings ~ current server ID: %s', server.id)
 
     if timeframe not in ["daily", "weekly"]:
         return
@@ -47,11 +48,11 @@ async def update_rankings(server: Server, now: datetime, timeframe: str) -> None
         await Server.find_one(Server.id == server.id).update(AddToSet({Server.rankings: rankings}))
 
     logger.info(
-        'file: cogs/stats.py ~ update_rankings ~ rankings updated successfully for %s timeframe', timeframe)
+        'file: cogs/stats_utils.py ~ update_rankings ~ rankings updated successfully for %s timeframe', timeframe)
 
 
 async def update_stats(user: User, now: datetime, daily_reset: bool = False, weekly_reset: bool = False) -> None:
-    logger.info("file: cogs/stats.py ~ update_stats ~ run ~ now: %s | daily_reset: %s",
+    logger.info("file: cogs/stats_utils.py ~ update_stats ~ run ~ now: %s | daily_reset: %s",
                 now, daily_reset)
 
     leetcode_username = user.leetcode_username
@@ -145,4 +146,4 @@ async def update_stats(user: User, now: datetime, daily_reset: bool = False, wee
     await user.save_changes()
 
     logger.info(
-        'file: cogs/stats.py ~ update_stats ~ user stats updated successfully: %s', leetcode_username)
+        'file: cogs/stats_utils.py ~ update_stats ~ user stats updated successfully: %s', leetcode_username)

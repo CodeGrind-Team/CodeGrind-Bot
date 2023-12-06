@@ -2,7 +2,7 @@ import discord
 
 from bot_globals import (MILESTONE_ROLES, STREAK_ROLES, VERIFIED_ROLE, client,
                          logger)
-from models.server_model import Server
+from database.models.server_model import Server
 
 
 async def create_roles_from_string(guild: discord.Guild, role: str):
@@ -14,7 +14,7 @@ async def create_roles_from_string(guild: discord.Guild, role: str):
                                     hoist=False, mentionable=False)
         except discord.errors.Forbidden as e:
             logger.exception(
-                "file: cogs/roles.py ~ create_roles_from_string ~ missing 'manage roles' permission ~ error: %s", e)
+                "file: cogs/roles_utils.py ~ create_roles_from_string ~ missing 'manage roles' permission ~ error: %s", e)
 
 
 async def create_roles_from_dict(guild: discord.Guild, roles: dict):
@@ -27,7 +27,7 @@ async def create_roles_from_dict(guild: discord.Guild, roles: dict):
                                         hoist=False, mentionable=False)
             except discord.errors.Forbidden as e:
                 logger.exception(
-                    "file: cogs/roles.py ~ create_roles_from_dict ~ 403 Forbidden error ~ error: %s", e)
+                    "file: cogs/roles_utils.py ~ create_roles_from_dict ~ 403 Forbidden error ~ error: %s", e)
 
 
 async def remove_roles_from_string(guild: discord.Guild, role: str):
@@ -38,7 +38,7 @@ async def remove_roles_from_string(guild: discord.Guild, role: str):
             await role_found.delete()
         except discord.errors.Forbidden as e:
             logger.exception(
-                "file: cogs/roles.py ~ remove_roles_from_string ~ 403 Forbidden error ~ error: %s", e)
+                "file: cogs/roles_utils.py ~ remove_roles_from_string ~ 403 Forbidden error ~ error: %s", e)
 
 
 async def remove_roles_from_dict(guild: discord.Guild, roles: dict):
@@ -52,7 +52,7 @@ async def remove_roles_from_dict(guild: discord.Guild, roles: dict):
                 await role_found.delete()
             except discord.errors.Forbidden as e:
                 logger.exception(
-                    "file: cogs/roles.py ~ remove_roles_from_dict ~ 403 Forbidden error ~ error: %s", e)
+                    "file: cogs/roles_utils.py ~ remove_roles_from_dict ~ 403 Forbidden error ~ error: %s", e)
 
 
 async def create_roles(guild: discord.Guild):
@@ -102,11 +102,11 @@ async def give_verified_role(user: discord.User, guild_id: int) -> None:
         await discord_user.add_roles(role)
     except discord.errors.Forbidden as e:
         logger.exception(
-            "file: cogs/roles.py ~ give_verified_role ~ run ~ 403 Forbidden error ~ error: %s", e)
+            "file: cogs/roles_utils.py ~ give_verified_role ~ run ~ 403 Forbidden error ~ error: %s", e)
     except Exception as e:
         # Handle other exceptions
         logger.exception(
-            "file: cogs/roles.py ~ give_verified_role ~ run ~ error: %s", e)
+            "file: cogs/roles_utils.py ~ give_verified_role ~ run ~ error: %s", e)
 
 
 async def give_streak_role(user: discord.User, guild_id: int, streak: int) -> None:

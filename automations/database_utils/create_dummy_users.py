@@ -1,12 +1,11 @@
 import os
 import sys
+from random import randint
 
 # Make the directory to the root folder so that the other files can be imported
 current_path = os.path.dirname(__file__)
 parent_path = os.path.abspath(os.path.join(current_path, '../..'))
 sys.path.append(parent_path)
-
-from random import randint
 
 from beanie import init_beanie
 from beanie.odm.fields import WriteRules
@@ -14,11 +13,13 @@ from beanie.odm.operators.update.array import AddToSet
 from dotenv import load_dotenv
 from motor.motor_asyncio import AsyncIOMotorClient
 
-from bot_globals import calculate_scores
-from models.server_model import Server
-from models.user_model import DisplayInformation, Scores, Submissions, User
+from utils.common_utils import calculate_scores
+from database.models.server_model import Server
+from database.models.user_model import (DisplayInformation, Scores,
+                                        Submissions, User)
 
 load_dotenv()
+
 
 async def create_user(server_id: int, user_id: int, leetcode_username: str, name: str, rank: int, url_bool: bool, easy: int, medium: int, hard: int):
     display_information = DisplayInformation(
@@ -39,6 +40,7 @@ async def create_user(server_id: int, user_id: int, leetcode_username: str, name
     server = await Server.get(server_id)
     # link rule to create a new document for the new link
     await server.save(link_rule=WriteRules.WRITE)
+
 
 async def init_mongodb_conn(server_id: int, number_of_users: int) -> None:
     mongodb_client = AsyncIOMotorClient(os.environ["MONGODB_URI"])

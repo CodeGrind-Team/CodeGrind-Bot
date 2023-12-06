@@ -9,7 +9,11 @@ from beanie.odm.operators.update.general import Set
 from bson import DBRef
 from discord.ext import commands
 
-from bot_globals import calculate_scores, logger
+from bot_globals import logger
+from database.models.projections import IdProjection
+from database.models.server_model import Server
+from database.models.user_model import (DisplayInformation, Scores,
+                                        Submissions, User)
 from embeds.misc_embeds import error_embed
 from embeds.users_embeds import (account_not_found_embed,
                                  account_permanently_deleted_embed,
@@ -20,13 +24,11 @@ from embeds.users_embeds import (account_not_found_embed,
                                  profile_details_updated_embed,
                                  synced_existing_user_embed,
                                  user_already_added_in_server_embed)
-from models.projections import IdProjection
-from models.server_model import Server
-from models.user_model import DisplayInformation, Scores, Submissions, User
-from utils.middleware import (defer_interaction, ensure_server_document,
-                              track_analytics)
-from utils.questions import get_problems_solved_and_rank
-from utils.roles import give_verified_role
+from middleware import (defer_interaction, ensure_server_document,
+                        track_analytics)
+from utils.common_utils import calculate_scores
+from utils.questions_utils import get_problems_solved_and_rank
+from utils.roles_utils import give_verified_role
 
 
 class Users(commands.Cog):
