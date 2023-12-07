@@ -88,8 +88,7 @@ async def update_stats(user: User, now: datetime, daily_reset: bool = False, wee
     user.submissions.hard = hard
     user.submissions.total_score = total_score
 
-    if daily_reset:
-        await update_display_information_names(user)
+    await update_display_information_names(user)
 
     if daily_reset:
         # Increments the streak if the user has submitted a problem today
