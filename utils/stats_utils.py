@@ -115,8 +115,16 @@ async def update_stats(user: User, now: datetime, daily_reset: bool = False, wee
 
 
 async def update_display_information_names(user: User) -> None:
+    logger.info(
+        "file: cogs/stats_utils.py ~ update_display_information_names ~ run ~ user: %s", user.id)
+
     for i in range(len(user.display_information)-1, -1, -1):
         if user.display_information[i].server_id == 0:
+            discord_user = client.get_user(user.id)
+
+            if discord_user:
+                user.display_information[i].name = discord_user.name
+
             continue
 
         guild = client.get_guild(user.display_information[i].server_id)

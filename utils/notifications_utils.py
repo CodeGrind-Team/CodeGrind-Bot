@@ -2,17 +2,18 @@ import asyncio
 from datetime import datetime, time
 
 import discord
-from beanie.odm.operators.update.array import Pull
 from discord.ext import tasks
 
 from bot_globals import client, logger
-from database.models.analytics_model import Analytics, AnalyticsHistory
 from database.models.server_model import Server
 from database.models.user_model import User
 from embeds.questions_embeds import daily_question_embed
-from utils.leaderboards_utils import send_leaderboard_winners
+from utils.analytics_utils import save_analytics
+from utils.leaderboards_utils import (send_leaderboard_winners,
+                                      update_global_leaderboard)
 from utils.roles_utils import update_roles
 from utils.stats_utils import update_rankings, update_stats
+from utils.users_utils import remove_inactive_users
 
 
 async def send_daily_question(server: Server, embed: discord.Embed) -> None:
@@ -69,6 +70,8 @@ async def send_daily_question_and_update_stats(force_update_stats: bool = True, 
 
         await asyncio.gather(*tasks, return_exceptions=True)
 
+        await update_global_leaderboard()
+
     async for server in Server.all(fetch_links=True):
         server.last_updated = now
         await server.save()
@@ -76,7 +79,6 @@ async def send_daily_question_and_update_stats(force_update_stats: bool = True, 
         if daily_reset:
             await update_rankings(server, now, "daily")
             await send_leaderboard_winners(server, "yesterday")
-            # TODO AddToSet global leaderboard all users
 
         if weekly_reset:
             await update_rankings(server, now, "weekly")
@@ -91,70 +93,10 @@ async def send_daily_question_and_update_stats(force_update_stats: bool = True, 
         async for server in Server.all(fetch_links=True):
             await send_daily_question(server, embed)
 
-        analytics = await Analytics.find_all().to_list()
+        await save_analytics()
 
-        if not analytics:
-            analytics = Analytics()
-            await analytics.create()
-        else:
-            analytics = analytics[0]
-
-        analytics.history.append(AnalyticsHistory(
-            distinct_users=analytics.distinct_users_today, command_count=analytics.command_count_today))
-
-        analytics.distinct_users_today = []
-        analytics.command_count_today = 0
-
-        await analytics.save()
-
-    # Data removal process
     if monthly:
         await remove_inactive_users()
 
     logger.info(
         "file: utils/notifications_utils.py ~ send_daily_question_and_update_stats ~ ended")
-
-
-async def remove_inactive_users():
-    async for server in Server.all():
-        # Make exception for global leaderboard server.
-        if server.id == 0:
-            continue
-
-        # So that we can access user.id
-        await server.fetch_all_links()
-
-        guild = client.get_guild(server.id)
-
-        delete_server = False
-        # Delete server document if the bot isn't in the server anymore
-        if not guild or guild not in client.guilds:
-            delete_server = True
-
-        for user in server.users:
-            # unlink user if server was deleted or if bot not in the server anymore
-            unlink_user = not guild or not guild.get_member(
-                user.id) or delete_server
-
-            # Unlink user from server if they're not in the server anymore
-            if unlink_user:
-                await User.find_one(User.id == user.id).update(Pull({User.display_information: {"server_id": server.id}}))
-                await Server.find_one(Server.id == server.id).update(Pull({Server.users: {"$id": user.id}}))
-
-                logger.info(
-                    "file: utils/notifications_utils.py ~ remove_inactive_users ~ user unlinked from server ~ user_id: %s, server_id: %s", user.id, server.id)
-
-        if delete_server:
-            await server.delete()
-
-            logger.info(
-                "file: utils/notifications_utils.py ~ remove_inactive_users ~ server document deleted ~ id: %s", server.id)
-
-    async for user in User.all():
-        # Delete user document if they're not in any server with the bot in it except the global leaderboard
-        if len(user.display_information) == 1:
-            await Server.find_one(Server.id == 0).update(Pull({Server.users: {"$id": user.id}}))
-            await user.delete()
-
-            logger.info(
-                "file: utils/notifications_utils.py ~ remove_inactive_users ~ user document deleted ~ id: %s", user.id)

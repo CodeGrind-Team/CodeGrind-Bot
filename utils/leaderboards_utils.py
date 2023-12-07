@@ -2,6 +2,8 @@ from collections import Counter
 from datetime import datetime, timedelta
 
 import discord
+from beanie.odm.operators.update.array import AddToSet
+from bson import DBRef
 
 from bot_globals import RANK_EMOJI, TIMEFRAME_TITLE, client, logger
 from database.models.server_model import Server
@@ -147,3 +149,10 @@ async def send_leaderboard_winners(server: Server, timeframe: str) -> None:
 
     logger.info(
         "file: utils/leaderboards_utils.py ~ send_leaderboard_winners ~ %s winners leaderboard sent to channels", timeframe)
+
+
+async def update_global_leaderboard() -> None:
+    """Add all users to the global server in case anyone is missing.
+    """
+    async for user in User.all():
+        await Server.find_one(Server.id == 0).update(AddToSet({Server.users: DBRef("users",  user.id)}))
