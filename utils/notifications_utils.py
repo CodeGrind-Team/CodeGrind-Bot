@@ -16,7 +16,7 @@ from utils.stats_utils import update_rankings, update_stats
 
 
 async def send_daily_question(server: Server, embed: discord.Embed) -> None:
-    logger.info("file: utils/message_scheduler_utils.py ~ send_daily ~ run")
+    logger.info("file: utils/notifications_utils.py ~ send_daily ~ run")
 
     for channel_id in server.channels.daily_question:
         channel = client.get_channel(channel_id)
@@ -28,20 +28,20 @@ async def send_daily_question(server: Server, embed: discord.Embed) -> None:
             await channel.send(embed=embed)
         except discord.errors.Forbidden as e:
             logger.exception(
-                "file: utils/message_scheduler_utils.py ~ send_daily ~ missing permissions on channel id %s. Error: %s", channel.id, e)
+                "file: utils/notifications_utils.py ~ send_daily ~ missing permissions on channel id %s. Error: %s", channel.id, e)
 
         # async for message in channel.history(limit=1):
         #     try:
         #         await message.pin()
         #     except discord.errors.Forbidden as e:
         #         logger.exception(
-        #             "file: utils/message_scheduler_utils.py ~ send_daily ~ message not pinned due to missing permissions in channel %s", channel_id)
+        #             "file: utils/notifications_utils.py ~ send_daily ~ message not pinned due to missing permissions in channel %s", channel_id)
 
         logger.info(
-            "file: utils/message_scheduler_utils.py ~ send_daily ~ daily question sent to channel %s", channel.id)
+            "file: utils/notifications_utils.py ~ send_daily ~ daily question sent to channel %s", channel.id)
 
     logger.info(
-        "file: utils/message_scheduler_utils.py ~ send_daily ~ all daily questions sent to server ID: %s", server.id)
+        "file: utils/notifications_utils.py ~ send_daily ~ all daily questions sent to server ID: %s", server.id)
 
 
 @tasks.loop(time=[time(hour=hour, minute=minute) for hour in range(24) for minute in [0, 30]])
@@ -51,7 +51,7 @@ async def send_daily_question_and_update_stats_schedule() -> None:
 
 async def send_daily_question_and_update_stats(force_update_stats: bool = True, force_daily_reset: bool = False, force_weekly_reset: bool = False) -> None:
     logger.info(
-        "file: utils/message_scheduler_utils.py ~ send_daily_question_and_update_stats ~ started")
+        "file: utils/notifications_utils.py ~ send_daily_question_and_update_stats ~ started")
 
     now = datetime.utcnow()
 
@@ -71,7 +71,7 @@ async def send_daily_question_and_update_stats(force_update_stats: bool = True, 
 
     async for server in Server.all(fetch_links=True):
         server.last_updated = now
-        await server.save_changes()
+        await server.save()
 
         if daily_reset:
             await update_rankings(server, now, "daily")
@@ -112,7 +112,7 @@ async def send_daily_question_and_update_stats(force_update_stats: bool = True, 
         await remove_inactive_users()
 
     logger.info(
-        "file: utils/message_scheduler_utils.py ~ send_daily_question_and_update_stats ~ ended")
+        "file: utils/notifications_utils.py ~ send_daily_question_and_update_stats ~ ended")
 
 
 async def remove_inactive_users():
@@ -142,13 +142,13 @@ async def remove_inactive_users():
                 await Server.find_one(Server.id == server.id).update(Pull({Server.users: {"$id": user.id}}))
 
                 logger.info(
-                    "file: utils/message_scheduler_utils.py ~ remove_inactive_users ~ user unlinked from server ~ user_id: %s, server_id: %s", user.id, server.id)
+                    "file: utils/notifications_utils.py ~ remove_inactive_users ~ user unlinked from server ~ user_id: %s, server_id: %s", user.id, server.id)
 
         if delete_server:
             await server.delete()
 
             logger.info(
-                "file: utils/message_scheduler_utils.py ~ remove_inactive_users ~ server document deleted ~ id: %s", server.id)
+                "file: utils/notifications_utils.py ~ remove_inactive_users ~ server document deleted ~ id: %s", server.id)
 
     async for user in User.all():
         # Delete user document if they're not in any server with the bot in it except the global leaderboard
@@ -157,4 +157,4 @@ async def remove_inactive_users():
             await user.delete()
 
             logger.info(
-                "file: utils/message_scheduler_utils.py ~ remove_inactive_users ~ user document deleted ~ id: %s", user.id)
+                "file: utils/notifications_utils.py ~ remove_inactive_users ~ user document deleted ~ id: %s", user.id)

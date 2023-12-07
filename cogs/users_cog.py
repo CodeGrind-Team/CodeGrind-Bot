@@ -143,7 +143,6 @@ class Users(commands.Cog):
 
                 # Add to the global leaderboard.
                 await Server.find_one(Server.id == 0).update(AddToSet({Server.users: DBRef("users", user_id)}))
-                await server.save()
 
                 await give_verified_role(interaction.user, interaction.guild.id)
 

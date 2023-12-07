@@ -1,7 +1,6 @@
 from datetime import datetime
 
 from beanie.odm.operators.update.array import AddToSet, Pull
-from beanie.odm.operators.update.general import Set
 
 from bot_globals import client, logger
 from database.models.server_model import Rankings, Server, UserRank
@@ -71,59 +70,26 @@ async def update_stats(user: User, now: datetime, daily_reset: bool = False, wee
 
     total_score = calculate_scores(easy, medium, hard)
 
-    # Week score
-    # TODO: add projection
     user = await User.find_one(User.id == user.id)
+
     start_of_week_total_score = get_score(user, "start_of_week_total")
-
-    week_score = total_score - start_of_week_total_score
-
-    await User.find_one(User.id == user.id).update(Set({User.scores.week_score: week_score}))
-
-    # Day score
-    # TODO: add projection
-    user = await User.find_one(User.id == user.id)
     start_of_day_total_score = get_score(user, "start_of_day_total")
 
+    week_score = total_score - start_of_week_total_score
     day_score = total_score - start_of_day_total_score
 
-    await User.find_one(User.id == user.id).update(Set({User.scores.day_score: day_score}))
+    user.scores.week_score = week_score
+    user.scores.day_score = day_score
+    user.scores.last_updated = now
 
-    await User.find_one(User.id == user.id).update(Set({User.scores.last_updated: now}))
-
-    user = await User.find_one(User.id == user.id)
     user.rank = rank
     user.submissions.easy = easy
     user.submissions.medium = medium
     user.submissions.hard = hard
     user.submissions.total_score = total_score
 
-    for i in range(len(user.display_information)-1, -1, -1):
-        if display_information[i].server_id == 0:
-            discord_user = await client.fetch_user(user.id)
-
-            if discord_user is None:
-                continue
-
-            user.display_information[i].name = discord_user.name
-            continue
-
-        guild = client.get_guild(user.display_information[i].server_id)
-
-        if not guild:
-            continue
-
-        member = guild.get_member(
-            user.id)
-
-        if not member:
-            await Server.find_one(Server.id == user.display_information[i].server_id).update(Pull({"users": {"$id": user.id}}))
-            del user.display_information[i]
-            logger.info(
-                "file: utils/stats.py ~ update_stats ~ user unlinked from server ~ user_id: %s, server_id: %s", user.id, guild.id)
-            continue
-
-        user.display_information[i].name = member.display_name
+    if daily_reset:
+        await update_display_information_names(user)
 
     if daily_reset:
         # Increments the streak if the user has submitted a problem today
@@ -143,7 +109,29 @@ async def update_stats(user: User, now: datetime, daily_reset: bool = False, wee
         user.scores.week_score = 0
         user.scores.start_of_week_total_score = total_score
 
-    await user.save_changes()
+    await user.save()
 
     logger.info(
         'file: cogs/stats_utils.py ~ update_stats ~ user stats updated successfully: %s', leetcode_username)
+
+
+async def update_display_information_names(user: User) -> None:
+    for i in range(len(user.display_information)-1, -1, -1):
+        if user.display_information[i].server_id == 0:
+            continue
+
+        guild = client.get_guild(user.display_information[i].server_id)
+
+        if not guild:
+            continue
+
+        member = guild.get_member(user.id)
+
+        if not member:
+            await Server.find_one(Server.id == user.display_information[i].server_id).update(Pull({"users": {"$id": user.id}}))
+            del user.display_information[i]
+            logger.info(
+                "file: utils/stats.py ~ update_stats ~ user unlinked from server ~ user_id: %s, server_id: %s", user.id, guild.id)
+            continue
+
+        user.display_information[i].name = member.display_name
