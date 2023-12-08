@@ -12,6 +12,11 @@ class DisplayInformation(BaseModel):
     private: Optional[bool] = True
 
 
+class Votes(BaseModel):
+    last_voted: datetime
+    vote_count: Optional[int] = 0
+
+
 class Scores(BaseModel):
     # TODO: use this data to determine if scores should be updated if there was downtime during a scheduled score update
     last_updated: Optional[datetime] = Field(default_factory=datetime.utcnow)
@@ -49,6 +54,7 @@ class User(Document):
     submissions: Submissions
     history: Optional[List[History]] = []
     scores: Optional[Scores] = Field(default_factory=Scores)
+    votes: Optional[Votes] = Field(default_factory=Votes)
 
     class Settings:
         name = "users"

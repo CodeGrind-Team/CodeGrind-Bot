@@ -9,7 +9,7 @@ from embeds.channels_embeds import (
     set_channels_instructions_embed)
 from middleware import (admins_only, defer_interaction, ensure_server_document,
                         track_analytics)
-from utils.views_utils import ChannelsSelectView
+from views.channel_notification_select_view import ChannelsSelectView
 
 
 class Channels(commands.GroupCog, name="notify-channel"):
