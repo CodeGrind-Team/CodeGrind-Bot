@@ -6,7 +6,7 @@ from embeds.general_embeds import not_creator_embed
 
 
 class LeaderboardPagination(discord.ui.View):
-    def __init__(self, user_id: int | None = None, pages: List[discord.Embed] | None = None, page: int = 0, *, timeout=180):
+    def __init__(self, user_id: int, pages: List[discord.Embed], page: int = 0, *, timeout=180):
         super().__init__(timeout=timeout)
         self.page = page
         self.user_id = user_id
