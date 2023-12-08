@@ -1,0 +1,28 @@
+from functools import wraps
+from typing import Callable
+
+import discord
+
+from embeds.misc_embeds import error_embed
+
+
+def defer_interaction(ephemeral_default: bool = False) -> Callable:
+    def ephemeral_response(func: Callable) -> Callable:
+        @wraps(func)
+        async def wrapper(self, interaction: discord.Interaction, *args, **kwargs) -> Callable | None:
+            display_publicly: bool | None = kwargs.get(
+                'display_publicly', None)
+
+            ephemeral = not display_publicly if display_publicly is not None else ephemeral_default
+
+            await interaction.response.defer(ephemeral=ephemeral)
+
+            if not interaction.guild or not isinstance(interaction.channel, discord.TextChannel) or not isinstance(interaction.user, discord.Member):
+                embed = error_embed()
+                await interaction.followup.send(embed=embed)
+                return
+
+            return await func(self, interaction, *args, **kwargs)
+
+        return wrapper
+    return ephemeral_response
