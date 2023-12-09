@@ -26,3 +26,30 @@ def defer_interaction(ephemeral_default: bool = False) -> Callable:
 
         return wrapper
     return ephemeral_response
+
+# def defer_interaction(*, ephemeral_default: bool = False, user_settings_prompt: bool = False) -> Callable:
+#     def ephemeral_response(func: Callable) -> Callable:
+#         @wraps(func)
+#         async def wrapper(self, interaction: discord.Interaction, *args, **kwargs) -> Callable | None:
+#             display_publicly: bool | None = kwargs.get(
+#                 'display_publicly', None)
+
+#             ephemeral = not display_publicly if display_publicly is not None else ephemeral_default
+#             ephemeral = True if user_settings_prompt else ephemeral
+
+#             print(interaction.id)
+#             await interaction.response.defer(ephemeral=ephemeral)
+#             print(interaction.id)
+
+#             if not interaction.guild or not isinstance(interaction.channel, discord.TextChannel) or not isinstance(interaction.user, discord.Member):
+#                 embed = error_embed()
+#                 await interaction.followup.send(embed=embed)
+#                 return
+
+#             if user_settings_prompt:
+#                 await update_user_settings_prompt(interaction)
+
+#             return await func(self, interaction, *args, **kwargs)
+
+#         return wrapper
+#     return ephemeral_response

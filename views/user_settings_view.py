@@ -1,4 +1,5 @@
-from typing import List, Tuple
+from dataclasses import dataclass
+from typing import List
 
 import discord
 from beanie.odm.operators.update.general import Set
@@ -6,12 +7,18 @@ from beanie.odm.operators.update.general import Set
 from database.models.user_model import User
 
 
-class UserSettingsProcess(discord.ui.View):
-    def __init__(self, pages: List[Tuple[discord.Embed, str]], page_num: int = 0, *, timeout=180):
+@dataclass
+class EmbedAndField:
+    embed: discord.Embed
+    field: str
+
+
+class UserSettingsPrompt(discord.ui.View):
+    def __init__(self, pages: List[EmbedAndField], page_num: int = 0, *, timeout=180):
         super().__init__(timeout=timeout)
         self.pages = pages
-        self.curr_embed = self.pages[page_num][0]
-        self.curr_field = self.pages[page_num][1]
+        self.curr_embed = self.pages[page_num].embed
+        self.curr_field = self.pages[page_num].field
         self.page_num = page_num
 
     @discord.ui.button(label='Yes', style=discord.ButtonStyle.blurple)
@@ -26,8 +33,16 @@ class UserSettingsProcess(discord.ui.View):
 
     async def increment_page(self, interaction: discord.Interaction):
         self.page_num += 1
-        self.curr_embed = self.pages[self.page_num][0]
-        self.curr_field = self.pages[self.page_num][1]
 
-        await interaction.message.edit(embed=self.pages[self.page_num])
-        await interaction.response.edit_message(view=self)
+        if self.page_num == len(self.pages):
+            # TODO: send finished embed
+            self.stop()
+            return
+
+        self.curr_embed = self.pages[self.page_num].embed
+        self.curr_field = self.pages[self.page_num].field
+
+        self.curr_embed.set_footer(
+            text=f"Question {self.page_num+1} of {len(self.pages)}")
+
+        await interaction.response.edit_message(embed=self.pages[self.page_num].embed, view=self)

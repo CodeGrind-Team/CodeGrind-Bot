@@ -5,6 +5,10 @@ import discord
 
 from database.models.analytics_model import Analytics
 from database.models.server_model import Server
+from database.models.user_model import User
+from views.user_settings_view import EmbedAndField, UserSettingsPrompt
+
+from .discord_middleware import defer_interaction
 
 
 def ensure_server_document(func: Callable) -> Callable:
@@ -45,3 +49,46 @@ def track_analytics(func: Callable) -> Callable:
         return await func(self, interaction, *args, **kwargs)
 
     return wrapper
+
+
+def update_user_settings_prompt(func: Callable) -> Callable:
+    # @defer_interaction(ephemeral_default=True)
+    @wraps(func)
+    async def wrapper(self, interaction: discord.Interaction, *args, **kwargs) -> Callable | None:
+        await interaction.response.defer(ephemeral=True)
+        user = await User.find_one(User.id == interaction.user.id)
+
+        if not user:
+            return
+
+        pages = [
+            EmbedAndField(discord.Embed(title="TEST 1: URL",
+                          description="TEST 1"), "url"),
+            EmbedAndField(discord.Embed(title="TEST 2: PRIVATE",
+                                        description="TEST 2"), "private")
+        ]
+
+        view = UserSettingsPrompt(pages)
+        await interaction.followup.send(embed=pages[0].embed, view=view)
+        await view.wait()
+
+        return await func(self, interaction, *args, **kwargs)
+
+    return wrapper
+
+# async def update_user_settings_prompt(interaction: discord.Interaction) -> None:
+#     user = await User.find_one(User.id == interaction.user.id)
+
+#     if not user:
+#         return
+
+#     pages = [
+#         EmbedAndField(discord.Embed(title="TEST 1: URL",
+#                                     description="TEST 1"), "url"),
+#         EmbedAndField(discord.Embed(title="TEST 2: PRIVATE",
+#                                     description="TEST 2"), "private")
+#     ]
+
+#     view = UserSettingsPrompt(pages)
+#     await interaction.followup.send(embed=pages[0].embed, view=view, ephemeral=True)
+#     await view.wait()

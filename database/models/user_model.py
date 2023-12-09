@@ -13,8 +13,8 @@ class DisplayInformation(BaseModel):
 
 
 class Votes(BaseModel):
-    last_voted: datetime
-    vote_count: Optional[int] = 0
+    last_voted: Optional[datetime] = Field(default_factory=datetime.utcnow)
+    count: Optional[int] = 0
 
 
 class Scores(BaseModel):
