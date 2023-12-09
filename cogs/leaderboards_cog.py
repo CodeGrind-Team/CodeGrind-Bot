@@ -17,7 +17,7 @@ class Leaderboards(commands.GroupCog, name="leaderboard"):
         super().__init__()
 
     @discord.app_commands.command(name="alltime", description="View the All-Time leaderboard")
-    @defer_interaction(prompt_update_user_settings=True)
+    @defer_interaction(user_preferences_prompt=True)
     @ensure_server_document
     @track_analytics
     async def alltime(self, interaction: discord.Interaction, page: int = 1) -> None:

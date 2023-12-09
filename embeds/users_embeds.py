@@ -1,4 +1,8 @@
+from typing import List, Tuple
+
 import discord
+
+from views.user_settings_view import EmbedAndField
 
 
 def synced_existing_user_embed() -> discord.Embed:
@@ -90,3 +94,27 @@ def no_changes_provided_embed() -> discord.Embed:
     embed.description = "Please provide some changes"
 
     return embed
+
+
+def preferences_update_prompt() -> Tuple[List[EmbedAndField], discord.Embed]:
+    pages = [
+        EmbedAndField(discord.Embed(title="Update your profile preferences",
+                                    description="Do you want your LeetCode profile url be visible on the leaderboards in this server?", color=discord.Color.teal()),
+                      "url",
+                      False),
+
+        EmbedAndField(discord.Embed(title="Update your profile preferences",
+                                    description="Do you want your LeetCode profile url be visible on the Global leaderboards?", color=discord.Color.teal()),
+                      "url",
+                      True),
+
+        EmbedAndField(discord.Embed(title="Update your profile preferences",
+                                    description="Do you want your Discord username be visible on the Global leaderboards?", color=discord.Color.teal()),
+                      "private",
+                      True)
+    ]
+
+    end_embed = discord.Embed(
+        title="Successfully updated your profile preferences", color=discord.Color.green())
+
+    return pages, end_embed
