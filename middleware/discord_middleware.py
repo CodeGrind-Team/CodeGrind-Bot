@@ -27,7 +27,7 @@ def defer_interaction(*, ephemeral_default: bool = False, user_preferences_promp
             ret = await func(self, interaction, *args, **kwargs)
 
             if user_preferences_prompt:
-                await update_user_preferences_prompt(interaction)
+                await update_user_preferences_prompt(interaction, reminder=True)
 
             return ret
 

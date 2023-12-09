@@ -10,6 +10,7 @@ class DisplayInformation(BaseModel):
     name: str
     url: Optional[bool] = True
     private: Optional[bool] = True
+    last_updated: Optional[datetime]
 
 
 class Votes(BaseModel):

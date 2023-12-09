@@ -80,23 +80,7 @@ def account_not_found_embed() -> discord.Embed:
     return embed
 
 
-def profile_details_updated_embed() -> discord.Embed:
-    embed = discord.Embed(
-        title="Your profile details for this server have been updated successfully", color=discord.Color.green())
-
-    return embed
-
-
-def no_changes_provided_embed() -> discord.Embed:
-    embed = discord.Embed(
-        title="No changes were provided", color=discord.Color.red())
-
-    embed.description = "Please provide some changes"
-
-    return embed
-
-
-def preferences_update_prompt() -> Tuple[List[EmbedAndField], discord.Embed]:
+def preferences_update_prompt_embeds() -> Tuple[List[EmbedAndField], discord.Embed]:
     pages = [
         EmbedAndField(discord.Embed(title="Update your profile preferences",
                                     description="Do you want your LeetCode profile url be visible on the leaderboards in this server?", color=discord.Color.teal()),

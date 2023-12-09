@@ -26,7 +26,7 @@ class Leaderboards(commands.GroupCog, name="leaderboard"):
         await display_leaderboard(interaction.followup.send, interaction.guild.id, interaction.user.id, "alltime", page)
 
     @discord.app_commands.command(name="weekly", description="View the Weekly leaderboard")
-    @defer_interaction()
+    @defer_interaction(user_preferences_prompt=True)
     @ensure_server_document
     @track_analytics
     async def weekly(self, interaction: discord.Interaction, page: int = 1) -> None:
@@ -35,7 +35,7 @@ class Leaderboards(commands.GroupCog, name="leaderboard"):
         await display_leaderboard(interaction.followup.send, interaction.guild.id, interaction.user.id, "weekly", page)
 
     @discord.app_commands.command(name="daily", description="View the Daily leaderboard")
-    @defer_interaction()
+    @defer_interaction(user_preferences_prompt=True)
     @ensure_server_document
     @track_analytics
     async def daily(self, interaction: discord.Interaction, page: int = 1) -> None:
@@ -44,7 +44,7 @@ class Leaderboards(commands.GroupCog, name="leaderboard"):
         await display_leaderboard(interaction.followup.send, interaction.guild.id, interaction.user.id, "daily", page)
 
     @discord.app_commands.command(name="global-alltime", description="View the Global All-Time leaderboard")
-    @defer_interaction()
+    @defer_interaction(user_preferences_prompt=True)
     @topgg_vote_required
     @track_analytics
     async def global_alltime(self, interaction: discord.Interaction, page: int = 1) -> None:
@@ -54,7 +54,7 @@ class Leaderboards(commands.GroupCog, name="leaderboard"):
         await display_leaderboard(interaction.followup.send, user_id=interaction.user.id, timeframe="alltime", page=page, global_leaderboard=True)
 
     @discord.app_commands.command(name="global-weekly", description="View the Global Weekly leaderboard")
-    @defer_interaction()
+    @defer_interaction(user_preferences_prompt=True)
     @topgg_vote_required
     @track_analytics
     async def global_weekly(self, interaction: discord.Interaction, page: int = 1) -> None:
@@ -64,7 +64,7 @@ class Leaderboards(commands.GroupCog, name="leaderboard"):
         await display_leaderboard(interaction.followup.send, user_id=interaction.user.id, timeframe="weekly", page=page, global_leaderboard=True)
 
     @discord.app_commands.command(name="global-daily", description="View the Global Daily leaderboard")
-    @defer_interaction()
+    @defer_interaction(user_preferences_prompt=True)
     @topgg_vote_required
     @track_analytics
     async def global_daily(self, interaction: discord.Interaction, page: int = 1) -> None:

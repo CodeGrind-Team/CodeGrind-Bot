@@ -1,12 +1,14 @@
+from datetime import datetime
 from functools import wraps
 from typing import Callable
 
 import discord
+from beanie.odm.operators.update.general import Set
 
 from database.models.analytics_model import Analytics
 from database.models.server_model import Server
 from database.models.user_model import User
-from embeds.users_embeds import preferences_update_prompt
+from embeds.users_embeds import preferences_update_prompt_embeds
 from views.user_settings_view import UserPreferencesPrompt
 
 
@@ -50,13 +52,23 @@ def track_analytics(func: Callable) -> Callable:
     return wrapper
 
 
-async def update_user_preferences_prompt(interaction: discord.Interaction) -> None:
-    user = await User.find_one(User.id == interaction.user.id)
+async def update_user_preferences_prompt(interaction: discord.Interaction, reminder: bool = False) -> None:
+    user = await User.find_one(
+        User.id == interaction.user.id)
 
-    if not user:
+    display_information = next(
+        (di for di in user.display_information if di.server_id == interaction.guild.id), None)
+
+    if not display_information:
         return
 
-    pages, end_embed = preferences_update_prompt()
+    if reminder and display_information.last_updated and (display_information.last_updated - datetime.utcnow()).days <= 30:
+        return
+
+    pages, end_embed = preferences_update_prompt_embeds()
 
     view = UserPreferencesPrompt(pages, end_embed)
     await interaction.followup.send(embed=pages[0].embed, view=view, ephemeral=True)
+    await view.wait()
+
+    await User.find_one(User.id == interaction.user.id, User.display_information.server_id == interaction.guild.id).update(Set({"display_information.$.last_updated": datetime.utcnow()}))

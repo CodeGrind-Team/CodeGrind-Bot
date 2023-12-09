@@ -46,7 +46,7 @@ class UserPreferencesPrompt(discord.ui.View):
 
         if self.page_num == len(self.pages):
             await interaction.response.edit_message(embed=self.end_embed, view=None)
-            # Stopped in case this view needs to be waited in the future.
+            # Stopped so that the view can be waited.
             self.stop()
             return
 
