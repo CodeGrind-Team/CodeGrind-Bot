@@ -9,12 +9,12 @@ class DisplayInformation(BaseModel):
     server_id: Indexed(int)
     name: str
     url: Optional[bool] = True
-    private: Optional[bool] = True
+    visible: Optional[bool] = False
     last_updated: Optional[datetime]
 
 
 class Votes(BaseModel):
-    last_voted: Optional[datetime] = Field(default_factory=datetime.utcnow)
+    last_voted: Optional[datetime]
     count: Optional[int] = 0
 
 

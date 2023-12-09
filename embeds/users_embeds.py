@@ -94,7 +94,7 @@ def preferences_update_prompt_embeds() -> Tuple[List[EmbedAndField], discord.Emb
 
         EmbedAndField(discord.Embed(title="Update your profile preferences",
                                     description="Do you want your Discord username be visible on the Global leaderboards?", color=discord.Color.teal()),
-                      "private",
+                      "visible",
                       True)
     ]
 
