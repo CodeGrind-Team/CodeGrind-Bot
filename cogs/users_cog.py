@@ -5,27 +5,24 @@ import string
 import discord
 from beanie.odm.fields import WriteRules
 from beanie.odm.operators.update.array import AddToSet, Pull
-from beanie.odm.operators.update.general import Set
 from bson import DBRef
 from discord.ext import commands
 
 from bot_globals import logger
 from database.models.projections import IdProjection
 from database.models.server_model import Server
-from database.models.user_model import (DisplayInformation, Scores,
-                                        Submissions, User)
-from embeds.misc_embeds import error_embed
-from embeds.users_embeds import (account_not_found_embed,
-                                 account_permanently_deleted_embed,
-                                 account_removed_embed,
-                                 connect_account_instructions_embed,
-                                 no_changes_provided_embed,
-                                 profile_added_embed,
-                                 profile_details_updated_embed,
-                                 synced_existing_user_embed,
-                                 user_already_added_in_server_embed)
-from middleware import (defer_interaction, ensure_server_document,
-                        track_analytics)
+from database.models.user_model import DisplayInformation, Scores, Submissions, User
+from embeds.users_embeds import (
+    account_not_found_embed,
+    account_permanently_deleted_embed,
+    account_removed_embed,
+    connect_account_instructions_embed,
+    profile_added_embed,
+    synced_existing_user_embed,
+    user_already_added_in_server_embed,
+)
+from middleware import defer_interaction, ensure_server_document, track_analytics
+from middleware.database_middleware import update_user_preferences_prompt
 from utils.common_utils import calculate_scores
 from utils.questions_utils import get_problems_solved_and_rank
 from utils.roles_utils import give_verified_role
@@ -42,24 +39,17 @@ class Users(commands.Cog):
     @defer_interaction(ephemeral_default=True)
     @ensure_server_document
     @track_analytics
-    async def add(self, interaction: discord.Interaction, leetcode_id: str, include_lc_profile: bool = True, include_lc_profile_globally: bool = False, private: bool = True) -> None:
+    async def add(self, interaction: discord.Interaction, leetcode_id: str) -> None:
         leetcode_username = leetcode_id
 
         logger.info(
-            'file: cogs/users.py ~ add ~ run ~ leetcode_username: %s, include_lc_profile: %s, include_lc_profile_globally: %s, private: %s', leetcode_username, include_lc_profile, include_lc_profile_globally, private)
+            'file: cogs/users.py ~ add ~ run ~ leetcode_username: %s', leetcode_username)
 
         server_id = interaction.guild.id
         user_id = interaction.user.id
 
-        server_exists = await Server.find_one(Server.id == server_id).project(IdProjection)
-
-        if not server_exists:
-            embed = error_embed()
-            await interaction.followup.send(embed=embed)
-            return
-
         display_information = DisplayInformation(
-            server_id=server_id, name=interaction.user.display_name, url=include_lc_profile)
+            server_id=server_id, name=interaction.user.display_name)
 
         user_exists = await User.find_one(User.id == user_id).project(IdProjection)
 
@@ -75,6 +65,7 @@ class Users(commands.Cog):
                 # User has already been added in the server
                 embed = user_already_added_in_server_embed()
                 await interaction.followup.send(embed=embed)
+                return
 
             else:
                 logger.info(
@@ -134,7 +125,7 @@ class Users(commands.Cog):
                                 start_of_day_total_score=total_score)
 
                 user = User(id=user_id, leetcode_username=leetcode_username, rank=rank, display_information=[
-                            display_information, DisplayInformation(server_id=0, name=interaction.user.name, url=include_lc_profile_globally, private=private)], submissions=submissions, scores=scores)
+                            display_information, DisplayInformation(server_id=0, name=interaction.user.name,)], submissions=submissions, scores=scores)
 
                 await Server.find_one(Server.id == server_id).update(AddToSet({Server.users: user}))
                 server = await Server.get(server_id)
@@ -157,44 +148,24 @@ class Users(commands.Cog):
 
                 embed = profile_added_embed(leetcode_username, added=False)
                 await interaction.edit_original_response(embed=embed)
+                return
+
+        await update_user_preferences_prompt(interaction)
 
     @discord.app_commands.command(name="update", description="Update your profile on this server's leaderboards")
     @defer_interaction(ephemeral_default=True)
     @ensure_server_document
     @track_analytics
-    async def update(self, interaction: discord.Interaction, include_lc_profile: bool | None = None, include_lc_profile_globally: bool | None = None, private: bool | None = None) -> None:
+    async def update(self, interaction: discord.Interaction) -> None:
         logger.info(
-            'file: cogs/users.py ~ update ~ run ~ include_lc_profile: %s, include_lc_profile_globally: %s, private: %s', include_lc_profile, include_lc_profile_globally, private)
+            'file: cogs/users.py ~ update ~ run')
 
-        if include_lc_profile is include_lc_profile_globally is private is None:
-            embed = no_changes_provided_embed()
-            await interaction.followup.send(embed=embed)
-            return
-
-        server_id = interaction.guild.id
         user_id = interaction.user.id
-
-        server_exists = await Server.find_one(Server.id == server_id).project(IdProjection)
-
-        if not server_exists:
-            embed = error_embed()
-            await interaction.followup.send(embed=embed)
-            return
 
         user = await User.find_one(User.id == user_id)
 
         if user:
-            if include_lc_profile is not None:
-                await User.find_one(User.id == user.id, User.display_information.server_id == server_id).update(Set({"display_information.$.url": include_lc_profile}))
-
-            if include_lc_profile_globally is not None:
-                await User.find_one(User.id == user.id, User.display_information.server_id == 0).update(Set({"display_information.$.url": include_lc_profile_globally}))
-
-            if private is not None:
-                await User.find_one(User.id == user.id, User.display_information.server_id == 0).update(Set({"display_information.$.private": private}))
-
-            embed = profile_details_updated_embed()
-            await interaction.followup.send(embed=embed)
+            await update_user_preferences_prompt(interaction)
             return
 
         logger.info(
@@ -214,13 +185,6 @@ class Users(commands.Cog):
         server_id = interaction.guild.id
         user_id = interaction.user.id
 
-        server_exists = await Server.find_one(Server.id == server_id).project(IdProjection)
-
-        if not server_exists:
-            embed = error_embed()
-            await interaction.followup.send(embed=embed)
-            return
-
         logger.info(
             'file: cogs/users.py ~ remove ~ user_id: %s', user_id)
 
@@ -239,6 +203,7 @@ class Users(commands.Cog):
                 return
 
             # unlink user from server(interaction, user_id)
+            # TODO: this is getting the entire user.
             display_information = await User.find_one(
                 User.id == user_id, User.display_information.server_id == server_id)
 

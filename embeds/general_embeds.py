@@ -26,14 +26,8 @@ You can view our Privacy Policy [here](https://github.com/CodeGrind-Team/CodeGri
 
 </add:1115756888185917542>: Adds your LeetCode account onto this server's leaderboards. 
 >    - `leetcode_id`: Your permanent LeetCode ID you can find at https://leetcode.com/profile/account/.
->    - `include_lc_profile` _(optional)_: Decide whether you want leaderboards in this server to include a hyperlink to your LeetCode profile or not. Default is 'True'.
->    - `include_lc_profile_globally` _(optional)_: Decide whether you want Global leaderboards to include a hyperlink to your LeetCode profile or not. Default is 'False'.
->    - `private` _(optional)_: Decide whether you want to be shown as a 'Private User' or not in Global leaderboards. Default is 'True'.
 
-</update:1127716432168362004>: Updates your account preferences for this server.
->    - `include_lc_profile` _(optional)_: Decide whether you want leaderboards in this server to include a hyperlink to your LeetCode profile or not. Default is 'True'.
->    - `include_lc_profile_globally` _(optional)_: Decide whether you want Global leaderboards to include a hyperlink to your LeetCode profile or not. Default is 'False'.
->    - `private` _(optional)_: Decide whether you want to be shown as a 'Private User' or not in Global leaderboards. Default is 'True'.
+</update:1127716432168362004>: Displays a prompt where you can update your account preferences.
 
 </remove:1127663038514876540>: Removes your LeetCode account from this server.
 >    - `permanently_delete` _(optional)_: Permanently delete all your CodeGrind information from all servers and unlink your LeetCode account from the bot.""",

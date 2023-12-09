@@ -10,6 +10,12 @@ class DisplayInformation(BaseModel):
     name: str
     url: Optional[bool] = True
     private: Optional[bool] = True
+    last_updated: Optional[datetime]
+
+
+class Votes(BaseModel):
+    last_voted: Optional[datetime] = Field(default_factory=datetime.utcnow)
+    count: Optional[int] = 0
 
 
 class Scores(BaseModel):
@@ -49,6 +55,7 @@ class User(Document):
     submissions: Submissions
     history: Optional[List[History]] = []
     scores: Optional[Scores] = Field(default_factory=Scores)
+    votes: Optional[Votes] = Field(default_factory=Votes)
 
     class Settings:
         name = "users"

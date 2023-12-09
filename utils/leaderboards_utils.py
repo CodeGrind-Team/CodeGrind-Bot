@@ -11,7 +11,7 @@ from database.models.user_model import User
 from embeds.leaderboards_embeds import (empty_leaderboard_embed,
                                         leaderboard_embed)
 from utils.common_utils import strftime_with_suffix
-from utils.views_utils import Pagination
+from views.leaderboard_view import LeaderboardPagination
 
 
 def get_score(user: User, timeframe: str | None = None) -> int:
@@ -125,7 +125,8 @@ async def display_leaderboard(send_message, server_id: int = 0, user_id: int | N
         pages.append(embed)
 
     page = page - 1 if page > 0 else 0
-    view = None if winners_only else Pagination(user_id, pages, page)
+    view = None if winners_only else LeaderboardPagination(
+        user_id, pages, page)
 
     try:
         await send_message(embed=pages[page], view=view)
