@@ -7,7 +7,6 @@ from middleware import (
     ensure_server_document,
     topgg_vote_required,
     track_analytics,
-    update_user_settings_prompt,
 )
 from utils.leaderboards_utils import display_leaderboard
 
@@ -18,7 +17,7 @@ class Leaderboards(commands.GroupCog, name="leaderboard"):
         super().__init__()
 
     @discord.app_commands.command(name="alltime", description="View the All-Time leaderboard")
-    @update_user_settings_prompt
+    @defer_interaction(prompt_update_user_settings=True)
     @ensure_server_document
     @track_analytics
     async def alltime(self, interaction: discord.Interaction, page: int = 1) -> None:

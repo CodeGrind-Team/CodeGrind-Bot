@@ -5,8 +5,10 @@ import discord
 
 from embeds.misc_embeds import error_embed
 
+from .database_middleware import update_user_settings_prompt
 
-def defer_interaction(ephemeral_default: bool = False) -> Callable:
+
+def defer_interaction(*, ephemeral_default: bool = False, prompt_update_user_settings: bool = False) -> Callable:
     def ephemeral_response(func: Callable) -> Callable:
         @wraps(func)
         async def wrapper(self, interaction: discord.Interaction, *args, **kwargs) -> Callable | None:
@@ -22,7 +24,12 @@ def defer_interaction(ephemeral_default: bool = False) -> Callable:
                 await interaction.followup.send(embed=embed)
                 return
 
-            return await func(self, interaction, *args, **kwargs)
+            ret = await func(self, interaction, *args, **kwargs)
+
+            if prompt_update_user_settings:
+                await update_user_settings_prompt(interaction)
+
+            return ret
 
         return wrapper
     return ephemeral_response
