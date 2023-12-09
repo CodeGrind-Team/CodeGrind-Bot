@@ -80,7 +80,7 @@ async def display_leaderboard(send_message, server_id: int = 0, user_id: int | N
 
             name = display_information.name
             url = display_information.url
-            private = display_information.private
+            visible = display_information.visible
             total_score = get_score(user, timeframe)
 
             if winners_only and (total_score == 0 or place == 3):
@@ -94,7 +94,7 @@ async def display_leaderboard(send_message, server_id: int = 0, user_id: int | N
 
             number_rank = f"{place}\."
 
-            display_name = "Private User" if private and global_leaderboard else (
+            display_name = "Anonymous User" if not visible and global_leaderboard else (
                 f"[{name}]({profile_link})"if url else name)
 
             wins = user_to_wins[user.id]

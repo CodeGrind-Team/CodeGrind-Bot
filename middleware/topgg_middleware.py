@@ -3,16 +3,16 @@ from typing import Callable
 
 import discord
 
-from bot_globals import client
+from database.models.user_model import User
 from embeds.topgg_embeds import topgg_not_voted
 
 
 def topgg_vote_required(func: Callable) -> Callable:
     @wraps(func)
     async def wrapper(self, interaction: discord.Interaction, *args, **kwargs) -> Callable | None:
-        voted = await client.topggpy.get_user_vote(interaction.user.id)
+        user = await User.find_one(User.id == interaction.user.id)
 
-        if not voted:
+        if not user.votes.last_voted or (user.votes.last_voted and (datetime.utcnow() - user.votes.last_voted).days > 30):
             embed = topgg_not_voted()
             await interaction.followup.send(embed=embed)
             return

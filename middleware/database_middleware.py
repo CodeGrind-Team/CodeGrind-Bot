@@ -62,7 +62,7 @@ async def update_user_preferences_prompt(interaction: discord.Interaction, remin
     if not display_information:
         return
 
-    if reminder and display_information.last_updated and (display_information.last_updated - datetime.utcnow()).days <= 30:
+    if reminder and display_information.last_updated and (datetime.utcnow() - display_information.last_updated).days <= 30:
         return
 
     pages, end_embed = preferences_update_prompt_embeds()

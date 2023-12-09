@@ -11,6 +11,6 @@ def topgg_not_voted() -> discord.Embed:
     embed.description = f"You can vote [here]({url})"
 
     embed.set_footer(
-        text="Note: votes are reset every 12 hours")
+        text="Note: you will have access to these features for 30 days since voting, unless you vote again.")
 
     return embed
