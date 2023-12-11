@@ -135,10 +135,8 @@ async def update_display_information_names(user: User) -> None:
         member = guild.get_member(user.id)
 
         if not member:
-            await Server.find_one(Server.id == user.display_information[i].server_id).update(Pull({"users": {"$id": user.id}}))
-            del user.display_information[i]
             logger.info(
-                "file: utils/stats.py ~ update_stats ~ user unlinked from server ~ user_id: %s, server_id: %s", user.id, guild.id)
+                "file: utils/stats.py ~ update_stats ~ user not a member of server ~ user_id: %s, server_id: %s", user.id, guild.id)
             continue
 
         user.display_information[i].name = member.display_name
