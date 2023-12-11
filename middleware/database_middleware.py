@@ -56,6 +56,9 @@ async def update_user_preferences_prompt(interaction: discord.Interaction, remin
     user = await User.find_one(
         User.id == interaction.user.id)
 
+    if not user:
+        return
+
     display_information = next(
         (di for di in user.display_information if di.server_id == interaction.guild.id), None)
 
