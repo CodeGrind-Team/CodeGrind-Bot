@@ -130,18 +130,23 @@ async def give_streak_role(user: discord.User, guild_id: int, streak: int) -> No
         else:
             break
 
-    # Remove all other roles.
-    for role_milestone, _ in STREAK_ROLES.items():
-        role_name, _ = STREAK_ROLES[role_milestone]
-        role = discord.utils.get(guild.roles, name=role_name)
-        if role and role in discord_user.roles:
-            await discord_user.remove_roles(role)
+    try:
+        # Remove all other roles.
+        for role_milestone, _ in STREAK_ROLES.items():
+            role_name, _ = STREAK_ROLES[role_milestone]
+            role = discord.utils.get(guild.roles, name=role_name)
+            if role and role in discord_user.roles:
+                await discord_user.remove_roles(role)
 
-    if role_to_assign:
-        # Give the user the appropriate role.
-        await discord_user.add_roles(role_to_assign)
-        logger.info("file: utils/roles.py ~ give_streak_role ~ assigned %s role to %s", role_to_assign.name,
-                    discord_user.display_name)
+        if role_to_assign:
+            # Give the user the appropriate role.
+            await discord_user.add_roles(role_to_assign)
+            logger.info("file: utils/roles.py ~ give_streak_role ~ assigned %s role to %s", role_to_assign.name,
+                        discord_user.display_name)
+
+    except discord.errors.Forbidden as e:
+        logger.exception(
+            "file: cogs/roles_utils.py ~ give_streak_role ~ missing 'manage roles' permission ~ error: %s", e)
 
 
 async def give_milestone_role(user: discord.User, guild_id: int, total_solved: int) -> None:
@@ -164,15 +169,20 @@ async def give_milestone_role(user: discord.User, guild_id: int, total_solved: i
         if total_solved >= role_milestone:
             role_to_assign = discord.utils.get(guild.roles, name=role_name)
 
-    # Remove all other roles
-    for role_milestone, _ in MILESTONE_ROLES.items():
-        role_name, _ = MILESTONE_ROLES[role_milestone]
-        role = discord.utils.get(guild.roles, name=role_name)
-        if role and role in discord_user.roles:
-            await discord_user.remove_roles(role)
+    try:
+        # Remove all other roles
+        for role_milestone, _ in MILESTONE_ROLES.items():
+            role_name, _ = MILESTONE_ROLES[role_milestone]
+            role = discord.utils.get(guild.roles, name=role_name)
+            if role and role in discord_user.roles:
+                await discord_user.remove_roles(role)
 
-    if role_to_assign:
-        # Give the user the appropriate role
-        await discord_user.add_roles(role_to_assign)
-        logger.info("file: utils/roles.py ~ give_milestone_role ~ assigned %s role to %s", role_to_assign.name,
-                    discord_user.display_name)
+        if role_to_assign:
+            # Give the user the appropriate role
+            await discord_user.add_roles(role_to_assign)
+            logger.info("file: utils/roles.py ~ give_milestone_role ~ assigned %s role to %s", role_to_assign.name,
+                        discord_user.display_name)
+
+    except discord.errors.Forbidden as e:
+        logger.exception(
+            "file: cogs/roles_utils.py ~ give_milestone_role ~ missing 'manage roles' permission ~ error: %s", e)
