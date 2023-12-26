@@ -64,7 +64,6 @@ async def display_leaderboard(send_message, server_id: int = 0, user_id: int | N
 
     place = 0
     prev_score = float("-inf")
-    reached_end_of_winners = False
 
     for page_i in range(page_count):
         leaderboard = []
@@ -83,12 +82,11 @@ async def display_leaderboard(send_message, server_id: int = 0, user_id: int | N
             visible = display_information.visible
             total_score = get_score(user, timeframe)
 
-            if winners_only and (total_score == 0 or place == 3):
-                reached_end_of_winners = True
-                break
-
             if total_score != prev_score:
                 place += 1
+
+            if winners_only and (total_score == 0 or place == 4):
+                break
 
             prev_score = total_score
 
@@ -116,9 +114,6 @@ async def display_leaderboard(send_message, server_id: int = 0, user_id: int | N
         embed = leaderboard_embed(
             server, page_i, page_count, title, leaderboard)
         pages.append(embed)
-
-        if reached_end_of_winners:
-            break
 
     if len(pages) == 0:
         embed = empty_leaderboard_embed()
