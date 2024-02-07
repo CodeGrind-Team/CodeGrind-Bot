@@ -88,7 +88,7 @@ async def send_daily_question_and_update_stats(force_update_stats: bool = True, 
             await update_roles(server)
 
     if daily_reset:
-        embed = await daily_question_embed()
+        embed = await daily_question_embed(store_question=True)
 
         async for server in Server.all(fetch_links=True):
             await send_daily_question(server, embed)

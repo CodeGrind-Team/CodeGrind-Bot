@@ -33,6 +33,8 @@ class Scores(BaseModel):
 
     streak: Optional[int] = 0
 
+    daily_completed: bool = False
+
 
 class Submissions(BaseModel):
     easy: int
