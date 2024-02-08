@@ -1,4 +1,5 @@
 import requests
+from datetime import datetime
 
 import bot_globals
 
@@ -23,6 +24,7 @@ def daily_completed(leetcode_username: str) -> bool | None:
         '''query getDailyCompleted($username: String!, $limit: Int!) {
             recentAcSubmissionList(username: $username, limit: $limit) {
                 titleSlug
+                timestamp
             }
         }
         ''',
@@ -62,6 +64,11 @@ def daily_completed(leetcode_username: str) -> bool | None:
     if not recentAcSubmissionList:
         return
 
-    question_title_slug = recentAcSubmissionList[0]["titleSlug"]
+    question_title_slug, timestamp = recentAcSubmissionList[
+        0]["titleSlug"], recentAcSubmissionList[0]["timestamp"]
 
-    return question_title_slug == bot_globals.DAILY_QUESTION_TITLE_SLUG
+    last_submission_is_daily = question_title_slug == bot_globals.DAILY_QUESTION_TITLE_SLUG
+    question_completed_today = datetime.fromtimestamp(
+        int(timestamp)).date() == datetime.utcnow().date()
+
+    return last_submission_is_daily and question_completed_today
