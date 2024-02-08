@@ -58,5 +58,4 @@ STREAK_ROLES = {
 
 VERIFIED_ROLE = "CodeGrind Verified"
 
-global daily_question_title_slug
-daily_question_title_slug = None
+DAILY_QUESTION_TITLE_SLUG = None

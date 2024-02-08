@@ -6,6 +6,8 @@ from typing import Any, List
 import markdownify
 import requests
 
+import bot_globals
+
 from bot_globals import logger
 from utils.common_utils import to_thread
 from utils.ratings_utils import get_rating_data
@@ -50,7 +52,7 @@ def get_random_question(difficulty: str) -> str | None:
 
 
 @to_thread
-def get_daily_question() -> str | None:
+def get_daily_question(store_question: bool = False) -> str | None:
     logger.info(
         "file: utils/questions_utils.py ~ get_daily_question ~ run")
 
@@ -94,6 +96,12 @@ def get_daily_question() -> str | None:
     response_data = response.json()
 
     question_title_slug = response_data['data']['challenge']['question']['titleSlug']
+
+    logger.info(
+        "file: cogs/questions.py ~ Daily question titleSlug: %s", question_title_slug)
+
+    if store_question:
+        bot_globals.DAILY_QUESTION_TITLE_SLUG = question_title_slug
 
     return question_title_slug
 

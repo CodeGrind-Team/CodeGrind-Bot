@@ -11,6 +11,7 @@ from utils.notifications_utils import (
     send_daily_question_and_update_stats,
     send_daily_question_and_update_stats_schedule)
 from utils.ratings_utils import read_ratings_txt
+from utils.questions_utils import get_daily_question
 
 load_dotenv()
 
@@ -69,6 +70,7 @@ async def main(token: str) -> None:
     async with client:
         await read_ratings_txt()
         await init_mongodb_conn()
+        await get_daily_question(store_question=True)
         await load_extensions()
         await client.start(token)
 

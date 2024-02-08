@@ -1,17 +1,11 @@
 import discord
 
-from bot_globals import daily_question_title_slug
-
 from utils.questions_utils import (get_daily_question, get_question_info_from_title,
                                    get_random_question, search_question)
 
 
 async def daily_question_embed(store_question: bool = False) -> discord.Embed:
-    question_title = await get_daily_question()
-
-    if store_question:
-        global daily_question_title_slug
-        daily_question_title_slug = question_title
+    question_title = await get_daily_question(store_question)
 
     if not question_title:
         return question_error_embed()

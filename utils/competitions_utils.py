@@ -1,7 +1,9 @@
 import requests
 
-from bot_globals import logger, daily_question_title_slug
-from common_utils import to_thread
+import bot_globals
+
+from bot_globals import logger
+from utils.common_utils import to_thread
 
 
 @to_thread
@@ -47,7 +49,7 @@ def daily_completed(leetcode_username: str) -> bool | None:
 
     response_data = response.json()
 
-    if response_data["data"]["matchedUser"] is None:
+    if response_data["data"]["recentAcSubmissionList"] is None:
         logger.warning(
             "file: utils/competitions_utils.py ~ daily_completed ~ user not found ~ https://leetcode.com/%s", leetcode_username)
         return
@@ -60,7 +62,6 @@ def daily_completed(leetcode_username: str) -> bool | None:
     if not recentAcSubmissionList:
         return
 
-    question_title_slug = recentAcSubmissionList[0].titleSlug
+    question_title_slug = recentAcSubmissionList[0]["titleSlug"]
 
-    global daily_question_title_slug
-    return question_title_slug == daily_question_title_slug
+    return question_title_slug == bot_globals.DAILY_QUESTION_TITLE_SLUG
