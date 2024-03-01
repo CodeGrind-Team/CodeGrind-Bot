@@ -2,6 +2,7 @@ import asyncio
 import logging
 import os
 
+import discord
 import topgg
 from dotenv import load_dotenv
 
@@ -27,6 +28,9 @@ async def on_autopost_success():
 @client.event
 async def on_ready() -> None:
     logger.info("file: main.py ~ on_ready ~ start")
+
+    if os.environ["MAINTENANCE"] == "True":
+        await client.change_presence(status=discord.Status.do_not_disturb, activity=discord.Game(name="Under Maintenance"))
 
     update_stats_on_start = os.environ["UPDATE_STATS_ON_START"] == "True"
     daily_reset_on_start = os.environ["DAILY_RESET_ON_START"] == "True"
