@@ -1,6 +1,8 @@
+import aiohttp
 from datetime import datetime
 
-from beanie.odm.operators.update.array import AddToSet, Pull
+
+from beanie.odm.operators.update.array import AddToSet
 
 from bot_globals import client, logger
 from database.models.server_model import Rankings, Server, UserRank
@@ -50,14 +52,13 @@ async def update_rankings(server: Server, now: datetime, timeframe: str) -> None
         'file: cogs/stats_utils.py ~ update_rankings ~ rankings updated successfully for %s timeframe', timeframe)
 
 
-async def update_stats(user: User, now: datetime, daily_reset: bool = False, weekly_reset: bool = False) -> None:
+async def update_stats(client_session: aiohttp.ClientSession, user: User, now: datetime, daily_reset: bool = False, weekly_reset: bool = False) -> None:
     logger.info("file: cogs/stats_utils.py ~ update_stats ~ run ~ now: %s | daily_reset: %s",
                 now, daily_reset)
 
     leetcode_username = user.leetcode_username
 
-    submissions_and_rank = await get_problems_solved_and_rank(
-        leetcode_username)
+    submissions_and_rank = await get_problems_solved_and_rank(client_session, leetcode_username)
 
     if submissions_and_rank is None:
         return

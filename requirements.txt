@@ -4,6 +4,7 @@ anyio==3.7.1
 async-timeout==4.0.2
 attrs==23.1.0
 autopep8==2.0.2
+backoff==2.2.1
 beanie==1.20.0
 beautifulsoup4==4.12.2
 bs4==0.0.1

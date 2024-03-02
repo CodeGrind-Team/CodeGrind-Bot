@@ -1,14 +1,22 @@
+import asyncio
 import ast
+import aiohttp
+import backoff
 import random
 import re
-from typing import Any, List
+from typing import List, Any
+from random import random
 
 import markdownify
 import requests
+from requests.exceptions import RequestException
 
 from bot_globals import logger
 from utils.common_utils import to_thread
 from utils.ratings_utils import get_rating_data
+from utils.dev_utils import log_to_channel, LogType
+
+semaphore = asyncio.Semaphore(10)
 
 
 @to_thread
@@ -264,11 +272,17 @@ def html_to_markdown(html):
     return markdown
 
 
-@to_thread
-def get_problems_solved_and_rank(leetcode_username: str) -> dict[str, Any] | None:
+class RateLimitReached(Exception):
+    def __init__(self) -> None:
+        super().__init__("ExceptionWithStatusCode. Error: 429. Rate Limited.")
+
+
+@backoff.on_exception(backoff.expo, RateLimitReached)
+async def get_problems_solved_and_rank(client_session: aiohttp.ClientSession, leetcode_username: str) -> dict[str, Any] | None:
     logger.info(
         "file: utils/questions_utils.py ~ get_problems_solved_and_rank ~ run ~ leetcode_username: %s", leetcode_username)
 
+    # Todo: Convert to class
     url = 'https://leetcode.com/graphql'
 
     headers = {
@@ -299,38 +313,48 @@ def get_problems_solved_and_rank(leetcode_username: str) -> dict[str, Any] | Non
     logger.info(
         "file: utils/questions_utils.py ~ get_problems_solved_and_rank ~ data requesting ~ https://leetcode.com/%s", leetcode_username)
 
-    try:
-        response = requests.post(url, json=data, headers=headers, timeout=10)
+    async with semaphore:
+        try:
+            response = await client_session.post(
+                url, json=data, headers=headers, timeout=10)
 
-    except Exception as e:
-        logger.exception(
-            "file: utils/questions_utils.py ~ get_problems_solved_and_rank ~ exception: %s", e)
+            await asyncio.sleep(random())
 
-        return
+        except Exception as e:
+            logger.exception(
+                "file: utils/questions_utils.py ~ get_problems_solved_and_rank ~ exception: %s", e)
 
-    if response.status_code != 200:
-        logger.exception(
-            "file: utils/questions_utils.py ~ get_problems_solved_and_rank ~ Error code: %s", response.status_code)
+            return
 
-        return
+        if response.status == 429:
+            # Rate limit reached
+            logger.exception(
+                "file: utils/questions_utils.py ~ get_problems_solved_and_rank ~ Error code: %s", response.status)
+            await log_to_channel(LogType.WARNING, "Rate limited")
+            raise RateLimitReached()
+        elif response.status != 200:
+            logger.exception(
+                "file: utils/questions_utils.py ~ get_problems_solved_and_rank ~ Error code: %s", response.status)
 
-    response_data = response.json()
+            return
 
-    if response_data["data"]["matchedUser"] is None:
-        logger.warning(
-            "file: utils/questions_utils.py ~ get_problems_solved_and_rank ~ user not found ~ https://leetcode.com/%s", leetcode_username)
-        return
+        response_data = await response.json()
 
-    logger.info(
-        "file: utils/questions_utils.py ~ get_problems_solved_and_rank ~ data requested successfully ~ https://leetcode.com/%s", leetcode_username)
+        if response_data["data"]["matchedUser"] is None:
+            logger.warning(
+                "file: utils/questions_utils.py ~ get_problems_solved_and_rank ~ user not found ~ https://leetcode.com/%s", leetcode_username)
+            return
 
-    stats = response_data["data"]["matchedUser"]
+        logger.info(
+            "file: utils/questions_utils.py ~ get_problems_solved_and_rank ~ data requested successfully ~ https://leetcode.com/%s", leetcode_username)
 
-    questionsCompleted = {}
+        stats = response_data["data"]["matchedUser"]
 
-    for dic in stats["submitStatsGlobal"]["acSubmissionNum"]:
-        questionsCompleted[dic["difficulty"]] = dic["count"]
+        questionsCompleted = {}
 
-    stats["submitStatsGlobal"]["acSubmissionNum"] = questionsCompleted
+        for dic in stats["submitStatsGlobal"]["acSubmissionNum"]:
+            questionsCompleted[dic["difficulty"]] = dic["count"]
 
-    return stats
+        stats["submitStatsGlobal"]["acSubmissionNum"] = questionsCompleted
+
+        return stats

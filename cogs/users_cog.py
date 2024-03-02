@@ -1,3 +1,4 @@
+import aiohttp
 import asyncio
 import random
 import string
@@ -91,8 +92,9 @@ class Users(commands.Cog):
             check_interval = 5  # seconds
 
             # Check if the profile name matches the generated string
+            clientSession = aiohttp.ClientSession()
             for _ in range(60 // check_interval):
-                stats = await get_problems_solved_and_rank(leetcode_username)
+                stats = await get_problems_solved_and_rank(clientSession, leetcode_username)
 
                 if not stats:
                     break
@@ -104,9 +106,12 @@ class Users(commands.Cog):
                     break
 
                 await asyncio.sleep(check_interval)
+            await clientSession.close()
 
             if profile_name == generated_string:
-                stats = await get_problems_solved_and_rank(leetcode_username)
+                clientSession = aiohttp.ClientSession()
+                stats = await get_problems_solved_and_rank(clientSession, leetcode_username)
+                await clientSession.close()
 
                 if not stats:
                     return
