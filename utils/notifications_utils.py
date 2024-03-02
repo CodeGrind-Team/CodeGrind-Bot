@@ -1,3 +1,4 @@
+import aiohttp
 import asyncio
 from datetime import datetime, time
 
@@ -14,6 +15,7 @@ from utils.leaderboards_utils import (send_leaderboard_winners,
 from utils.roles_utils import update_roles
 from utils.stats_utils import update_rankings, update_stats
 from utils.users_utils import remove_inactive_users
+from utils.dev_utils import log_to_channel, LogType
 
 
 async def send_daily_question(server: Server, embed: discord.Embed) -> None:
@@ -64,14 +66,22 @@ async def send_daily_question_and_update_stats(force_update_stats: bool = True, 
                12 and now.minute == 0)
 
     if force_update_stats:
-        tasks = []
-        async for user in User.all():
-            tasks.append(update_stats(user, now, daily_reset, weekly_reset))
+        await log_to_channel(LogType.INFO, "Started updating users stats")
+        async with aiohttp.ClientSession() as client_session:
+            tasks = []
+            async for user in User.all():
+                task = asyncio.create_task(coro=update_stats(client_session, user,
+                                                             now, daily_reset, weekly_reset))
 
-        await asyncio.gather(*tasks, return_exceptions=True)
+                tasks.append(task)
+
+            await asyncio.gather(*tasks, return_exceptions=False)
 
         await update_global_leaderboard()
 
+        await log_to_channel(LogType.INFO, "Completed updating users stats")
+
+    await log_to_channel(LogType.INFO, "Started updating server rankings")
     async for server in Server.all(fetch_links=True):
         server.last_updated = now
         await server.save()
@@ -87,6 +97,8 @@ async def send_daily_question_and_update_stats(force_update_stats: bool = True, 
         if midday:
             await update_roles(server)
 
+    await log_to_channel(LogType.INFO, "Completed updating server rankings")
+
     if daily_reset:
         embed = await daily_question_embed()
 
@@ -96,7 +108,9 @@ async def send_daily_question_and_update_stats(force_update_stats: bool = True, 
         await save_analytics()
 
     if monthly:
+        await log_to_channel(LogType.INFO, "Started pruning")
         await remove_inactive_users()
+        await log_to_channel(LogType.INFO, "Completed pruning")
 
     logger.info(
         "file: utils/notifications_utils.py ~ send_daily_question_and_update_stats ~ ended")
