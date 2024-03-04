@@ -5,11 +5,9 @@ import backoff
 import random
 import re
 from typing import List, Any
-from random import random
 
 import markdownify
 import requests
-from requests.exceptions import RequestException
 
 from bot_globals import logger
 from utils.common_utils import to_thread
@@ -318,7 +316,7 @@ async def get_problems_solved_and_rank(client_session: aiohttp.ClientSession, le
             response = await client_session.post(
                 url, json=data, headers=headers, timeout=10)
 
-            await asyncio.sleep(random())
+            await asyncio.sleep(random.random())
 
         except Exception as e:
             logger.exception(
