@@ -4,8 +4,8 @@ from utils.questions_utils import (get_daily_question, get_question_info_from_ti
                                    get_random_question, search_question)
 
 
-async def daily_question_embed() -> discord.Embed:
-    question_title = await get_daily_question()
+async def daily_question_embed(store_question: bool = False) -> discord.Embed:
+    question_title = await get_daily_question(store_question)
 
     if not question_title:
         return question_error_embed()
