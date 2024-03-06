@@ -1,47 +1,46 @@
 
 import asyncio
-import os
-from enum import Enum
 import discord
-from dotenv import load_dotenv
 from bot_globals import client, logger
 from datetime import datetime
 from random import random
 
-load_dotenv()
 
-LOGGING_CHANNEL_ID = int(os.environ['LOGGING_CHANNEL_ID'])
+class ChannelLogger:
+    def __init__(self, channel_id: int) -> None:
+        self.rate_limits = 0
+        self.channel_id = channel_id
 
+    def rate_limited(self) -> None:
+        self.rate_limits += 1
 
-class LogType(Enum):
-    INFO = 1
-    WARNING = 2
-    ERROR = 3
+    async def INFO(self, message: str, include_rate_limit_count: bool = False) -> None:
+        if include_rate_limit_count:
+            message += f". Rate limited {self.rate_limits} times"
+            self.rate_limits = 0
 
+        await self.log(message, discord.Color.blue())
 
-async def log_to_channel(log_type: LogType, message: str):
-    color = None
+    async def WARNING(self, message: str) -> None:
+        await self.log(message, discord.Color.orange())
 
-    match log_type:
-        case LogType.INFO:
-            color = discord.Color.blue()
-        case LogType.WARNING:
-            color = discord.Color.orange()
-        case LogType.ERROR:
-            color = discord.Color.red()
-        case _:
-            return
+    async def ERROR(self, message: str) -> None:
+        await self.log(message, discord.Color.red())
 
-    embed = discord.Embed(color=color, description=message)
-    embed.set_footer(text=datetime.utcnow().strftime("%H:%M:%S.%f"))
+    async def log(self, message: str, color: discord.Color) -> None:
+        embed = discord.Embed(color=color, description=message)
+        embed.set_footer(text=datetime.utcnow().strftime("%H:%M:%S.%f"))
 
-    try:
-        channel = client.get_channel(LOGGING_CHANNEL_ID)
-        if not channel or not isinstance(channel, discord.TextChannel):
-            return
+        try:
+            channel = client.get_channel(self.channel_id)
+            if not channel or not isinstance(channel, discord.TextChannel):
+                return
 
-        await asyncio.sleep(random())
-        await channel.send(embed=embed)
-    except discord.errors.Forbidden as e:
-        logger.exception(
-            "file: utils/dev_utils.py ~ log_to_channel ~ missing permissions on channel id %s. Error: %s", LOGGING_CHANNEL_ID, e)
+            await asyncio.sleep(random())
+            await channel.send(embed=embed)
+        except discord.errors.Forbidden as e:
+            logger.exception(
+                "file: utils/dev_utils.py ~ ChannelLogger.log ~ missing permissions on logging channel. Error: %s", e)
+        except Exception as e:
+            logger.exception(
+                "file: utils/dev_utils.py ~ ChannelLogger.log ~ Error: %s", e)

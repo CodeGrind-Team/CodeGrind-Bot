@@ -12,6 +12,7 @@ from utils.notifications_utils import (
     send_daily_question_and_update_stats,
     send_daily_question_and_update_stats_schedule)
 from utils.ratings_utils import read_ratings_txt
+from utils.dev_utils import ChannelLogger
 
 load_dotenv()
 
@@ -52,6 +53,9 @@ async def setup_hook() -> None:
             client, dbl_token, autopost=True, post_shard_count=True)
 
     try:
+        LOGGING_CHANNEL_ID = int(os.environ['LOGGING_CHANNEL_ID'])
+        client.channel_logger = ChannelLogger(LOGGING_CHANNEL_ID)
+
         synced = await client.tree.sync()
         logger.info(
             "file: main.py ~ setup_hook ~ synced %s commands", len(synced))

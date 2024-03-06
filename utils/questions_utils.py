@@ -9,12 +9,11 @@ from typing import List, Any
 import markdownify
 import requests
 
-from bot_globals import logger
+from bot_globals import logger, client
 from utils.common_utils import to_thread
 from utils.ratings_utils import get_rating_data
-from utils.dev_utils import log_to_channel, LogType
 
-semaphore = asyncio.Semaphore(10)
+semaphore = asyncio.Semaphore(8)
 
 
 @to_thread
@@ -327,12 +326,12 @@ async def get_problems_solved_and_rank(client_session: aiohttp.ClientSession, le
         if response.status == 429:
             # Rate limit reached
             logger.exception(
-                "file: utils/questions_utils.py ~ get_problems_solved_and_rank ~ Error code: %s", response.status)
-            await log_to_channel(LogType.WARNING, "Rate limited")
+                "file: utils/questions_utils.py ~ get_problems_solved_and_rank ~ LeetCode username: %s ~ Error code: %s", leetcode_username, response.status)
+            client.channel_logger.rate_limited()
             raise RateLimitReached()
         elif response.status != 200:
             logger.exception(
-                "file: utils/questions_utils.py ~ get_problems_solved_and_rank ~ Error code: %s", response.status)
+                "file: utils/questions_utils.py ~ get_problems_solved_and_rank ~ LeetCode username: %s ~ Error code: %s", leetcode_username, response.status)
 
             return
 
