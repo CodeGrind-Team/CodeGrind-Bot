@@ -60,7 +60,7 @@ async def setup_hook() -> None:
         logger.info(
             "file: main.py ~ setup_hook ~ synced %s commands", len(synced))
 
-        # send_daily_question_and_update_stats_schedule.start()
+        send_daily_question_and_update_stats_schedule.start()
 
     except Exception as e:
         logger.exception("file: main.py ~ setup_hook ~ exception: %s", e)
