@@ -4,7 +4,7 @@ import os
 
 import discord
 import topgg
-from dotenv import load_dotenv
+from dotenv import load_dotenv, find_dotenv
 
 from bot_globals import client, logger
 from database.setup import init_mongodb_conn
@@ -14,7 +14,7 @@ from utils.notifications_utils import (
 from utils.ratings_utils import read_ratings_txt
 from utils.dev_utils import ChannelLogger
 
-load_dotenv()
+load_dotenv(find_dotenv())
 
 
 @client.event

@@ -5,10 +5,10 @@ from datetime import datetime
 import discord
 import pytz
 from discord.ext import commands
-from dotenv import load_dotenv
+from dotenv import load_dotenv, find_dotenv
 from html2image import Html2Image
 
-load_dotenv()
+load_dotenv(find_dotenv())
 
 if not os.path.exists('logs'):
     os.makedirs('logs')

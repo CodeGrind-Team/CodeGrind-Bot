@@ -10,7 +10,7 @@ sys.path.append(parent_path)
 from beanie import init_beanie
 from beanie.odm.fields import WriteRules
 from beanie.odm.operators.update.array import AddToSet
-from dotenv import load_dotenv
+from dotenv import load_dotenv, find_dotenv
 from motor.motor_asyncio import AsyncIOMotorClient
 
 from utils.common_utils import calculate_scores
@@ -18,7 +18,7 @@ from database.models.server_model import Server
 from database.models.user_model import (DisplayInformation, Scores,
                                         Submissions, User)
 
-load_dotenv()
+load_dotenv(find_dotenv())
 
 
 async def create_user(server_id: int, user_id: int, leetcode_username: str, name: str, rank: int, url_bool: bool, easy: int, medium: int, hard: int):
