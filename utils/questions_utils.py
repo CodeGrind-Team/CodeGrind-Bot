@@ -63,6 +63,11 @@ def get_daily_question() -> str | None:
 
     headers = {
         'Content-Type': 'application/json',
+        'Origin': 'https://leetcode.com',
+        'Referer': 'https://leetcode.com',
+        'Cookie': 'csrftoken=; LEETCODE_SESSION=;',
+        'x-csrftoken': '',
+        'user-agent': 'Mozilla/5.0 LeetCode API'
     }
 
     data = {
@@ -112,6 +117,11 @@ def search_question(text: str) -> str | None:
 
     headers = {
         'Content-Type': 'application/json',
+        'Origin': 'https://leetcode.com',
+        'Referer': 'https://leetcode.com',
+        'Cookie': 'csrftoken=; LEETCODE_SESSION=;',
+        'x-csrftoken': '',
+        'user-agent': 'Mozilla/5.0 LeetCode API'
     }
 
     data = {
@@ -166,6 +176,11 @@ def get_question_info_from_title(question_title_slug: str) -> List[int | str] | 
 
     headers = {
         'Content-Type': 'application/json',
+        'Origin': 'https://leetcode.com',
+        'Referer': 'https://leetcode.com',
+        'Cookie': 'csrftoken=; LEETCODE_SESSION=;',
+        'x-csrftoken': '',
+        'user-agent': 'Mozilla/5.0 LeetCode API'
     }
 
     # Get question info
@@ -284,6 +299,11 @@ async def get_problems_solved_and_rank(client_session: aiohttp.ClientSession, le
 
     headers = {
         'Content-Type': 'application/json',
+        'Origin': 'https://leetcode.com',
+        'Referer': 'https://leetcode.com',
+        'Cookie': 'csrftoken=; LEETCODE_SESSION=;',
+        'x-csrftoken': '',
+        'user-agent': 'Mozilla/5.0 LeetCode API'
     }
 
     data = {
@@ -329,6 +349,11 @@ async def get_problems_solved_and_rank(client_session: aiohttp.ClientSession, le
                 "file: utils/questions_utils.py ~ get_problems_solved_and_rank ~ LeetCode username: %s ~ Error code: %s", leetcode_username, response.status)
             client.channel_logger.rate_limited()
             raise RateLimitReached()
+        elif response.status == 403:
+            logger.exception(
+                "file: utils/questions_utils.py ~ get_problems_solved_and_rank ~ LeetCode username: %s ~ Error code: %s", leetcode_username, response.status)
+            client.channel_logger.forbidden()
+            return
         elif response.status != 200:
             logger.exception(
                 "file: utils/questions_utils.py ~ get_problems_solved_and_rank ~ LeetCode username: %s ~ Error code: %s", leetcode_username, response.status)
