@@ -78,7 +78,7 @@ async def send_daily_question_and_update_stats(force_update_stats: bool = True, 
 
         await update_global_leaderboard()
 
-        await client.channel_logger.INFO("Completed updating users stats", include_rate_limit_count=True)
+        await client.channel_logger.INFO("Completed updating users stats", include_error_counts=True)
 
     await client.channel_logger.INFO("Started updating server rankings")
     async for server in Server.all(fetch_links=True):
