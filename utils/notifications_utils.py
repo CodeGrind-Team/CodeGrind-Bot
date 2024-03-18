@@ -68,7 +68,7 @@ async def send_daily_question_and_update_stats(force_update_stats: bool = True, 
         await client.channel_logger.INFO("Started updating users stats")
         async with aiohttp.ClientSession() as client_session:
             tasks = []
-            async for user in User.all():
+            async for user in User.all(no_cursor_timeout=True):
                 task = asyncio.create_task(coro=update_stats(client_session, user,
                                                              now, daily_reset, weekly_reset))
 
@@ -81,7 +81,7 @@ async def send_daily_question_and_update_stats(force_update_stats: bool = True, 
         await client.channel_logger.INFO("Completed updating users stats", include_error_counts=True)
 
     await client.channel_logger.INFO("Started updating server rankings")
-    async for server in Server.all(fetch_links=True):
+    async for server in Server.all(fetch_links=True, no_cursor_timeout=True):
         server.last_updated = now
         await server.save()
 
