@@ -64,6 +64,14 @@ async def send_daily_question_and_update_stats(force_update_stats: bool = True, 
     monthly = (now.day == 1 and now.hour ==
                12 and now.minute == 0)
 
+    if daily_reset:
+        embed = await daily_question_embed()
+
+        async for server in Server.all(fetch_links=True):
+            await send_daily_question(server, embed)
+
+        await save_analytics()
+
     if force_update_stats:
         await client.channel_logger.INFO("Started updating users stats")
         async with aiohttp.ClientSession() as client_session:
@@ -97,14 +105,6 @@ async def send_daily_question_and_update_stats(force_update_stats: bool = True, 
             await update_roles(server)
 
     await client.channel_logger.INFO("Completed updating server rankings")
-
-    if daily_reset:
-        embed = await daily_question_embed()
-
-        async for server in Server.all(fetch_links=True):
-            await send_daily_question(server, embed)
-
-        await save_analytics()
 
     if monthly:
         await client.channel_logger.INFO("Started pruning")
