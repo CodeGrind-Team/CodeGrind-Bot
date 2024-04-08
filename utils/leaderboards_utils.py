@@ -4,8 +4,10 @@ from datetime import datetime, timedelta
 import discord
 from beanie.odm.operators.update.array import AddToSet
 from bson import DBRef
+from sortedcollections import ValueSortedDict
 
 from bot_globals import RANK_EMOJI, TIMEFRAME_TITLE, client, logger
+from constants import Period
 from database.models.server_model import Server
 from database.models.user_model import User
 from embeds.leaderboards_embeds import (empty_leaderboard_embed,
@@ -152,3 +154,17 @@ async def update_global_leaderboard() -> None:
     """
     async for user in User.all():
         await Server.find_one(Server.id == 0).update(AddToSet({Server.users: DBRef("users",  user.id)}))
+
+
+class Leaderboard:
+    def __init__(self, periods: Period):
+        self.leaderboard = {}
+
+        for period in periods:
+            self.leaderboard[period] = ValueSortedDict()
+
+    def update_score(self, period: Period, user_id: int, score: int):
+        self.leaderboard[period][user_id] = score
+
+    def clear(self, period: Period):
+        self.leaderboard[period].clear()
