@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import List, Optional
 
 from beanie import Document, Indexed
@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field
 
 
 class DisplayInformation(BaseModel):
-    server_id: Indexed(int)
+    server_id: Indexed(int)  # type: ignore
     name: str
     url: Optional[bool] = True
     visible: Optional[bool] = False
@@ -14,47 +14,29 @@ class DisplayInformation(BaseModel):
 
 
 class Votes(BaseModel):
-    last_voted: Optional[datetime]
+    last_voted: Optional[datetime] = Field(
+        default_factory=lambda: datetime.now(UTC))
     count: Optional[int] = 0
 
 
-class Scores(BaseModel):
-    # TODO: use this data to determine if scores should be updated if there was downtime during a scheduled score update
-    last_updated: Optional[datetime] = Field(default_factory=datetime.utcnow)
-
-    start_of_week_total_score: Optional[int]
-    start_of_day_total_score: Optional[int]
-
-    day_score: Optional[int] = 0
-    week_score: Optional[int] = 0
-
-    yesterday_score: Optional[int] = 0
-    last_week_score: Optional[int] = 0
-
-    streak: Optional[int] = 0
-
-
 class Submissions(BaseModel):
-    easy: int
-    medium: int
-    hard: int
-    total_score: Optional[int]
+    easy: Optional[int] = 0
+    medium: Optional[int] = 0
+    hard: Optional[int] = 0
 
 
-class History(BaseModel):
-    timestamp: datetime
-    submissions: Submissions
+class Stats(BaseModel):
+    submissions: Optional[Submissions] = Field(default_factory=Submissions)
     streak: Optional[int] = 0
+    timestamp: Optional[datetime] = Field(
+        default_factory=lambda: datetime.now(UTC))
 
 
 class User(Document):
     id: int
     leetcode_username: str
-    rank: int
     display_information: List[DisplayInformation]
-    submissions: Submissions
-    history: Optional[List[History]] = []
-    scores: Optional[Scores] = Field(default_factory=Scores)
+    scores: Optional[Stats] = Field(default_factory=Stats)
     votes: Optional[Votes] = Field(default_factory=Votes)
 
     class Settings:

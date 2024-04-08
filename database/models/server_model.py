@@ -18,20 +18,12 @@ class UserRank(BaseModel):
     rank: int
 
 
-class Rankings(BaseModel):
-    date: datetime
-    timeframe: str  # "daily" or "weekly"
-    winner: int  # user id
-    rankings_order: Optional[List[UserRank]] = []  # leaderboard rankings
-
-
 class Server(Document):
     id: int
     users: Optional[List[Link[User]]] = []
     last_updated: Optional[datetime] = Field(default_factory=datetime.utcnow)
     timezone: Optional[str] = "UTC"
     channels: Optional[Channel] = Field(default_factory=Channel)
-    rankings: Optional[List[Rankings]] = []
 
     class Settings:
         name = "servers"

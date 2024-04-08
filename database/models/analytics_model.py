@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import List, Optional
 
 from beanie import Document
@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field
 
 
 class AnalyticsHistory(BaseModel):
-    date: Optional[datetime] = Field(default_factory=datetime.utcnow)
+    date: Optional[datetime] = Field(default_factory=lambda: datetime.now(UTC))
     distinct_users: Optional[List[int]] = []
     command_count: int
 
