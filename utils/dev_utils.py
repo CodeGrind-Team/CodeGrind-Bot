@@ -1,13 +1,12 @@
-
 import asyncio
 import discord
-from bot_globals import client, logger
-from datetime import datetime
+from datetime import datetime, UTC
 from random import random
 
 
 class ChannelLogger:
-    def __init__(self, channel_id: int) -> None:
+    def __init__(self, client: discord.Bot, channel_id: int) -> None:
+        self.client = client
         self.rate_limits = 0
         self.forbidden_count = 0
         self.channel_id = channel_id
@@ -18,7 +17,7 @@ class ChannelLogger:
     def forbidden(self) -> None:
         self.forbidden_count += 1
 
-    async def INFO(self, message: str, include_error_counts: bool = False) -> None:
+    async def info(self, message: str, include_error_counts: bool = False) -> None:
         if include_error_counts:
             message += f". Rate limited {self.rate_limits} times"
             self.rate_limits = 0
@@ -29,15 +28,21 @@ class ChannelLogger:
             await self.WARNING(f"Forbidden {self.forbidden_count} times.")
             self.forbidden_count = 0
 
-    async def WARNING(self, message: str) -> None:
+    async def warning(self, message: str) -> None:
         await self.log(message, discord.Color.orange())
 
-    async def ERROR(self, message: str) -> None:
-        await self.log(message, discord.Color.red())
+    async def error(
+        self,
+        message: str,
+    ) -> None:
+        await self.log(message, discord.Color.red(), True)
 
-    async def log(self, message: str, color: discord.Color) -> None:
+    async def exception(self, message: str) -> None:
+        await self.log(message, discord.Color.red(), True)
+
+    async def log(self, message: str, color: discord.Color, silent: bool) -> None:
         embed = discord.Embed(color=color, description=message)
-        embed.set_footer(text=datetime.utcnow().strftime("%H:%M:%S.%f"))
+        embed.set_footer(text=datetime.now(UTC).strftime("%H:%M:%S.%f"))
 
         try:
             channel = client.get_channel(self.channel_id)
@@ -45,10 +50,15 @@ class ChannelLogger:
                 return
 
             await asyncio.sleep(random())
-            await channel.send(embed=embed)
+            await channel.send(embed=embed, silent=silent)
+
         except discord.errors.Forbidden as e:
-            logger.exception(
-                "file: utils/dev_utils.py ~ ChannelLogger.log ~ missing permissions on logging channel. Error: %s", e)
+            client.logger.exception(
+                "file: utils/dev_utils.py ~ ChannelLogger.log ~ \
+                    missing permissions on logging channel. Error: %s",
+                e,
+            )
         except Exception as e:
-            logger.exception(
-                "file: utils/dev_utils.py ~ ChannelLogger.log ~ Error: %s", e)
+            client.logger.exception(
+                "file: utils/dev_utils.py ~ ChannelLogger.log ~ Error: %s", e
+            )

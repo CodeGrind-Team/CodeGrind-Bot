@@ -1,90 +1,260 @@
-import asyncio
+"""
+Copyright © Krypton 2019-2023 - https://github.com/kkrypt0nn (https://krypton.ninja)
+Description:
+🐍 A simple template to start to code your own and personalized discord bot in Python programming language.
+
+Version: 6.1.0
+"""
+
 import logging
 import os
+import platform
+from datetime import UTC, datetime
 
 import discord
 import topgg
-from dotenv import load_dotenv, find_dotenv
-
-from bot_globals import client, logger
-from database.setup import init_mongodb_conn
+from discord.ext import commands
+from discord.ext.commands import Context
+from dotenv import find_dotenv, load_dotenv
+from html2image import Html2Image
+from utils.dev_utils import ChannelLogger
 from utils.notifications_utils import (
     send_daily_question_and_update_stats,
-    send_daily_question_and_update_stats_schedule)
-from utils.ratings_utils import read_ratings_txt
-from utils.dev_utils import ChannelLogger
+    send_daily_question_and_update_stats_schedule,
+)
 
-load_dotenv(find_dotenv())
+if not os.path.isfile(f"{os.path.realpath(os.path.dirname(__file__))}/logs"):
+    os.makedirs(f"{os.path.realpath(os.path.dirname(__file__))}/logs")
 
-
-@client.event
-async def on_autopost_success():
-    logger.info("Posted server count (%s), shard count (%s)",
-                client.topggpy.guild_count, client.shard_count)
-
-    logger.info("Total bot member count (%s)",
-                len(set(client.get_all_members())))
+intents = discord.Intents.default()
+intents.members = True
 
 
-@client.event
-async def on_ready() -> None:
-    logger.info("file: main.py ~ on_ready ~ start")
+class LoggingFormatter(logging.Formatter):
+    # Colors
+    black = "\x1b[30m"
+    red = "\x1b[31m"
+    green = "\x1b[32m"
+    yellow = "\x1b[33m"
+    blue = "\x1b[34m"
+    gray = "\x1b[38m"
+    # Styles
+    reset = "\x1b[0m"
+    bold = "\x1b[1m"
 
-    if os.environ["MAINTENANCE"] == "True":
-        await client.change_presence(status=discord.Status.do_not_disturb, activity=discord.Game(name="Under Maintenance"))
+    COLORS = {
+        logging.DEBUG: gray + bold,
+        logging.INFO: blue + bold,
+        logging.WARNING: yellow + bold,
+        logging.ERROR: red,
+        logging.CRITICAL: red + bold,
+    }
 
-    update_stats_on_start = os.environ["UPDATE_STATS_ON_START"] == "True"
-    daily_reset_on_start = os.environ["DAILY_RESET_ON_START"] == "True"
-    weekly_reset_on_start = os.environ["WEEKLY_RESET_ON_START"] == "True"
+    def format(self, record):
+        log_color = self.COLORS[record.levelno]
+        format = "(black){asctime}(reset) (levelcolor){levelname:<8}(reset) (green){name}(reset) {message}"
+        format = format.replace("(black)", self.black + self.bold)
+        format = format.replace("(reset)", self.reset)
+        format = format.replace("(levelcolor)", log_color)
+        format = format.replace("(green)", self.green + self.bold)
+        formatter = logging.Formatter(format, "%Y-%m-%d %H:%M:%S", style="{")
+        return formatter.format(record)
 
-    if update_stats_on_start or daily_reset_on_start or weekly_reset_on_start:
-        await send_daily_question_and_update_stats(update_stats_on_start, daily_reset_on_start, weekly_reset_on_start)
+
+logger = logging.getLogger("discord_bot")
+logger.setLevel(logging.INFO)
+
+# File handler
+file_handler = logging.FileHandler(
+    filename=f"logs/{datetime.now(UTC).strftime('%Y%m%d-%H%M%S')}.log",
+    encoding="utf-8",
+    mode="w",
+)
+file_handler_formatter = logging.Formatter(
+    "[{asctime}] [{levelname:<8}] {name}: {message}", "%Y-%m-%d %H:%M:%S", style="{"
+)
+file_handler.setFormatter(file_handler_formatter)
+
+logger.addHandler(file_handler)
 
 
-@client.event
-async def setup_hook() -> None:
-    logger.info("file: main.py ~ setup_hook ~ start")
-    logger.info(
-        "file: main.py ~ setup_hook ~ logged in as a bot %s", client.user)
+class DiscordBot(commands.Bot):
+    def __init__(self) -> None:
+        super().__init__(
+            intents=intents,
+            help_command=None,
+        )
+        """
+        This creates custom bot variables so that we can access these variables in cogs
+        more easily.
+        """
+        self.logger = logger
+        self.html2image = Html2Image(
+            browser_executable=os.getenv("BROWSER_EXECUTABLE_PATH")
+        )
+        self.topggpy = None
+        self.channel_logger = None
+        # TODO: self.ratings = None
+        # TODO: self.session
 
-    if os.environ["PRODUCTION"] == "True":
-        dbl_token = os.environ["TOPGG_TOKEN"]
-        client.topggpy = topgg.DBLClient(
-            client, dbl_token, autopost=True, post_shard_count=True)
+    async def on_autopost_success(self):
+        """Runs when stats are posted to topgg"""
+        self.logger.info(
+            "Posted server count (%s), shard count (%s)",
+            self.topggpy.guild_count,
+            self.shard_count,
+        )
 
-    try:
-        LOGGING_CHANNEL_ID = int(os.environ['LOGGING_CHANNEL_ID'])
-        client.channel_logger = ChannelLogger(LOGGING_CHANNEL_ID)
+        self.logger.info(
+            "Total bot member count (%s)", len(set(self.get_all_members()))
+        )
 
-        synced = await client.tree.sync()
-        logger.info(
-            "file: main.py ~ setup_hook ~ synced %s commands", len(synced))
+    async def init_topgg(self) -> None:
+        if os.getenv("PRODUCTION", "False") == "True":
+            self.topggpy = topgg.DBLClient(
+                self, os.getenv("TOPGG_TOKEN"), autopost=True, post_shard_count=True
+            )
+
+    async def load_cogs(self) -> None:
+        """
+        The code in this function is executed whenever the bot will start.
+        """
+        for file in os.listdir(f"{os.path.realpath(os.path.dirname(__file__))}/cogs"):
+            if file.endswith(".py"):
+                extension = file[:-3]
+                try:
+                    await self.load_extension(f"cogs.{extension}")
+                    self.logger.info(f"Loaded extension '{extension}'")
+                except Exception as e:
+                    exception = f"{type(e).__name__}: {e}"
+                    self.logger.error(
+                        f"Failed to load extension {extension}\n{exception}"
+                    )
+
+    async def on_ready(self) -> None:
+        self.logger.info("file: main.py ~ on_ready ~ start")
+
+        if os.getenv("MAINTENANCE", "False") == "True":
+            await self.change_presence(
+                status=discord.Status.do_not_disturb,
+                activity=discord.Game(name="Under Maintenance"),
+            )
+
+        update_stats_on_start = os.getenv("UPDATE_STATS_ON_START", "False") == "True"
+        daily_reset_on_start = os.getenv("DAILY_RESET_ON_START", "False") == "True"
+        weekly_reset_on_start = os.getenv("WEEKLY_RESET_ON_START", "False") == "True"
+
+        if update_stats_on_start or daily_reset_on_start or weekly_reset_on_start:
+            await send_daily_question_and_update_stats(
+                update_stats_on_start, daily_reset_on_start, weekly_reset_on_start
+            )
+
+    async def setup_hook(self) -> None:
+        """
+        This will just be executed when the bot starts the first time.
+        """
+        self.logger.info(f"Logged in as {self.user.name}")
+        self.logger.info(f"discord.py API version: {discord.__version__}")
+        self.logger.info(f"Python version: {platform.python_version()}")
+        self.logger.info(
+            f"Running on: {platform.system()} {platform.release()} ({os.name})"
+        )
+        self.logger.info("-------------------")
+        # TODO: await read_ratings_txt()
+        await self.init_mongodb_conn(os.getenv("MONGODB_URI"))
+        await self.load_cogs()
+        await self.init_topgg()
+        self.channel_logger = ChannelLogger(self, int(os.environ["LOGGING_CHANNEL_ID"]))
 
         send_daily_question_and_update_stats_schedule.start()
 
-    except Exception as e:
-        logger.exception("file: main.py ~ setup_hook ~ exception: %s", e)
+    async def on_command_completion(self, context: Context) -> None:
+        """
+        The code in this event is executed every time a normal command has been
+        *successfully* executed.
+
+        :param context: The context of the command that has been executed.
+        """
+        full_command_name = context.command.qualified_name
+        split = full_command_name.split(" ")
+        executed_command = str(split[0])
+        if context.guild is not None:
+            self.logger.info(
+                f"Executed {executed_command} command in {context.guild.name} (ID: {context.guild.id}) by {context.author} (ID: {context.author.id})"
+            )
+        else:
+            self.logger.info(
+                f"Executed {executed_command} command by {context.author} (ID: {context.author.id}) in DMs"
+            )
+
+    async def on_command_error(self, context: Context, error) -> None:
+        """
+        The code in this event is executed every time a normal valid command catches an error.
+
+        :param context: The context of the normal command that failed executing.
+        :param error: The error that has been faced.
+        """
+        if isinstance(error, commands.CommandOnCooldown):
+            minutes, seconds = divmod(error.retry_after, 60)
+            hours, minutes = divmod(minutes, 60)
+            hours = hours % 24
+            embed = discord.Embed(
+                description=f"**Please slow down** - You can use this command again in \
+                    {f'{round(hours)} hours' if round(hours) > 0 else ''} \
+                        {f'{round(minutes)} minutes' if round(minutes) > 0 else ''} \
+                            {f'{round(seconds)} seconds' if round(seconds) > 0 else ''}.",
+                color=0xE02B2B,
+            )
+            await context.send(embed=embed)
+        elif isinstance(error, commands.NotOwner):
+            embed = discord.Embed(
+                description="You are not the owner of the bot!", color=0xE02B2B
+            )
+            await context.send(embed=embed)
+            if context.guild:
+                self.logger.warning(
+                    f"{context.author} (ID: {context.author.id})"
+                    + "tried to execute an owner only command in the guild"
+                    + f"{context.guild.name} (ID: {context.guild.id})"
+                    + ", but the user is not an owner of the bot."
+                )
+            else:
+                self.logger.warning(
+                    f"{context.author} (ID: {context.author.id})"
+                    + "tried to execute an owner only command in the bot's DMs,\
+                          but the user is not an owner of the bot."
+                )
+        elif isinstance(error, commands.MissingPermissions):
+            embed = discord.Embed(
+                description="You are missing the permission(s) `"
+                + ", ".join(error.missing_permissions)
+                + "` to execute this command!",
+                color=0xE02B2B,
+            )
+            await context.send(embed=embed)
+        elif isinstance(error, commands.BotMissingPermissions):
+            embed = discord.Embed(
+                description="I am missing the permission(s) `"
+                + ", ".join(error.missing_permissions)
+                + "` to fully perform this command!",
+                color=0xE02B2B,
+            )
+            await context.send(embed=embed)
+        elif isinstance(error, commands.MissingRequiredArgument):
+            embed = discord.Embed(
+                title="Error!",
+                # We need to capitalize because the command arguments have no
+                # capital letter in the code and they are the first word in the
+                # error message.
+                description=str(error).capitalize(),
+                color=0xE02B2B,
+            )
+            await context.send(embed=embed)
+        else:
+            raise error
 
 
-async def load_extensions() -> None:
-    for filename in os.listdir("./cogs"):
-        if filename.endswith("cog.py"):
-            # cut off the .py from the file name
-            await client.load_extension(f"cogs.{filename[:-3]}")
+load_dotenv(find_dotenv())
 
-
-async def main(token: str) -> None:
-    async with client:
-        await read_ratings_txt()
-        await init_mongodb_conn()
-        await load_extensions()
-        await client.start(token)
-
-
-if __name__ == "__main__":
-    logger.setLevel(logging.INFO)
-    logger.info("Logger is in INFO mode")
-
-    token = os.environ['TOKEN']
-
-    asyncio.run(main(token))
+bot = DiscordBot()
+bot.run(os.getenv("TOKEN"))

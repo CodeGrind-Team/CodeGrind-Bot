@@ -13,11 +13,6 @@ class Channel(BaseModel):
     winners: Optional[List[int]] = []
 
 
-class UserRank(BaseModel):
-    user_id: int
-    rank: int
-
-
 class Server(Document):
     id: int
     users: Optional[List[Link[User]]] = []

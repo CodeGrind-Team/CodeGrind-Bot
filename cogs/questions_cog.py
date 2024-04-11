@@ -1,52 +1,67 @@
-import re
-
 import discord
 from discord.ext import commands
 
-from bot_globals import logger
-from embeds.questions_embeds import (daily_question_embed,
-                                     random_question_embed,
-                                     search_question_embed)
-from middleware import track_analytics, defer_interaction
+from constants import Difficulty
+from embeds.questions_embeds import (
+    daily_question_embed,
+    random_question_embed,
+    search_question_embed,
+)
+from middleware import defer_interaction, track_analytics
 
 
-class Questions(commands.GroupCog, name="question"):
-    def __init__(self, client: commands.Bot):
+class QuestionsCog(commands.GroupCog, name="question"):
+    def __init__(self, client: commands.Bot) -> None:
         self.client = client
 
-    @discord.app_commands.command(name="search", description="Search for a LeetCode question")
+    @discord.app_commands.command(
+        name="search", description="Search for a LeetCode question"
+    )
     @defer_interaction()
     @track_analytics
-    async def search_question(self, interaction: discord.Interaction, name_id_or_url: str) -> None:
-        logger.info("file: cogs/questions.py ~ display_question ~ run")
+    async def search_question(
+        self, interaction: discord.Interaction, name_id_or_url: str
+    ) -> None:
+        """
+        Command to search for a LeetCode question.
 
+        :param interaction: The interaction context.
+        :param name_id_or_url: The name, ID, or URL of the question to search.
+        """
         embed = await search_question_embed(name_id_or_url)
-
         await interaction.followup.send(embed=embed)
 
     @discord.app_commands.command(name="daily", description="Get the daily question")
     @defer_interaction()
     @track_analytics
     async def daily_question(self, interaction: discord.Interaction) -> None:
-        logger.info("file: cogs/questions.py ~ get_daily ~ run")
+        """
+        Command to get the daily question.
 
+        :param interaction: The interaction context.
+        """
         embed = await daily_question_embed()
-
         await interaction.followup.send(embed=embed)
 
-    @discord.app_commands.command(name="random", description="Get a random question of your desired difficulty")
+    @discord.app_commands.command(
+        name="random", description="Get a random question of your desired difficulty"
+    )
     @defer_interaction()
     @track_analytics
-    async def random_question(self, interaction: discord.Interaction, difficulty: str = "random") -> None:
-        logger.info(
-            "file: cogs/questions.py ~ question ~ run ~ difficulty: %s", difficulty)
+    async def random_question(
+        self,
+        interaction: discord.Interaction,
+        difficulty: Difficulty = Difficulty.RANDOM,
+    ) -> None:
+        """
+        Command to get a random question of the selected difficulty.
 
-        difficulty = difficulty.lower()
-
+        :param interaction: The interaction context.
+        :param difficulty: The desired difficulty level of the question.
+        """
         embed = await random_question_embed(difficulty)
-
         await interaction.followup.send(embed=embed)
 
 
 async def setup(client: commands.Bot) -> None:
-    await client.add_cog(Questions(client))
+    await client.add_cog(QuestionsCog(client))

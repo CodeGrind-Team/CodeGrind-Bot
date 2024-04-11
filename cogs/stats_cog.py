@@ -1,53 +1,67 @@
 import discord
 from discord.ext import commands
 
-from bot_globals import logger
+from constants import StatsCardOptions
+from database.models.preference_model import Preference
+from database.models.server_model import Server
 from database.models.user_model import User
 from embeds.stats_embeds import account_hidden_embed, stats_embed
 from embeds.users_embeds import account_not_found_embed
 from middleware import defer_interaction, track_analytics
 
 
-class Stats(commands.Cog):
-    def __init__(self, client):
+class StatsCog(commands.Cog):
+    def __init__(self, client) -> None:
         self.client = client
 
     @discord.app_commands.command(name="stats", description="Displays a user's stats")
     @defer_interaction()
     @track_analytics
-    async def stats(self, interaction: discord.Interaction, user: discord.Member | None = None, display_publicly: bool | None = None, heatmap: bool = False) -> None:
-        logger.info('file: cogs/stats.py ~ stats ~ run')
+    async def stats(
+        self,
+        interaction: discord.Interaction,
+        option: StatsCardOptions,
+        member: discord.Member | None = None,
+    ) -> None:
+        """
+        Command to display a user's stats.
 
-        if user:
-            user_id = user.id
-        else:
-            user_id = interaction.user.id
+        :param interaction: The interaction context.
+        :param option: The stats card option to select.
+        :param member: The member whose stats to display.
+        """
+        server = await Server.find_one(User.id == interaction.user.id)
 
+        user_id = member.id if member else interaction.user.id
         user = await User.find_one(User.id == user_id)
 
         if not user:
-            embed = account_not_found_embed()
-            await interaction.followup.send(embed=embed)
+            await interaction.followup.send(embed=account_not_found_embed())
             return
 
-        display_information = next(
-            (di for di in user.display_information if di.server_id == interaction.guild.id), None)
+        preference = await Preference.find_one(
+            Preference.user == user, Preference.server == server
+        )
 
-        if user.id != interaction.user.id and not display_information.url:
-            embed = account_hidden_embed()
-            await interaction.followup.send(embed=embed)
+        if user.id != interaction.user.id and not preference.url:
+            await interaction.followup.send(embed=account_hidden_embed())
             return
 
         # Needed because if user already has connected their account to the bot
         # but hasn't connected their account to the corresponding server,
         # then display_information is None.
-        embed, file = await stats_embed(user.leetcode_username, user.leetcode_username if display_information is None else display_information.name, "heatmap" if heatmap else "activity")
+        embed, file = await stats_embed(
+            user.leetcode_username,
+            (preference.name if preference else user.leetcode_username),
+            option,
+        )
 
-        if file is None:
+        if not file:
             await interaction.followup.send(embed=embed)
-        else:
-            await interaction.followup.send(embed=embed, file=file)
+            return
+
+        await interaction.followup.send(embed=embed, file=file)
 
 
-async def setup(client: commands.Bot):
-    await client.add_cog(Stats(client))
+async def setup(client: commands.Bot) -> None:
+    await client.add_cog(StatsCog(client))

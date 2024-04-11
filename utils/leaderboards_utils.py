@@ -1,170 +1,348 @@
-from collections import Counter
-from datetime import datetime, timedelta
+from abc import ABC, abstractmethod
+from datetime import UTC, datetime, timedelta
+from typing import Dict, Set, Tuple, List
 
 import discord
-from beanie.odm.operators.update.array import AddToSet
-from bson import DBRef
 from sortedcollections import ValueSortedDict
 
-from bot_globals import RANK_EMOJI, TIMEFRAME_TITLE, client, logger
+from bot_globals import RANK_EMOJI, logger
 from constants import Period
+from database.models.preference_model import Preference
+from database.models.record_model import Record
 from database.models.server_model import Server
 from database.models.user_model import User
-from embeds.leaderboards_embeds import (empty_leaderboard_embed,
-                                        leaderboard_embed)
-from utils.common_utils import strftime_with_suffix
+from embeds.leaderboards_embeds import empty_leaderboard_embed, leaderboard_embed
+from utils.common_utils import convert_to_score, strftime_with_suffix
 from views.leaderboard_view import LeaderboardPagination
 
 
-def get_score(user: User, timeframe: str | None = None) -> int:
-    if timeframe == "alltime":
-        return user.submissions.total_score
+class Leaderboard(ABC):
+    def __init__(self) -> None:
+        self.leaderboard = ValueSortedDict()
 
-    else:
-        if timeframe == "daily":
-            return user.scores.day_score
+    def _get_score(self, user_id: int) -> int:
+        """Get the score of a user for a leaderboard."""
+        return self.leaderboard[user_id]
 
-        elif timeframe == "weekly":
-            return user.scores.week_score
+    def _update_score(self, user_id: int, score: int) -> None:
+        """Update the score of a user for the leaderboard."""
+        self.leaderboard[user_id] = score
 
-        elif timeframe == "yesterday":
-            return user.scores.yesterday_score
+    def clear(self) -> None:
+        """Clear a leaderboard."""
+        self.leaderboard.clear()
 
-        elif timeframe == "last_week":
-            return user.scores.last_week_score
-
-        elif timeframe == "start_of_week_total":
-            start_of_week_total_score = user.scores.start_of_week_total_score
-            return start_of_week_total_score if start_of_week_total_score is not None else user.submissions.total_score
-
-        elif timeframe == "start_of_day_total":
-            start_of_day_total_score = user.scores.start_of_day_total_score
-            return start_of_day_total_score if start_of_day_total_score is not None else user.submissions.total_score
+    @abstractmethod
+    async def calculate_score(self, user: User) -> int:
+        """Calculate the user's score."""
+        pass
 
 
-async def display_leaderboard(send_message, server_id: int = 0, user_id: int | None = None, timeframe: str = "alltime", page: int = 1, winners_only: bool = False, users_per_page: int = 10, global_leaderboard: bool = False) -> None:
-    logger.info(
-        "file: cogs/leaderboards.py ~ display_leaderboard ~ run ~ guild id: %s", server_id)
+class DailyLeaderboard(Leaderboard):
+    async def calculate_score(self, user: User) -> int:
+        """Calculate the user's score for the day."""
+        current_score = convert_to_score(**user.stats.submissions)
 
-    # TODO: Project
-    # Server ID of 0 is the global leaderboard
-    server = await Server.find_one(Server.id == server_id, fetch_links=True)
+        timestamp = datetime.now().replace(
+            hour=0, minute=0, second=0, microsecond=0
+        ) - timedelta(days=datetime.now().weekday())
 
-    if not server:
-        embed = empty_leaderboard_embed()
-        await send_message(embed=embed)
-        return
+        record = await Record.find_one(
+            Record.user == user, Record.timestamp == timestamp
+        )
 
-    users = sorted(server.users,
-                   key=lambda user: get_score(user, timeframe), reverse=True)
+        if not record:
+            return current_score
 
-    user_to_wins = Counter(
-        rankings.winner for rankings in server.rankings if rankings.timeframe == timeframe)
+        score_difference = current_score - convert_to_score(**record.submissions)
 
-    pages = []
-    page_count = -(-len(users)//users_per_page)
+        return score_difference
 
-    place = 0
-    prev_score = float("-inf")
 
-    for page_i in range(page_count):
+class WeeklyLeaderboard(Leaderboard):
+    async def calculate_score(self, user: User) -> int:
+        """Calculate the user's score for the week."""
+        current_score = convert_to_score(**user.stats.submissions)
+
+        timestamp = datetime.now().replace(
+            hour=0, minute=0, second=0, microsecond=0
+        ) - timedelta(days=datetime.now().weekday())
+
+        record = await Record.find_one(
+            Record.user == user, Record.timestamp == timestamp
+        )
+
+        if not record:
+            return current_score
+
+        score_difference = current_score - convert_to_score(**record.submissions)
+
+        return score_difference
+
+
+class MonthlyLeaderboard(Leaderboard):
+    async def calculate_score(self, user: User) -> int:
+        """Calculate the user's score for the month."""
+        current_score = convert_to_score(**user.stats.submissions)
+
+        timestamp = datetime.now().replace(
+            day=1, hour=0, minute=0, second=0, microsecond=0
+        )
+
+        record = await Record.find_one(
+            Record.user == user, Record.timestamp == timestamp
+        )
+
+        if not record:
+            return current_score
+
+        score_difference = current_score - convert_to_score(**record.submissions)
+
+        return score_difference
+
+
+class AllTimeLeaderboard(Leaderboard):
+    async def calculate_score(self, user: User) -> int:
+        """Calculate the user's score for all time."""
+        current_score = convert_to_score(**user.stats.submissions)
+        return current_score
+
+
+class Leaderboards:
+    def __init__(self) -> None:
+        """Initialize the Leaderboards object."""
+        self.leaderboards: Dict[Period, Leaderboard] = {
+            Period.WEEK: WeeklyLeaderboard(),
+            Period.MONTH: MonthlyLeaderboard(),
+            Period.ALLTIME: AllTimeLeaderboard(),
+        }
+
+    async def update_scores(self, periods: Set[Period]) -> None:
+        """Update scores for all users for selected periods."""
+        async for user in User.all():
+            for period in periods:
+                leaderboard = self.leaderboards[period]
+                await leaderboard.update_score(
+                    user.id, await leaderboard.calculate_score(user)
+                )
+
+    def get_score(self, period: Period, user_id: int) -> int:
+        """Get the score of a user for a specific period."""
+        leaderboard = self.leaderboards[period]
+        return leaderboard._get_score(user_id)
+
+    def clear(self, period: Period) -> None:
+        """Clear a specific leaderboard."""
+        leaderboard = self.leaderboards[period]
+        leaderboard.clear()
+
+    def clear_all(self) -> None:
+        """Clear all leaderboards."""
+        for leaderboard in self.leaderboards.values():
+            leaderboard.clear()
+
+
+class LeaderboardManager:
+    def __init__(self) -> None:
+        self.leaderboard = Leaderboards(
+            {Period.DAY, Period.WEEK, Period.MONTH, Period.ALLTIME}
+        )
+
+    async def generate_leaderboard_embed(
+        self,
+        period: Period,
+        server: Server,
+        author_user_id: int | None = None,
+        winners_only: bool = False,
+        global_leaderboard: bool = False,
+        page: int = 1,
+        users_per_page: int = 10,
+    ) -> Tuple[discord.Embed, discord.ui.View]:
+        logger.info(
+            "file: cogs/leaderboards.py ~ display_leaderboard\
+                    ~ run ~ guild id: %s",
+            server.id,
+        )
+
+        pages: List[discord.Embed] = []
+        num_pages = -(-len(server.users) // users_per_page)
+
+        place = 0
+        prev_score = float("-inf")
+
+        for page_index in range(num_pages):
+            page, place, prev_score = await self._build_leaderboard_page(
+                period,
+                server,
+                winners_only,
+                global_leaderboard,
+                page_index,
+                users_per_page,
+                num_pages,
+                place,
+                prev_score,
+            )
+            pages.append(page)
+
+        if len(pages) == 0:
+            embed = empty_leaderboard_embed()
+            pages.append(embed)
+
+        page = page - 1 if page > 0 else 0
+        view = (
+            None if winners_only else LeaderboardPagination(author_user_id, pages, page)
+        )
+
+        return pages[page], view
+
+        # try:
+        #     await send_message(embed=pages[page], view=view)
+        # except discord.errors.Forbidden as e:
+        #     logger.exception(
+        #         "file: utils/leaderboards_utils.py ~ display_leaderboard ~ \
+        #         missing permissions on server id %s. Error: %s",
+        #         server.id,
+        #         e,
+        #     )
+
+    async def _build_leaderboard_page(
+        self,
+        period: Period,
+        server: Server,
+        winners_only: bool,
+        global_leaderboard: bool,
+        page_index: int,
+        users_per_page: int,
+        num_pages: int,
+        place: int,
+        prev_score: float,
+    ) -> Tuple[discord.Embed, int, float]:
         leaderboard = []
 
-        for user in users[page_i * users_per_page: page_i * users_per_page + users_per_page]:
+        for user in server.users[
+            page_index * users_per_page : page_index * users_per_page + users_per_page
+        ]:
+
             profile_link = f"https://leetcode.com/{user.leetcode_username}"
 
-            display_information = next(
-                (di for di in user.display_information if di.server_id == server_id), None)
-
-            if not display_information:
-                continue
-
-            name = display_information.name
-            url = display_information.url
-            visible = display_information.visible
-            total_score = get_score(user, timeframe)
-
-            if total_score != prev_score:
-                place += 1
-
-            if winners_only and (total_score == 0 or place == 4):
-                break
-
-            prev_score = total_score
-
-            number_rank = f"{place}\."
-
-            display_name = "Anonymous User" if not visible and global_leaderboard else (
-                f"[{name}]({profile_link})"if url else name)
-
-            wins = user_to_wins[user.id]
-
-            wins_text = f"({str(wins)} wins) "
-            # wins won't be displayed for alltime timeframe as wins !> 0
-            leaderboard.append(
-                f"**{RANK_EMOJI[place] if place in RANK_EMOJI and total_score != 0 else number_rank} {display_name}** {wins_text if  wins > 0 else ''}- **{total_score}** pts"
+            # ? Check if this is possible or if dbref needs to be
+            # ? specified on the id
+            preference = await Preference.find_one(
+                Preference.user == user, Preference.server == server
             )
 
-        title = f"{'Global ' if global_leaderboard else ''}{TIMEFRAME_TITLE[timeframe]['title']} Leaderboard"
+            if not preference:
+                continue
+
+            name = preference.name
+            url = preference.url
+            visible = preference.visible
+            score = self._get_score(period, user.id)
+
+            if score != prev_score:
+                place += 1
+
+            if winners_only and (score == 0 or place == 4):
+                break
+
+            prev_score = score
+
+            display_name = (
+                "Anonymous User"
+                if not visible and global_leaderboard
+                else (f"[{name}]({profile_link})" if url else name)
+            )
+
+            rank = self._get_rank_emoji(place, score)
+            leaderboard.append(f"**{rank} {display_name}** - **{score}** pts")
+
+        title = self._get_title(period, winners_only, global_leaderboard)
+
+        return (
+            leaderboard_embed(server, page_index, num_pages, title, leaderboard),
+            place,
+            prev_score,
+        )
+
+    def _get_title(
+        self, period: Period, winners_only: bool, global_leaderboard: bool
+    ) -> str:
+        period_to_text = {
+            Period.DAY: "daily",
+            Period.WEEK: "weekly",
+            Period.MONTH: "monthly",
+            Period.ALLTIME: "allTime",
+        }
+
+        title = (
+            f"{'Global ' if global_leaderboard else ''}"
+            + f"{period_to_text[period].capitalize()} Leaderboard"
+        )
+
         if winners_only:
-            if timeframe == "yesterday":
-                title = f"{TIMEFRAME_TITLE[timeframe]['title']} Winners ({strftime_with_suffix('{S} %b %Y', datetime.utcnow() - timedelta(days=1))})"
+            title = self._get_winners_title(period)
 
-            elif timeframe == "last_week":
-                title = f"{TIMEFRAME_TITLE[timeframe]['title']} Winners ({strftime_with_suffix('{S} %b %Y', datetime.utcnow() - timedelta(days=7))} - {strftime_with_suffix('{S} %b %Y', datetime.utcnow() - timedelta(days=1))})"
+        return title
 
-        embed = leaderboard_embed(
-            server, page_i, page_count, title, leaderboard)
-        pages.append(embed)
+    def _get_winners_title(self, period: Period) -> str:
+        time_interval_text = ""
 
-    if len(pages) == 0:
-        embed = empty_leaderboard_embed()
-        pages.append(embed)
+        if period == Period.DAY:
+            time_interval_text = strftime_with_suffix(
+                "{S} %b %Y", datetime.now() - timedelta(days=1)
+            )
+            return f"Today's Winners ({time_interval_text})"
 
-    page = page - 1 if page > 0 else 0
-    view = None if winners_only else LeaderboardPagination(
-        user_id, pages, page)
+        elif period == Period.WEEK:
+            start_timestamp = strftime_with_suffix(
+                "{S} %b %Y", datetime.now(UTC) - timedelta(weeks=1)
+            )
+            end_timestamp = strftime_with_suffix(
+                "{S} %b %Y", datetime.now(UTC) - timedelta(days=1)
+            )
+            return f"Last Week's Winners ({start_timestamp} - {end_timestamp})"
 
-    try:
-        await send_message(embed=pages[page], view=view)
-    except discord.errors.Forbidden as e:
-        logger.exception(
-            "file: utils/leaderboards_utils.py ~ display_leaderboard ~ missing permissions on server id %s. Error: %s", server_id, e)
+        elif period == Period.MONTH:
+            start_timestamp = strftime_with_suffix(
+                "{S} %b %Y", (datetime.now(UTC) - timedelta(days=1)).replace(day=1)
+            )
+            end_timestamp = strftime_with_suffix(
+                "{S} %b %Y", datetime.now(UTC) - timedelta(days=1)
+            )
+            return f"Last Month's Winners ({start_timestamp} - {end_timestamp})"
 
+    def _get_rank_emoji(self, place: int, score: int) -> str:
+        if place in RANK_EMOJI and score != 0:
+            return RANK_EMOJI[place]
 
-async def send_leaderboard_winners(server: Server, timeframe: str) -> None:
-    for channel_id in server.channels.winners:
-        channel = client.get_channel(channel_id)
-
-        if not channel or not isinstance(channel, discord.TextChannel):
-            continue
-
-        try:
-            await display_leaderboard(channel.send, server.id, timeframe=timeframe, winners_only=True)
-        except discord.errors.Forbidden as e:
-            logger.exception(
-                "file: utils/leaderboards_utils.py ~ send_leaderboard_winners ~ missing permissions on channel id %s. Error: %s", channel.id, e)
-
-    logger.info(
-        "file: utils/leaderboards_utils.py ~ send_leaderboard_winners ~ %s winners leaderboard sent to channels", timeframe)
+        return f"{place}\."
 
 
-async def update_global_leaderboard() -> None:
-    """Add all users to the global server in case anyone is missing.
-    """
-    async for user in User.all():
-        await Server.find_one(Server.id == 0).update(AddToSet({Server.users: DBRef("users",  user.id)}))
+# async def send_leaderboard_winners(server: Server, period: str) -> None:
+#     for channel_id in server.channels.winners:
+#         channel = client.get_channel(channel_id)
+
+#         if not channel or not isinstance(channel, discord.TextChannel):
+#             continue
+
+#         try:
+#             await display_leaderboard(
+#                 channel.send, server.id, period=period, winners_only=True
+#             )
+#         except discord.errors.Forbidden as e:
+#             logger.exception(
+#                 "file: utils/leaderboards_utils.py ~ send_leaderboard_winners ~ missing permissions on channel id %s. Error: %s",
+#                 channel.id,
+#                 e,
+#             )
+
+#     logger.info(
+#         "file: utils/leaderboards_utils.py ~ send_leaderboard_winners ~ %s winners leaderboard sent to channels",
+#         period,
+#     )
 
 
-class Leaderboard:
-    def __init__(self, periods: Period):
-        self.leaderboard = {}
-
-        for period in periods:
-            self.leaderboard[period] = ValueSortedDict()
-
-    def update_score(self, period: Period, user_id: int, score: int):
-        self.leaderboard[period][user_id] = score
-
-    def clear(self, period: Period):
-        self.leaderboard[period].clear()
+# async def update_global_leaderboard() -> None:
+#     """Add all users to the global server in case anyone is missing."""
+#     async for user in User.all():
+#         await Server.find_one(Server.id == 0).update(AddToSet({Server.users: user}))

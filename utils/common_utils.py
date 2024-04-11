@@ -14,7 +14,7 @@ def to_thread(func: Callable) -> Callable:
     return wrapper
 
 
-def calculate_scores(easy: int = 0, medium: int = 0, hard: int = 0) -> int:
+def convert_to_score(easy: int = 0, medium: int = 0, hard: int = 0) -> int:
     return easy * DIFFICULTY_SCORE['easy'] + medium * DIFFICULTY_SCORE['medium'] + hard * DIFFICULTY_SCORE['hard']
 
 

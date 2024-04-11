@@ -3,9 +3,9 @@ from enum import Enum
 
 
 class Period(Enum):
-    DAILY = "daily"
-    WEEKLY = "weekly"
-    MONTHLY = "monthly"
+    DAY = "day"
+    WEEK = "week"
+    MONTH = "month"
     ALLTIME = "alltime"
 
 
@@ -15,18 +15,23 @@ class DifficultyScore(Enum):
     HARD = 7
 
 
+class Difficulty(Enum):
+    EASY = 1
+    MEDIUM = 2
+    HARD = 3
+    RANDOM = 4
+
+
 class RankEmoji(Enum):
     FIRST = "🥇"
     SECOND = "🥈"
     THIRD = "🥉"
 
 
-class TimeframeTitle(Enum):
-    ALLTIME = {"field": "total_score", "title": "All-Time"}
-    WEEKLY = {"field": "week_score", "title": "Weekly"}
-    DAILY = {"field": "day_score", "title": "Daily"}
-    YESTERDAY = {"field": "yesterday_score", "title": "Today's"}
-    LAST_WEEK = {"field": "last_week_score", "title": "This Week's"}
+class StatsCardOptions(Enum):
+    ACTIVITY = 1
+    HEATMAP = 2
+    # TODO: COMPETITIONS = 3
 
 
 MILESTONE_ROLES = {
@@ -37,7 +42,7 @@ MILESTONE_ROLES = {
     1000: ("Advanced (1000 pts)", discord.Color.orange()),
     2000: ("Expert (2000 pts)", discord.Color.red()),
     4000: ("Master (4000 pts)", discord.Color.purple()),
-    8000: ("Legend (6000 pts)", discord.Color.gold())
+    8000: ("Legend (6000 pts)", discord.Color.gold()),
 }
 
 STREAK_ROLES = {
