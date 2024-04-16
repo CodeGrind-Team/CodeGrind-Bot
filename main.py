@@ -31,7 +31,7 @@ intents.members = True
 
 
 class LoggingFormatter(logging.Formatter):
-    # Colors
+    # Colours
     black = "\x1b[30m"
     red = "\x1b[31m"
     green = "\x1b[32m"
@@ -42,7 +42,7 @@ class LoggingFormatter(logging.Formatter):
     reset = "\x1b[0m"
     bold = "\x1b[1m"
 
-    COLORS = {
+    COLOURS = {
         logging.DEBUG: gray + bold,
         logging.INFO: blue + bold,
         logging.WARNING: yellow + bold,
@@ -51,11 +51,11 @@ class LoggingFormatter(logging.Formatter):
     }
 
     def format(self, record):
-        log_color = self.COLORS[record.levelno]
-        format = "(black){asctime}(reset) (levelcolor){levelname:<8}(reset) (green){name}(reset) {message}"
+        log_colour = self.COLOURS[record.levelno]
+        format = "(black){asctime}(reset) (levelcolour){levelname:<8}(reset) (green){name}(reset) {message}"
         format = format.replace("(black)", self.black + self.bold)
         format = format.replace("(reset)", self.reset)
-        format = format.replace("(levelcolor)", log_color)
+        format = format.replace("(levelcolour)", log_colour)
         format = format.replace("(green)", self.green + self.bold)
         formatter = logging.Formatter(format, "%Y-%m-%d %H:%M:%S", style="{")
         return formatter.format(record)
@@ -140,9 +140,12 @@ class DiscordBot(commands.Bot):
                 activity=discord.Game(name="Under Maintenance"),
             )
 
-        update_stats_on_start = os.getenv("UPDATE_STATS_ON_START", "False") == "True"
-        daily_reset_on_start = os.getenv("DAILY_RESET_ON_START", "False") == "True"
-        weekly_reset_on_start = os.getenv("WEEKLY_RESET_ON_START", "False") == "True"
+        update_stats_on_start = os.getenv(
+            "UPDATE_STATS_ON_START", "False") == "True"
+        daily_reset_on_start = os.getenv(
+            "DAILY_RESET_ON_START", "False") == "True"
+        weekly_reset_on_start = os.getenv(
+            "WEEKLY_RESET_ON_START", "False") == "True"
 
         if update_stats_on_start or daily_reset_on_start or weekly_reset_on_start:
             await send_daily_question_and_update_stats(
@@ -164,7 +167,8 @@ class DiscordBot(commands.Bot):
         await self.init_mongodb_conn(os.getenv("MONGODB_URI"))
         await self.load_cogs()
         await self.init_topgg()
-        self.channel_logger = ChannelLogger(self, int(os.environ["LOGGING_CHANNEL_ID"]))
+        self.channel_logger = ChannelLogger(
+            self, int(os.environ["LOGGING_CHANNEL_ID"]))
 
         send_daily_question_and_update_stats_schedule.start()
 
@@ -203,12 +207,12 @@ class DiscordBot(commands.Bot):
                     {f'{round(hours)} hours' if round(hours) > 0 else ''} \
                         {f'{round(minutes)} minutes' if round(minutes) > 0 else ''} \
                             {f'{round(seconds)} seconds' if round(seconds) > 0 else ''}.",
-                color=0xE02B2B,
+                colour=0xE02B2B,
             )
             await context.send(embed=embed)
         elif isinstance(error, commands.NotOwner):
             embed = discord.Embed(
-                description="You are not the owner of the bot!", color=0xE02B2B
+                description="You are not the owner of the bot!", colour=0xE02B2B
             )
             await context.send(embed=embed)
             if context.guild:
@@ -229,7 +233,7 @@ class DiscordBot(commands.Bot):
                 description="You are missing the permission(s) `"
                 + ", ".join(error.missing_permissions)
                 + "` to execute this command!",
-                color=0xE02B2B,
+                colour=0xE02B2B,
             )
             await context.send(embed=embed)
         elif isinstance(error, commands.BotMissingPermissions):
@@ -237,7 +241,7 @@ class DiscordBot(commands.Bot):
                 description="I am missing the permission(s) `"
                 + ", ".join(error.missing_permissions)
                 + "` to fully perform this command!",
-                color=0xE02B2B,
+                colour=0xE02B2B,
             )
             await context.send(embed=embed)
         elif isinstance(error, commands.MissingRequiredArgument):
@@ -247,7 +251,7 @@ class DiscordBot(commands.Bot):
                 # capital letter in the code and they are the first word in the
                 # error message.
                 description=str(error).capitalize(),
-                color=0xE02B2B,
+                colour=0xE02B2B,
             )
             await context.send(embed=embed)
         else:

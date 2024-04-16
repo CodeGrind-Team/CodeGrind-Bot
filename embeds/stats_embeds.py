@@ -13,7 +13,7 @@ from utils.common_utils import to_thread
 @to_thread
 def stats_embed(leetcode_username: str, display_name: str, extension: str | None = None) -> Tuple[discord.Embed, discord.File | None]:
     embed = discord.Embed(title=display_name,
-                          url=f"https://leetcode.com/{leetcode_username}", color=discord.Color.orange())
+                          url=f"https://leetcode.com/{leetcode_username}", colour=discord.Colour.orange())
 
     width = 500
     height = 200
@@ -60,7 +60,7 @@ def invalid_username_embed() -> discord.Embed:
     embed = discord.Embed(
         title="Error",
         description="The username you entered is invalid",
-        color=discord.Color.red())
+        colour=discord.Colour.red())
 
     return embed
 
@@ -69,6 +69,6 @@ def account_hidden_embed() -> discord.Embed:
     embed = discord.Embed(
         title="Cannot access data",
         description="The chosen user has their LeetCode details hidden as their `include_url` setting is set to OFF",
-        color=discord.Color.red())
+        colour=discord.Colour.red())
 
     return embed

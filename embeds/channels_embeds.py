@@ -6,7 +6,7 @@ import discord
 def channel_receiving_all_notification_types_embed() -> discord.Embed:
     embed = discord.Embed(
         title="Denied",
-        color=discord.Color.red())
+        colour=discord.Colour.red())
 
     embed.description = "This channel is already receiving every type of notification"
 
@@ -16,7 +16,7 @@ def channel_receiving_all_notification_types_embed() -> discord.Embed:
 def channel_receiving_no_notification_types_embed() -> discord.Embed:
     embed = discord.Embed(
         title="Denied",
-        color=discord.Color.red())
+        colour=discord.Colour.red())
 
     embed.description = "This channel is not receiving any type of notification yet"
 
@@ -24,7 +24,7 @@ def channel_receiving_no_notification_types_embed() -> discord.Embed:
 
 
 def set_channels_instructions_embed(channel_name: str, adding: bool) -> discord.Embed:
-    embed = discord.Embed(title="Instructions", color=discord.Color.orange())
+    embed = discord.Embed(title="Instructions", colour=discord.Colour.orange())
 
     embed.description = f"**#{channel_name}** channel can receive regular messages from the bot.\nHere are the message types:"
 
@@ -52,7 +52,7 @@ def set_channels_instructions_embed(channel_name: str, adding: bool) -> discord.
 
 
 def channel_set_embed(channel_name: str, selected_options: List[str]) -> discord.Embed:
-    embed = discord.Embed(title="Success", color=discord.Color.green())
+    embed = discord.Embed(title="Success", colour=discord.Colour.green())
 
     embed.description = f"**#{channel_name}** will now receive **{'**,** '.join(selected_options)}** notifications"
 
@@ -60,7 +60,7 @@ def channel_set_embed(channel_name: str, selected_options: List[str]) -> discord
 
 
 def channel_remove_embed(channel_name: str, selected_options: List[str]) -> discord.Embed:
-    embed = discord.Embed(title="Success", color=discord.Color.green())
+    embed = discord.Embed(title="Success", colour=discord.Colour.green())
 
     embed.description = f"**#{channel_name}** will now stop receiving **{'**,** '.join(selected_options)}** notifications"
 

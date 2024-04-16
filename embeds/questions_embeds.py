@@ -42,16 +42,16 @@ async def question_embed(question_title: str) -> discord.Embed:
 
     premium, question_id, difficulty, title, link, total_accepted, total_submission, ac_rate, question_rating, description, constraints = info
 
-    color_dict = {"Easy": discord.Color.green(),
-                  "Medium": discord.Color.orange(),
-                  "Hard":  discord.Color.red()}
-    color = color_dict[difficulty] if difficulty in color_dict else discord.Color.blue()
+    colour_dict = {"Easy": discord.Colour.green(),
+                   "Medium": discord.Colour.orange(),
+                   "Hard":  discord.Colour.red()}
+    colour = colour_dict[difficulty] if difficulty in colour_dict else discord.Colour.blue()
 
     if premium:
-        return premium_question_embed(question_id, title, link, color)
+        return premium_question_embed(question_id, title, link, colour)
 
     embed = discord.Embed(
-        title=f"{question_id}. {title}", url=link, description=description, color=color)
+        title=f"{question_id}. {title}", url=link, description=description, colour=colour)
 
     embed.add_field(name='Constraints: ', value=constraints, inline=False)
 
@@ -67,9 +67,9 @@ async def question_embed(question_title: str) -> discord.Embed:
     return embed
 
 
-def premium_question_embed(question_id, title, link, color: discord.Color) -> discord.Embed:
+def premium_question_embed(question_id, title, link, colour: discord.Colour) -> discord.Embed:
     embed = discord.Embed(
-        title=f"{question_id}. {title}", url=link, color=color)
+        title=f"{question_id}. {title}", url=link, colour=colour)
 
     embed.description = 'Cannot display premium questions'
 
@@ -78,5 +78,5 @@ def premium_question_embed(question_id, title, link, color: discord.Color) -> di
 
 def question_error_embed() -> discord.Embed:
     embed = discord.Embed(
-        title="Question could not be found", color=discord.Color.red())
+        title="Question could not be found", colour=discord.Colour.red())
     return embed

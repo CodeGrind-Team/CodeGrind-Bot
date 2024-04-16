@@ -40,7 +40,7 @@ class GeneralCog(commands.Cog):
         embed = discord.Embed(
             title="Vote for CodeGrind Bot on top.gg ",
             description="https://top.gg/bot/1059122559066570885/vote",
-            color=discord.Color.purple(),
+            colour=discord.Colour.purple(),
         )
 
         await interaction.followup.send(embed=embed)

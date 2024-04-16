@@ -9,25 +9,25 @@ from beanie.odm.operators.update.array import AddToSet, Pull
 from bson import DBRef
 from discord.ext import commands
 
-from database.models.projections import IdProjection
-from database.models.server_model import Server
 from database.models.preference_model import Preference
-from database.models.user_model import Stats, User
+from database.models.projections import IdProjection
 from database.models.record_model import Record
-from embeds.users_embeds import (
-    account_not_found_embed,
-    account_permanently_deleted_embed,
-    account_removed_embed,
-    connect_account_instructions_embed,
-    profile_added_embed,
-    synced_existing_user_embed,
-    user_already_added_in_server_embed,
-)
-from middleware import defer_interaction, ensure_server_document, track_analytics
+from database.models.server_model import Server
+from database.models.user_model import Stats, User
+from embeds.users_embeds import (account_not_found_embed,
+                                 account_permanently_deleted_embed,
+                                 account_removed_embed,
+                                 connect_account_instructions_embed,
+                                 profile_added_embed,
+                                 synced_existing_user_embed,
+                                 user_already_added_in_server_embed)
+from middleware import (defer_interaction, ensure_server_document,
+                        track_analytics)
 from middleware.database_middleware import update_user_preferences_prompt
 from utils.common_utils import convert_to_score
-from utils.questions_utils import get_problems_solved_and_rank
+from utils.questions_utils import UserStats, get_problems_solved_and_rank
 from utils.roles_utils import give_verified_role
+from views.register_modal import RegisterModal
 
 
 class UsersCog(commands.Cog):
@@ -40,7 +40,7 @@ class UsersCog(commands.Cog):
     @defer_interaction(ephemeral_default=True)
     @ensure_server_document
     @track_analytics
-    async def add(self, interaction: discord.Interaction, leetcode_id: str) -> None:
+    async def add(self, interaction: discord.Interaction) -> None:
         server_id = interaction.guild.id
         user_id = interaction.user.id
 
@@ -49,7 +49,10 @@ class UsersCog(commands.Cog):
         if user:
             self._login(interaction.followup.send, user, server_id)
         else:
-            self._register(interaction.followup.send, user, leetcode_id)
+            register_modal = RegisterModal()
+            await interaction.response.send_modal(register_modal)
+            self._register(interaction.followup.send,
+                           user, register_modal.answer)
 
         await update_user_preferences_prompt(interaction)
 
@@ -130,10 +133,25 @@ class UsersCog(commands.Cog):
         server_id: int,
         user_display_name: str,
     ):
+        """
+        Logs in a user to a server if user already exists.
+
+        :param send_message: The webhook to send messages.
+        :type send_message: discord.Webhook
+        :param user: The user to log in.
+        :type user: discord.User
+        :param server_id: The ID of the server to log the user into.
+        :type server_id: int
+        :param user_display_name: The display name of the user.
+        :type user_display_name: str
+
+        :return: None
+        """
         await give_verified_role(user, server_id)
 
         preference = await Preference.find_one(
-            Preference.user == user, Preference.server == DBRef("servers", server_id)
+            Preference.user == user, Preference.server == DBRef(
+                "servers", server_id)
         )
 
         if preference:
@@ -161,7 +179,8 @@ class UsersCog(commands.Cog):
         # Generate a random string for account linking
         generated_string = "".join(random.choices(string.ascii_letters, k=8))
 
-        embed = connect_account_instructions_embed(generated_string, leetcode_id)
+        embed = connect_account_instructions_embed(
+            generated_string, leetcode_id)
         await send_message(embed=embed)
 
         matched = await self._linking_process(leetcode_id)
@@ -173,19 +192,12 @@ class UsersCog(commands.Cog):
             if not stats:
                 return
 
-            # TODO: dataclass
-            rank = stats["profile"]["ranking"]
-            easy = stats["submitStatsGlobal"]["acSubmissionNum"]["Easy"]
-            medium = stats["submitStatsGlobal"]["acSubmissionNum"]["Medium"]
-            hard = stats["submitStatsGlobal"]["acSubmissionNum"]["Hard"]
-
-            total_score = convert_to_score(easy, medium, hard)
-
             user = User(
                 id=user.id,
                 leetcode_id=leetcode_id,
-                rank=rank,
-                stats=Stats(easy=easy, medium=medium, hard=hard),
+                stats=Stats(easy=stats.submissions.easy,
+                            medium=stats.submissions.medium,
+                            hard=stats.submissions.hard)
             )
 
             record = Record()

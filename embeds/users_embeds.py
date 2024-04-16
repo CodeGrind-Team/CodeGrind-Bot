@@ -7,7 +7,7 @@ from views.user_settings_view import EmbedAndField
 
 def synced_existing_user_embed() -> discord.Embed:
     embed = discord.Embed(title="Account synced",
-                          color=discord.Color.green())
+                          colour=discord.Colour.green())
 
     embed.description = "Your account has been synced and your preferences for this server have been saved successefully"
 
@@ -16,7 +16,7 @@ def synced_existing_user_embed() -> discord.Embed:
 
 def user_already_added_in_server_embed() -> discord.Embed:
     embed = discord.Embed(title="Account already added to this server",
-                          color=discord.Color.blurple())
+                          colour=discord.Colour.blurple())
 
     embed.description = "You have already added your account to this server"
 
@@ -25,7 +25,7 @@ def user_already_added_in_server_embed() -> discord.Embed:
 
 def connect_account_instructions_embed(generated_string: str, leetcode_username: str) -> discord.Embed:
     embed = discord.Embed(title="Instructions",
-                          color=discord.Color.orange())
+                          colour=discord.Colour.orange())
     embed.description = "Please temorarily change your LeetCode Account **Name** to the following generated sequence:"
 
     embed.add_field(name="Generated Sequence",
@@ -50,7 +50,7 @@ def connect_account_instructions_embed(generated_string: str, leetcode_username:
 
 def profile_added_embed(leetcode_username: str, added: bool = True) -> discord.Embed:
     embed = discord.Embed(title=f"LeetCode account {'' if added else 'not '}added",
-                          color=discord.Color.green() if added else discord.Color.red())
+                          colour=discord.Colour.green() if added else discord.Colour.red())
     embed.description = f"**LeetCode ID**: {leetcode_username}\n\nYou can now revert or change your LeetCode Name to whatever you desire."
 
     return embed
@@ -58,14 +58,14 @@ def profile_added_embed(leetcode_username: str, added: bool = True) -> discord.E
 
 def account_removed_embed() -> discord.Embed:
     embed = discord.Embed(title="Your account has been removed from this server",
-                          color=discord.Color.green())
+                          colour=discord.Colour.green())
 
     return embed
 
 
 def account_permanently_deleted_embed() -> discord.Embed:
     embed = discord.Embed(title="Your account has been permanently deleted",
-                          color=discord.Color.green())
+                          colour=discord.Colour.green())
 
     return embed
 
@@ -73,7 +73,7 @@ def account_permanently_deleted_embed() -> discord.Embed:
 def account_not_found_embed() -> discord.Embed:
     embed = discord.Embed(
         title="Account not found",
-        color=discord.Color.red())
+        colour=discord.Colour.red())
 
     embed.description = "The user hasn't linked their LeetCode account to this server yet! To connect to the bot use </add:1115756888185917542>"
 
@@ -83,22 +83,22 @@ def account_not_found_embed() -> discord.Embed:
 def preferences_update_prompt_embeds() -> Tuple[List[EmbedAndField], discord.Embed]:
     pages = [
         EmbedAndField(discord.Embed(title="Update your profile preferences",
-                                    description="Do you want your LeetCode profile url be visible on the leaderboards in this server?", color=discord.Color.teal()),
+                                    description="Do you want your LeetCode profile url be visible on the leaderboards in this server?", colour=discord.Colour.teal()),
                       "url",
                       False),
 
         EmbedAndField(discord.Embed(title="Update your profile preferences",
-                                    description="Do you want your LeetCode profile url be visible on the Global leaderboards?", color=discord.Color.teal()),
+                                    description="Do you want your LeetCode profile url be visible on the Global leaderboards?", colour=discord.Colour.teal()),
                       "url",
                       True),
 
         EmbedAndField(discord.Embed(title="Update your profile preferences",
-                                    description="Do you want your Discord username be visible on the Global leaderboards?", color=discord.Color.teal()),
+                                    description="Do you want your Discord username be visible on the Global leaderboards?", colour=discord.Colour.teal()),
                       "visible",
                       True)
     ]
 
     end_embed = discord.Embed(
-        title="Successfully updated your profile preferences", color=discord.Color.green())
+        title="Successfully updated your profile preferences", colour=discord.Colour.green())
 
     return pages, end_embed

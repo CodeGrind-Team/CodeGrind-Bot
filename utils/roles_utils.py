@@ -10,7 +10,7 @@ async def create_roles_from_string(guild: discord.Guild, role: str):
 
     if not role_found:
         try:
-            await guild.create_role(name=role, color=discord.Color.light_gray(),
+            await guild.create_role(name=role, colour=discord.Colour.light_gray(),
                                     hoist=False, mentionable=False)
         except discord.errors.Forbidden as e:
             logger.exception(
@@ -19,11 +19,11 @@ async def create_roles_from_string(guild: discord.Guild, role: str):
 
 async def create_roles_from_dict(guild: discord.Guild, roles: dict):
     for role in roles:
-        role_name, role_color = roles[role]
+        role_name, role_colour = roles[role]
         role_found = discord.utils.get(guild.roles, name=role_name)
         if not role_found:
             try:
-                await guild.create_role(name=role_name, color=role_color,
+                await guild.create_role(name=role_name, colour=role_colour,
                                         hoist=False, mentionable=False)
             except discord.errors.Forbidden as e:
                 logger.exception(

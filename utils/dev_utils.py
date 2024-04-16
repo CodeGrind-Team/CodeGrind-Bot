@@ -22,26 +22,26 @@ class ChannelLogger:
             message += f". Rate limited {self.rate_limits} times"
             self.rate_limits = 0
 
-        await self.log(message, discord.Color.blue())
+        await self.log(message, discord.Colour.blue())
 
         if include_error_counts:
             await self.WARNING(f"Forbidden {self.forbidden_count} times.")
             self.forbidden_count = 0
 
     async def warning(self, message: str) -> None:
-        await self.log(message, discord.Color.orange())
+        await self.log(message, discord.Colour.orange())
 
     async def error(
         self,
         message: str,
     ) -> None:
-        await self.log(message, discord.Color.red(), True)
+        await self.log(message, discord.Colour.red(), True)
 
     async def exception(self, message: str) -> None:
-        await self.log(message, discord.Color.red(), True)
+        await self.log(message, discord.Colour.red(), True)
 
-    async def log(self, message: str, color: discord.Color, silent: bool) -> None:
-        embed = discord.Embed(color=color, description=message)
+    async def log(self, message: str, colour: discord.Colour, silent: bool) -> None:
+        embed = discord.Embed(colour=colour, description=message)
         embed.set_footer(text=datetime.now(UTC).strftime("%H:%M:%S.%f"))
 
         try:

@@ -10,14 +10,14 @@ def empty_leaderboard_embed() -> discord.Embed:
     embed = discord.Embed(
         title=f"Leaderboard is empty",
         description="No one has added their LeetCode username yet",
-        color=discord.Color.red())
+        colour=discord.Colour.red())
 
     return embed
 
 
 def leaderboard_embed(server: Server, page_i: int, page_count: int, title: str, leaderboard: str) -> discord.Embed:
     embed = discord.Embed(title=title,
-                          color=discord.Color.yellow())
+                          colour=discord.Colour.yellow())
 
     embed.description = "\n".join(leaderboard)
 
