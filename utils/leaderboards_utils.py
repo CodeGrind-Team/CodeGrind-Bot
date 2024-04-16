@@ -1,17 +1,17 @@
 from abc import ABC, abstractmethod
 from datetime import UTC, datetime, timedelta
-from typing import Dict, Set, Tuple, List
+from typing import Dict, List, Set, Tuple
 
 import discord
 from sortedcollections import ValueSortedDict
 
-from bot_globals import RANK_EMOJI, logger
-from constants import Period
+from constants import Period, RankEmoji
 from database.models.preference_model import Preference
-from database.models.record_model import Record
+from database.models.record_model import Record, MetaRecord
 from database.models.server_model import Server
 from database.models.user_model import User
-from embeds.leaderboards_embeds import empty_leaderboard_embed, leaderboard_embed
+from embeds.leaderboards_embeds import (empty_leaderboard_embed,
+                                        leaderboard_embed)
 from utils.common_utils import convert_to_score, strftime_with_suffix
 from views.leaderboard_view import LeaderboardPagination
 
@@ -54,7 +54,8 @@ class DailyLeaderboard(Leaderboard):
         if not record:
             return current_score
 
-        score_difference = current_score - convert_to_score(**record.submissions)
+        score_difference = current_score - \
+            convert_to_score(**record.submissions)
 
         return score_difference
 
@@ -69,13 +70,14 @@ class WeeklyLeaderboard(Leaderboard):
         ) - timedelta(days=datetime.now().weekday())
 
         record = await Record.find_one(
-            Record.user == user, Record.timestamp == timestamp
+            Record.user == user, Record.timestamp >= timestamp, sort=timestamp
         )
 
         if not record:
             return current_score
 
-        score_difference = current_score - convert_to_score(**record.submissions)
+        score_difference = current_score - \
+            convert_to_score(**record.submissions)
 
         return score_difference
 
@@ -90,13 +92,14 @@ class MonthlyLeaderboard(Leaderboard):
         )
 
         record = await Record.find_one(
-            Record.user == user, Record.timestamp == timestamp
+            Record.user == user, Record.timestamp >= timestamp, sort=timestamp
         )
 
         if not record:
             return current_score
 
-        score_difference = current_score - convert_to_score(**record.submissions)
+        score_difference = current_score - \
+            convert_to_score(**record.submissions)
 
         return score_difference
 
@@ -190,7 +193,8 @@ class LeaderboardManager:
 
         page = page - 1 if page > 0 else 0
         view = (
-            None if winners_only else LeaderboardPagination(author_user_id, pages, page)
+            None if winners_only else LeaderboardPagination(
+                author_user_id, pages, page)
         )
 
         return pages[page], view
@@ -220,7 +224,7 @@ class LeaderboardManager:
         leaderboard = []
 
         for user in server.users[
-            page_index * users_per_page : page_index * users_per_page + users_per_page
+            page_index * users_per_page: page_index * users_per_page + users_per_page
         ]:
 
             profile_link = f"https://leetcode.com/{user.leetcode_username}"
@@ -259,7 +263,8 @@ class LeaderboardManager:
         title = self._get_title(period, winners_only, global_leaderboard)
 
         return (
-            leaderboard_embed(server, page_index, num_pages, title, leaderboard),
+            leaderboard_embed(server, page_index, num_pages,
+                              title, leaderboard),
             place,
             prev_score,
         )
@@ -304,7 +309,8 @@ class LeaderboardManager:
 
         elif period == Period.MONTH:
             start_timestamp = strftime_with_suffix(
-                "{S} %b %Y", (datetime.now(UTC) - timedelta(days=1)).replace(day=1)
+                "{S} %b %Y", (datetime.now(UTC) -
+                              timedelta(days=1)).replace(day=1)
             )
             end_timestamp = strftime_with_suffix(
                 "{S} %b %Y", datetime.now(UTC) - timedelta(days=1)
@@ -312,8 +318,14 @@ class LeaderboardManager:
             return f"Last Month's Winners ({start_timestamp} - {end_timestamp})"
 
     def _get_rank_emoji(self, place: int, score: int) -> str:
-        if place in RANK_EMOJI and score != 0:
-            return RANK_EMOJI[place]
+        if score != 0:
+            match place:
+                case 1:
+                    return RankEmoji.FIRST
+                case 2:
+                    return RankEmoji.SECOND
+                case 3:
+                    return RankEmoji.THIRD
 
         return f"{place}\."
 
