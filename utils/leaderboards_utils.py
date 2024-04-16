@@ -7,7 +7,7 @@ from sortedcollections import ValueSortedDict
 
 from constants import Period, RankEmoji
 from database.models.preference_model import Preference
-from database.models.record_model import Record, MetaRecord
+from database.models.record_model import Record
 from database.models.server_model import Server
 from database.models.user_model import User
 from embeds.leaderboards_embeds import (empty_leaderboard_embed,

@@ -1,19 +1,13 @@
 from datetime import datetime
 
 from beanie import Document, Link, TimeSeriesConfig
-from pydantic import Field, BaseModel
 
 from .user_model import Submissions, User
 
 
-class MetaRecord(BaseModel):
-    user: Link[User]
-    period: str
-
-
 class Record(Document):
-    timestamp: datetime = Field(default_factory=datetime.now)
-    meta: MetaRecord
+    timestamp: datetime
+    user: Link[User]
     submissions: Submissions
 
     class Settings:
@@ -22,7 +16,7 @@ class Record(Document):
         use_state_management = True
         timeseries = TimeSeriesConfig(
             time_field="timestamp",
-            meta_field="meta",
+            meta_field="user",
             bucket_max_span_seconds=86400,
             bucket_rounding_seconds=86400,
         )
