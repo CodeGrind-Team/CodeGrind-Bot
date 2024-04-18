@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
 from datetime import UTC, datetime, timedelta
-from typing import Dict, List, Set, Tuple
 
 import discord
 from sortedcollections import ValueSortedDict
@@ -21,26 +20,51 @@ class Leaderboard(ABC):
         self.leaderboard = ValueSortedDict()
 
     def _get_score(self, user_id: int) -> int:
-        """Get the score of a user for a leaderboard."""
+        """
+        Get the score of a user for a leaderboard.
+
+        :param user_id: The user's ID.
+
+        :return: The user's score.
+        """
         return self.leaderboard[user_id]
 
     def _update_score(self, user_id: int, score: int) -> None:
-        """Update the score of a user for the leaderboard."""
+        """
+        Update the score of a user for the leaderboard.
+
+        :param user_id: The user's ID.
+        :param score: The user's score.
+        """
         self.leaderboard[user_id] = score
 
     def clear(self) -> None:
-        """Clear a leaderboard."""
+        """
+        Clear a leaderboard.
+        """
         self.leaderboard.clear()
 
     @abstractmethod
     async def calculate_score(self, user: User) -> int:
-        """Calculate the user's score."""
+        """
+        Calculate the user's score.
+
+        :param user: The user.
+
+        :return: The user's score.
+        """
         pass
 
 
 class DailyLeaderboard(Leaderboard):
     async def calculate_score(self, user: User) -> int:
-        """Calculate the user's score for the day."""
+        """
+        Calculate the user's score for the day.
+
+        :param user: The user.
+
+        :return: The user's score for the day.
+        """
         current_score = convert_to_score(**user.stats.submissions)
 
         timestamp = datetime.now().replace(
@@ -62,7 +86,13 @@ class DailyLeaderboard(Leaderboard):
 
 class WeeklyLeaderboard(Leaderboard):
     async def calculate_score(self, user: User) -> int:
-        """Calculate the user's score for the week."""
+        """
+        Calculate the user's score for the week.
+
+        :param user: The user.
+
+        :return: The user's score for the week.
+        """
         current_score = convert_to_score(**user.stats.submissions)
 
         timestamp = datetime.now().replace(
@@ -84,7 +114,13 @@ class WeeklyLeaderboard(Leaderboard):
 
 class MonthlyLeaderboard(Leaderboard):
     async def calculate_score(self, user: User) -> int:
-        """Calculate the user's score for the month."""
+        """
+        Calculate the user's score for the month.
+
+        :param user: The user.
+
+        :return: The user's score for the month.
+        """
         current_score = convert_to_score(**user.stats.submissions)
 
         timestamp = datetime.now().replace(
@@ -106,22 +142,31 @@ class MonthlyLeaderboard(Leaderboard):
 
 class AllTimeLeaderboard(Leaderboard):
     async def calculate_score(self, user: User) -> int:
-        """Calculate the user's score for all time."""
+        """
+        Calculate the user's total score.
+
+        :param user: The user.
+
+        :return: The user's total score.
+        """
         current_score = convert_to_score(**user.stats.submissions)
         return current_score
 
 
 class Leaderboards:
     def __init__(self) -> None:
-        """Initialize the Leaderboards object."""
-        self.leaderboards: Dict[Period, Leaderboard] = {
+        self.leaderboards: dict[Period, Leaderboard] = {
             Period.WEEK: WeeklyLeaderboard(),
             Period.MONTH: MonthlyLeaderboard(),
             Period.ALLTIME: AllTimeLeaderboard(),
         }
 
-    async def update_scores(self, periods: Set[Period]) -> None:
-        """Update scores for all users for selected periods."""
+    async def update_scores(self, periods: set[Period]) -> None:
+        """
+        Update scores for all users for selected periods.
+
+        :param periods: The periods to update scores for.
+        """
         async for user in User.all():
             for period in periods:
                 leaderboard = self.leaderboards[period]
@@ -130,17 +175,30 @@ class Leaderboards:
                 )
 
     def get_score(self, period: Period, user_id: int) -> int:
-        """Get the score of a user for a specific period."""
+        """
+        Get the score of a user for a specific period.
+
+        :param period: The period.
+        :param user_id: The user's ID.
+
+        :return: The user's score.
+        """
         leaderboard = self.leaderboards[period]
         return leaderboard._get_score(user_id)
 
     def clear(self, period: Period) -> None:
-        """Clear a specific leaderboard."""
+        """
+        Clear a specific leaderboard.
+
+        :param period: The period.
+        """
         leaderboard = self.leaderboards[period]
         leaderboard.clear()
 
     def clear_all(self) -> None:
-        """Clear all leaderboards."""
+        """
+        Clear all leaderboards.
+        """
         for leaderboard in self.leaderboards.values():
             leaderboard.clear()
 
@@ -160,14 +218,21 @@ class LeaderboardManager:
         global_leaderboard: bool = False,
         page: int = 1,
         users_per_page: int = 10,
-    ) -> Tuple[discord.Embed, discord.ui.View]:
-        logger.info(
-            "file: cogs/leaderboards.py ~ display_leaderboard\
-                    ~ run ~ guild id: %s",
-            server.id,
-        )
+    ) -> tuple[discord.Embed, discord.ui.View]:
+        """
+        Generate a leaderboard embed.
 
-        pages: List[discord.Embed] = []
+        :param period: The period.
+        :param server: The server.
+        :param author_user_id: The author's user ID.
+        :param winners_only: Whether to display only the winners.
+        :param global_leaderboard: Whether to display the global leaderboard.
+        :param page: The page number.
+        :param users_per_page: The number of users per page.
+
+        :return: The leaderboard embed and view.
+        """
+        pages: list[discord.Embed] = []
         num_pages = -(-len(server.users) // users_per_page)
 
         place = 0
@@ -220,7 +285,23 @@ class LeaderboardManager:
         num_pages: int,
         place: int,
         prev_score: float,
-    ) -> Tuple[discord.Embed, int, float]:
+    ) -> tuple[discord.Embed, int, float]:
+        """
+        Build a leaderboard page.
+
+        :param period: The period.
+        :param server: The server.
+        :param winners_only: Whether to display only the winners.
+        :param global_leaderboard: Whether to display the global leaderboard.
+        :param page_index: The page index.
+        :param users_per_page: The number of users per page.
+        :param num_pages: The number of pages.
+        :param place: The place.
+        :param prev_score: The previous score.
+
+        :return: The leaderboard page, place, and previous score.
+        """
+
         leaderboard = []
 
         for user in server.users[
@@ -272,6 +353,15 @@ class LeaderboardManager:
     def _get_title(
         self, period: Period, winners_only: bool, global_leaderboard: bool
     ) -> str:
+        """
+        Get the title of the leaderboard.
+
+        :param period: The period.
+        :param winners_only: Whether to display only the winners.
+        :param global_leaderboard: Whether to display the global leaderboard.
+
+        :return: The title of the leaderboard.
+        """
         period_to_text = {
             Period.DAY: "daily",
             Period.WEEK: "weekly",
@@ -290,6 +380,13 @@ class LeaderboardManager:
         return title
 
     def _get_winners_title(self, period: Period) -> str:
+        """
+        Get the title of the winners leaderboard.
+
+        :param period: The period.
+
+        :return: The title of the winners leaderboard.
+        """
         time_interval_text = ""
 
         if period == Period.DAY:
@@ -318,6 +415,14 @@ class LeaderboardManager:
             return f"Last Month's Winners ({start_timestamp} - {end_timestamp})"
 
     def _get_rank_emoji(self, place: int, score: int) -> str:
+        """
+        Get the rank emoji for a user.
+
+        :param place: The user's place.
+        :param score: The user's score.
+
+        :return: The rank emoji.
+        """
         if score != 0:
             match place:
                 case 1:
@@ -330,6 +435,7 @@ class LeaderboardManager:
         return f"{place}\."
 
 
+# ! check this
 # async def send_leaderboard_winners(server: Server, period: str) -> None:
 #     for channel_id in server.channels.winners:
 #         channel = client.get_channel(channel_id)
