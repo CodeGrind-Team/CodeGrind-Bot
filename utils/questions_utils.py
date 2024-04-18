@@ -8,9 +8,10 @@ import aiohttp
 import backoff
 import markdownify
 import requests
+from discord.ext import commands
 
 from utils.common_utils import to_thread
-from utils.ratings_utils import get_rating_data
+from utils.ratings_utils import fetch_rating_data
 
 URL = 'https://leetcode.com/graphql'
 HEADERS = {
@@ -59,18 +60,77 @@ class RateLimitReached(Exception):
         super().__init__("ExceptionWithStatusCode. Error: 429. Rate Limited.")
 
 
+def _parse_content(content: str) -> tuple[str, str]:
+    """
+    Parses the content of a LeetCode question to extract description and constraints.
+
+    :param content: The HTML content of the question.
+
+    :return: A tuple containing the description and constraints of the question,
+             or None if not found.
+    """
+    example_position = content.find(
+        '<strong class="example">')
+    constraint_query_string = '<p><strong>Constraints:</strong></p>'
+    constraints_position = content.find(constraint_query_string)
+
+    description = _html_to_markdown(content[:example_position])
+    constraints = _html_to_markdown(
+        content[constraints_position + len(constraint_query_string):])
+
+    return description, constraints
+
+
+def _html_to_markdown(html: str) -> str:
+    """
+    Converts HTML content to Markdown.
+
+    :param html: The HTML content to convert to Markdown.
+
+    :return: The Markdown content.
+    """
+    # Remove all bold, italics, and underlines from code blocks as markdowns doesn't
+    # support this.
+    tags_to_remove = ['<b>', '</b>', '<em>', '</em>',
+                      '<strong>', '</strong>', '<u>', '</u>']
+
+    for tag in tags_to_remove:
+        html = html.replace(tag, '')
+
+    html = re.sub(r'<(code|pre)>(.*?)</\1>', '', html, flags=re.DOTALL)
+
+    subsitutions = [
+        (r'<sup>', r'^'),
+        (r'</sup>', r''),
+        # Replace image tag with the url src of that image
+        (r'<img.*?src="(.*?)".*?>', r'\1'),
+        (r'<style.*?>.*?</style>', r''),
+        (r'&nbsp;', r' ')
+    ]
+
+    for pattern, replacement in subsitutions:
+        html = re.sub(pattern, replacement, html, flags=re.DOTALL)
+
+    markdown = markdownify.markdownify(html, heading_style="ATX")
+
+    # Remove unnecessary extra lines
+    markdown = re.sub(r'\n\n', '\n', markdown)
+
+    return markdown
+
+
 @to_thread
-def get_random_question(difficulty: str) -> str | None:
+def fetch_random_question(bot: commands.Bot, difficulty: str) -> str | None:
     """
     Fetches a random LeetCode question title slug based on the given difficulty.
 
-    :param difficulty: The difficulty level of the question
-                       ("easy", "medium", or "hard").
+    :param difficulty: The difficulty level of the question ("easy", "medium", or "hard"
+    ).
 
     :return: The title slug of a randomly selected question, or None if an error occurs.
     """
-    logger.info(
-        "file: utils/questions_utils.py ~ get_random_question ~ run")
+    bot.logger.info(
+        "file: utils/questions_utils.py ~ fetch_random_question ~ run")
 
     try:
         response = requests.get(
@@ -92,14 +152,15 @@ def get_random_question(difficulty: str) -> str | None:
         return question['stat']['question__title_slug']
 
     except requests.RequestException as e:
-        logger.exception(
-            "file: cogs/questions.py ~ An error occurred while trying to get the question from LeetCode: %s", e)
+        bot.logger.exception(
+            "file: cogs/questions.py ~ An error occurred while trying to get the \
+                question from LeetCode: %s", e)
 
         return
 
 
 @to_thread
-def get_daily_question() -> str | None:
+def fetch_daily_question(bot: commands.Bot) -> str | None:
     """
     Fetches the title slug of the active daily coding challenge question.
 
@@ -107,8 +168,8 @@ def get_daily_question() -> str | None:
              or None if an error occurs.
     """
     # ! Use aiohttp
-    logger.info(
-        "file: utils/questions_utils.py ~ get_daily_question ~ run")
+    bot.logger.info(
+        "file: utils/questions_utils.py ~ fetch_daily_question ~ run")
 
     data = {
         'operationName': 'daily',
@@ -132,14 +193,14 @@ def get_daily_question() -> str | None:
         return response_data['data']['challenge']['question']['titleSlug']
 
     except requests.RequestException as e:
-        logger.exception(
+        bot.logger.exception(
             "file: cogs/questions.py ~ Daily problem could not be retrieved: %s", e)
 
         return
 
 
 @to_thread
-def search_question(text: str) -> str | None:
+def search_question(bot: commands.Bot, text: str) -> str | None:
     """
     Searches for a LeetCode question title slug based on the provided text.
 
@@ -148,7 +209,7 @@ def search_question(text: str) -> str | None:
     :return: The title slug of the matched question, or None if no match is found or an
              error occurs.
     """
-    logger.info(
+    bot.logger.info(
         "file: utils/questions_utils.py ~ search_question ~ run")
 
     data = {
@@ -197,14 +258,17 @@ def search_question(text: str) -> str | None:
         return question_title_slug
 
     except requests.RequestException as e:
-        logger.exception(
-            "file: embeds/question_embeds.py ~ Daily problem could not be retrieved: %s", e)
+        bot.logger.exception(
+            "file: embeds/question_embeds.py ~ Daily problem could not be retrieved: \
+                %s", e)
 
         return
 
 
 @to_thread
-def get_question_info_from_title(question_title_slug: str) -> QuestionInfo | None:
+def fetch_question_info(
+        bot: commands.Bot,
+        question_title_slug: str) -> QuestionInfo | None:
     """
     Retrieves information about a LeetCode question based on its title slug.
 
@@ -214,8 +278,9 @@ def get_question_info_from_title(question_title_slug: str) -> QuestionInfo | Non
              question is found.
     """
 
-    logger.info(
-        "file: utils/questions_utils.py ~ get_question_info_from_title ~ run ~ question_title_slug: %s", question_title_slug)
+    bot.logger.info(
+        "file: utils/questions_utils.py ~ fetch_question_info ~ run ~ \
+            question_title_slug: %s", question_title_slug)
 
     # Get question info
     data = {
@@ -247,8 +312,8 @@ def get_question_info_from_title(question_title_slug: str) -> QuestionInfo | Non
         question = response_data.get('data', {}).get('question')
 
         if not question:
-            logger.warning("No question data found for %s",
-                           question_title_slug)
+            bot.logger.warning("No question data found for %s",
+                               question_title_slug)
             return None
 
         question_id = question['questionFrontendId']
@@ -266,12 +331,12 @@ def get_question_info_from_title(question_title_slug: str) -> QuestionInfo | Non
         # Get question rating
         question_rating = None
         if not is_paid_only:
-            rating_data = get_rating_data(title)
+            rating_data = fetch_rating_data(title)
             if rating_data:
                 question_rating = int(rating_data['rating'])
 
         # Parse content for description and constraints
-        description, constraints = parse_content(content)
+        description, constraints = _parse_content(content)
 
         return QuestionInfo(premium=is_paid_only,
                             question_id=question_id,
@@ -286,82 +351,29 @@ def get_question_info_from_title(question_title_slug: str) -> QuestionInfo | Non
                             constraints=constraints)
 
     except requests.RequestException as e:
-        logger.exception(
+        bot.logger.exception(
             "file: cogs/questions.py ~ Question could not be retrieved: %s", e)
         return
 
 
-def parse_content(content: str) -> tuple[str, str]:
-    """
-    Parses the content of a LeetCode question to extract description and constraints.
-
-    :param content: The HTML content of the question.
-
-    :return: A tuple containing the description and constraints of the question,
-             or None if not found.
-    """
-    example_position = content.find(
-        '<strong class="example">')
-    constraint_query_string = '<p><strong>Constraints:</strong></p>'
-    constraints_position = content.find(constraint_query_string)
-
-    description = html_to_markdown(content[:example_position])
-    constraints = html_to_markdown(
-        content[constraints_position + len(constraint_query_string):])
-
-    return description, constraints
-
-
-def html_to_markdown(html: str) -> str:
-    """
-    Converts HTML content to Markdown.
-
-    :param html: The HTML content to convert to Markdown.
-
-    :return: The Markdown content.
-    """
-    # Remove all bold, italics, and underlines from code blocks as markdowns doesn't
-    # support this.
-    html = re.sub(r'(<code>|<pre>)(.*?)(<[/]code>|<[/]pre>)',
-                  lambda m: m.group(0).replace('<b>', '').replace('</b>', '').replace(
-                      '<em>', '').replace('</em>', '').replace('<strong>', '').replace('</strong>', '').replace('<u>', '').replace('</u>', ''),
-                  html,
-                  flags=re.DOTALL)
-
-    subsitutions = [
-        (r'<sup>', r'^'),
-        (r'</sup>', r''),
-        # Replace image tag with the url src of that image
-        (r'<img.*?src="(.*?)".*?>', r'\1'),
-        (r'<style.*?>.*?</style>', r''),
-        (r'&nbsp;', r' ')
-    ]
-
-    for pattern, replacement in subsitutions:
-        html = re.sub(pattern, replacement, html, flags=re.DOTALL)
-
-    markdown = markdownify.markdownify(html, heading_style="ATX")
-
-    # Remove unnecessary extra lines
-    markdown = re.sub(r'\n\n', '\n', markdown)
-
-    return markdown
-
-
 @backoff.on_exception(backoff.expo, RateLimitReached)
-async def get_problems_solved_and_rank(client_session: aiohttp.ClientSession,
-                                       leetcode_username: str) -> UserStats | None:
+async def fetch_problems_solved_and_rank(
+        bot: commands.Bot,
+        client_session: aiohttp.ClientSession,
+        leetcode_username: str) -> UserStats | None:
     """
     Retrieves the statistics of problems solved and rank of a LeetCode user.
 
     :param client_session: The aiohttp ClientSession to use for making requests.
     :param leetcode_username: The LeetCode username.
 
-    :return: Statistics of problems solved and rank of the user, or None if an error occurs.
+    :return: Statistics of problems solved and rank of the user, or None if an error
+    occurs.
     """
 
-    logger.info(
-        "file: utils/questions_utils.py ~ get_problems_solved_and_rank ~ run ~ leetcode_username: %s", leetcode_username)
+    bot.logger.info(
+        "file: utils/questions_utils.py ~ fetch_problems_solved_and_rank ~ run ~ \
+            leetcode_username: %s", leetcode_username)
 
     data = {
         'operationName': 'getProblemsSolvedAndRank',
@@ -383,8 +395,9 @@ async def get_problems_solved_and_rank(client_session: aiohttp.ClientSession,
         'variables': {'username': leetcode_username}
     }
 
-    logger.info(
-        "file: utils/questions_utils.py ~ get_problems_solved_and_rank ~ data requesting ~ https://leetcode.com/%s", leetcode_username)
+    bot.logger.info(
+        "file: utils/questions_utils.py ~ fetch_problems_solved_and_rank ~ data \
+            requesting ~ https://leetcode.com/%s", leetcode_username)
 
     async with semaphore:
         try:
@@ -395,28 +408,37 @@ async def get_problems_solved_and_rank(client_session: aiohttp.ClientSession,
             await asyncio.sleep(random.random())
 
         except aiohttp.ClientError as e:
-            logger.exception(
-                "file: utils/questions_utils.py ~ get_problems_solved_and_rank ~ \
+            bot.logger.exception(
+                "file: utils/questions_utils.py ~ fetch_problems_solved_and_rank ~ \
                     exception: %s", e)
 
             return
 
     if response.status == 429:
         # Rate limit reached
-        logger.exception(
-            "file: utils/questions_utils.py ~ get_problems_solved_and_rank ~ LeetCode username: %s ~ Error code: %s", leetcode_username, response.status)
+        bot.logger.exception(
+            "file: utils/questions_utils.py ~ fetch_problems_solved_and_rank ~ \
+                LeetCode username: % s ~ Error code: % s",
+            leetcode_username,
+            response.status)
 
         bot.channel_logger.rate_limited()
         raise RateLimitReached()
     elif response.status == 403:
         # Forbidden access
-        logger.exception(
-            "file: utils/questions_utils.py ~ get_problems_solved_and_rank ~ LeetCode username: %s ~ Error code: %s", leetcode_username, response.status)
+        bot.logger.exception(
+            "file: utils/questions_utils.py ~ fetch_problems_solved_and_rank ~ \
+                LeetCode username: %s ~ Error code: %s",
+            leetcode_username,
+            response.status)
         bot.channel_logger.forbidden()
         return
     elif response.status != 200:
-        logger.exception(
-            "file: utils/questions_utils.py ~ get_problems_solved_and_rank ~ LeetCode username: %s ~ Error code: %s", leetcode_username, response.status)
+        bot.logger.exception(
+            "file: utils/questions_utils.py ~ fetch_problems_solved_and_rank ~ \
+                LeetCode username: %s ~ Error code: %s",
+            leetcode_username,
+            response.status)
         return
 
     response_data = await response.json()
@@ -424,7 +446,7 @@ async def get_problems_solved_and_rank(client_session: aiohttp.ClientSession,
     matched_user = response_data.get("data", {}).get("matchedUser")
 
     if not matched_user:
-        logger.warning("User %s not found", leetcode_username)
+        bot.logger.warning("User %s not found", leetcode_username)
         return
 
     real_name = matched_user["profile"]["realName"]
