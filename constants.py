@@ -34,6 +34,12 @@ class StatsCardOptions(Enum):
     # TODO: COMPETITIONS = 3
 
 
+class NotificationOptions(Enum):
+    DAILY_QUESTION = "daily_question"
+    WINNERS = "winners"
+    MAINTENANCE = "maintenance"
+
+
 GLOBAL_LEADERBOARD_ID = 0
 
 MILESTONE_ROLES = {

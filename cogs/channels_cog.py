@@ -38,7 +38,7 @@ class ChannelsGroupCog(commands.GroupCog, name="notify-channel"):
 
         :param interaction: The Discord interaction.
         :param channel: The text channel to enable notifications for.
-                        If None, defaults to the channel where the command was invoked.
+        If None, defaults to the channel where the command was invoked.
         """
         if channel is None:
             channel = interaction.channel
@@ -90,7 +90,7 @@ class ChannelsGroupCog(commands.GroupCog, name="notify-channel"):
 
         :param interaction: The Discord interaction.
         :param channel: The text channel to disable notifications for.
-                        If None, defaults to the channel where the command was invoked.
+        If None, defaults to the channel where the command was invoked.
         """
         if not channel:
             channel = interaction.channel

@@ -28,6 +28,7 @@ class QuestionsCog(commands.GroupCog, name="question"):
         :param interaction: The Discord interaction.
         :param name_id_or_url: The name, ID, or URL of the question to search.
         """
+        # TODO: use modal
         embed = await search_question_embed(name_id_or_url)
         await interaction.followup.send(embed=embed)
 
