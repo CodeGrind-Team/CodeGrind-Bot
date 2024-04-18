@@ -17,11 +17,13 @@ from discord.ext import commands
 from discord.ext.commands import Context
 from dotenv import find_dotenv, load_dotenv
 from html2image import Html2Image
+
+from constants import GLOBAL_LEADERBOARD_ID
+from database.setup import init_mongodb_conn
 from utils.dev_utils import ChannelLogger
 from utils.notifications_utils import (
     send_daily_question_and_update_stats,
-    send_daily_question_and_update_stats_schedule,
-)
+    send_daily_question_and_update_stats_schedule)
 
 if not os.path.isfile(f"{os.path.realpath(os.path.dirname(__file__))}/logs"):
     os.makedirs(f"{os.path.realpath(os.path.dirname(__file__))}/logs")
@@ -164,7 +166,7 @@ class DiscordBot(commands.Bot):
         )
         self.logger.info("-------------------")
         # TODO: await read_ratings_txt()
-        await self.init_mongodb_conn(os.getenv("MONGODB_URI"))
+        await init_mongodb_conn(os.getenv("MONGODB_URI"), GLOBAL_LEADERBOARD_ID)
         await self.load_cogs()
         await self.init_topgg()
         self.channel_logger = ChannelLogger(

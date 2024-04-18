@@ -8,7 +8,12 @@ from .models.server_model import Server
 from .models.user_model import User
 
 
-async def init_mongodb_conn(mongodb_uri: str) -> None:
+async def init_mongodb_conn(mongodb_uri: str, global_leaderboard_id: int) -> None:
+    """
+    Initialize MongoDB connection and create the necessary collections.
+
+    :param mongodb_uri: The MongoDB URI.
+    """
     mongodb_client = AsyncIOMotorClient(mongodb_uri)
 
     await init_beanie(
@@ -16,7 +21,7 @@ async def init_mongodb_conn(mongodb_uri: str) -> None:
     )
 
     # Create global leaderboard 'server' with id 0.
-    server = await Server.get(0)
+    server = await Server.get(global_leaderboard_id)
     if not server:
         server = Server(id=0)
         await server.create()
@@ -25,4 +30,4 @@ async def init_mongodb_conn(mongodb_uri: str) -> None:
 if __name__ == "__main__":
     import asyncio
 
-    asyncio.run(init_mongodb_conn(os.getenv("MONGODB_URI")))
+    asyncio.run(init_mongodb_conn(os.getenv("MONGODB_URI"), 0))
