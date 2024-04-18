@@ -12,8 +12,8 @@ from database.models.server_model import Server
 
 
 class LeaderboardsGroupCog(commands.GroupCog, name="leaderboard"):
-    def __init__(self, client: commands.Bot) -> None:
-        self.client = client
+    def __init__(self, bot: commands.Bot) -> None:
+        self.bot = bot
         self.leaderboards_manager = LeaderboardManager()
         super().__init__()
         # TODO: Check if necessary
@@ -179,5 +179,5 @@ class LeaderboardsGroupCog(commands.GroupCog, name="leaderboard"):
         await interaction.followup.send(embed=embed, view=view)
 
 
-async def setup(client: commands.Bot) -> None:
-    await client.add_cog(LeaderboardsGroupCog(client))
+async def setup(bot: commands.Bot) -> None:
+    await bot.add_cog(LeaderboardsGroupCog(bot))

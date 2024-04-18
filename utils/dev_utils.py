@@ -5,8 +5,8 @@ from random import random
 
 
 class ChannelLogger:
-    def __init__(self, client: discord.Bot, channel_id: int) -> None:
-        self.client = client
+    def __init__(self, bot: discord.Bot, channel_id: int) -> None:
+        self.bot = bot
         self.rate_limits = 0
         self.forbidden_count = 0
         self.channel_id = channel_id
@@ -45,7 +45,7 @@ class ChannelLogger:
         embed.set_footer(text=datetime.now(UTC).strftime("%H:%M:%S.%f"))
 
         try:
-            channel = client.get_channel(self.channel_id)
+            channel = bot.get_channel(self.channel_id)
             if not channel or not isinstance(channel, discord.TextChannel):
                 return
 
@@ -53,12 +53,12 @@ class ChannelLogger:
             await channel.send(embed=embed, silent=silent)
 
         except discord.errors.Forbidden as e:
-            client.logger.exception(
+            bot.logger.exception(
                 "file: utils/dev_utils.py ~ ChannelLogger.log ~ \
                     missing permissions on logging channel. Error: %s",
                 e,
             )
         except Exception as e:
-            client.logger.exception(
+            bot.logger.exception(
                 "file: utils/dev_utils.py ~ ChannelLogger.log ~ Error: %s", e
             )

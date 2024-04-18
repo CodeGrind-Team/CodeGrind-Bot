@@ -406,13 +406,13 @@ async def get_problems_solved_and_rank(client_session: aiohttp.ClientSession,
         logger.exception(
             "file: utils/questions_utils.py ~ get_problems_solved_and_rank ~ LeetCode username: %s ~ Error code: %s", leetcode_username, response.status)
 
-        client.channel_logger.rate_limited()
+        bot.channel_logger.rate_limited()
         raise RateLimitReached()
     elif response.status == 403:
         # Forbidden access
         logger.exception(
             "file: utils/questions_utils.py ~ get_problems_solved_and_rank ~ LeetCode username: %s ~ Error code: %s", leetcode_username, response.status)
-        client.channel_logger.forbidden()
+        bot.channel_logger.forbidden()
         return
     elif response.status != 200:
         logger.exception(

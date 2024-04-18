@@ -17,8 +17,8 @@ from views.channel_notification_select_view import ChannelsSelectView
 
 
 class ChannelsGroupCog(commands.GroupCog, name="notify-channel"):
-    def __init__(self, client: commands.Bot) -> None:
-        self.client = client
+    def __init__(self, bot: commands.Bot) -> None:
+        self.bot = bot
 
     @discord.app_commands.command(
         name="enable",
@@ -127,5 +127,5 @@ class ChannelsGroupCog(commands.GroupCog, name="notify-channel"):
         )
 
 
-async def setup(client: commands.Bot) -> None:
-    await client.add_cog(ChannelsGroupCog(client))
+async def setup(bot: commands.Bot) -> None:
+    await bot.add_cog(ChannelsGroupCog(bot))

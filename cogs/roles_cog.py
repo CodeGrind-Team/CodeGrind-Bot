@@ -13,8 +13,8 @@ from utils.roles_utils import create_roles, remove_roles, update_roles
 
 
 class RolesGroupCog(commands.GroupCog, name="roles"):
-    def __init__(self, client: commands.Bot) -> None:
-        self.client = client
+    def __init__(self, bot: commands.Bot) -> None:
+        self.bot = bot
 
     @discord.app_commands.command(
         name="enable",
@@ -58,5 +58,5 @@ class RolesGroupCog(commands.GroupCog, name="roles"):
         await interaction.followup.send(embed=roles_removed_embed())
 
 
-async def setup(client: commands.Bot) -> None:
-    await client.add_cog(RolesGroupCog(client))
+async def setup(bot: commands.Bot) -> None:
+    await bot.add_cog(RolesGroupCog(bot))

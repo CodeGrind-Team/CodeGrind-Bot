@@ -438,7 +438,7 @@ class LeaderboardManager:
 # ! check this
 # async def send_leaderboard_winners(server: Server, period: str) -> None:
 #     for channel_id in server.channels.winners:
-#         channel = client.get_channel(channel_id)
+#         channel = bot.get_channel(channel_id)
 
 #         if not channel or not isinstance(channel, discord.TextChannel):
 #             continue

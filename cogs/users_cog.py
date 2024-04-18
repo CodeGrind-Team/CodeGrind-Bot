@@ -31,8 +31,8 @@ from views.register_modal import RegisterModal
 
 
 class UsersCog(commands.Cog):
-    def __init__(self, client: commands.Bot) -> None:
-        self.client = client
+    def __init__(self, bot: commands.Bot) -> None:
+        self.bot = bot
 
     @discord.app_commands.command(
         name="add", description="Connect your LeetCode account to this server"
@@ -206,7 +206,7 @@ class UsersCog(commands.Cog):
             await interaction.edit_original_response(embed=embed)
             return
 
-        stats = await get_problems_solved_and_rank(self.client.session, leetcode_id)
+        stats = await get_problems_solved_and_rank(self.bot.session, leetcode_id)
         # ?! await clientSession.close()
 
         if not stats:
@@ -310,5 +310,5 @@ class UsersCog(commands.Cog):
         return profile_name == generated_string
 
 
-async def setup(client: commands.Bot) -> None:
-    await client.add_cog(UsersCog(client))
+async def setup(bot: commands.Bot) -> None:
+    await bot.add_cog(UsersCog(bot))

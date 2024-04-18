@@ -14,8 +14,8 @@ from middleware import (
 
 
 class AdminGroupCog(commands.GroupCog, name="settings"):
-    def __init__(self, client: commands.Bot) -> None:
-        self.client = client
+    def __init__(self, bot: commands.Bot) -> None:
+        self.bot = bot
 
     @discord.app_commands.command(
         name="timezone", description="Admins only: Change the timezone"
@@ -45,5 +45,5 @@ class AdminGroupCog(commands.GroupCog, name="settings"):
         await interaction.followup.send(embed=timezone_updated_embed())
 
 
-async def setup(client: commands.Bot) -> None:
-    await client.add_cog(AdminGroupCog(client))
+async def setup(bot: commands.Bot) -> None:
+    await bot.add_cog(AdminGroupCog(bot))

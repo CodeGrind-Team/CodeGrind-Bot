@@ -11,8 +11,8 @@ from middleware import defer_interaction, track_analytics
 
 
 class StatsCog(commands.Cog):
-    def __init__(self, client) -> None:
-        self.client = client
+    def __init__(self, bot) -> None:
+        self.bot = bot
 
     @discord.app_commands.command(name="stats", description="Displays a user's stats")
     @defer_interaction()
@@ -63,5 +63,5 @@ class StatsCog(commands.Cog):
         await interaction.followup.send(embed=embed, file=file)
 
 
-async def setup(client: commands.Bot) -> None:
-    await client.add_cog(StatsCog(client))
+async def setup(bot: commands.Bot) -> None:
+    await bot.add_cog(StatsCog(bot))

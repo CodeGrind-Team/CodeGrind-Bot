@@ -11,8 +11,8 @@ from middleware import defer_interaction, track_analytics
 
 
 class QuestionsCog(commands.GroupCog, name="question"):
-    def __init__(self, client: commands.Bot) -> None:
-        self.client = client
+    def __init__(self, bot: commands.Bot) -> None:
+        self.bot = bot
 
     @discord.app_commands.command(
         name="search", description="Search for a LeetCode question"
@@ -64,5 +64,5 @@ class QuestionsCog(commands.GroupCog, name="question"):
         await interaction.followup.send(embed=embed)
 
 
-async def setup(client: commands.Bot) -> None:
-    await client.add_cog(QuestionsCog(client))
+async def setup(bot: commands.Bot) -> None:
+    await bot.add_cog(QuestionsCog(bot))

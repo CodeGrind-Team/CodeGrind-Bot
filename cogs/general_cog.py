@@ -7,8 +7,8 @@ from views.commands_help_view import CommandTypeSelectView
 
 
 class GeneralCog(commands.Cog):
-    def __init__(self, client: commands.Bot) -> None:
-        self.client = client
+    def __init__(self, bot: commands.Bot) -> None:
+        self.bot = bot
 
     @discord.app_commands.command(name="help", description="Help with CodeGrind Bot")
     @defer_interaction(ephemeral_default=True)
@@ -46,5 +46,5 @@ class GeneralCog(commands.Cog):
         await interaction.followup.send(embed=embed)
 
 
-async def setup(client: commands.Bot) -> None:
-    await client.add_cog(GeneralCog(client))
+async def setup(bot: commands.Bot) -> None:
+    await bot.add_cog(GeneralCog(bot))

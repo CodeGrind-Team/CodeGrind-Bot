@@ -4,7 +4,7 @@ from datetime import datetime
 
 from beanie.odm.operators.update.array import AddToSet
 
-from bot_globals import client, logger
+from bot_globals import bot, logger
 from database.models.server_model import Rankings, Server, UserRank
 from database.models.user_model import History, Submissions, User
 from utils.common_utils import calculate_scores
@@ -121,14 +121,14 @@ async def update_display_information_names(user: User) -> None:
 
     for i in range(len(user.display_information)-1, -1, -1):
         if user.display_information[i].server_id == 0:
-            discord_user = client.get_user(user.id)
+            discord_user = bot.get_user(user.id)
 
             if discord_user:
                 user.display_information[i].name = discord_user.name
 
             continue
 
-        guild = client.get_guild(user.display_information[i].server_id)
+        guild = bot.get_guild(user.display_information[i].server_id)
 
         if not guild:
             continue

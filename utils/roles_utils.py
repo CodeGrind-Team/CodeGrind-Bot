@@ -1,6 +1,6 @@
 import discord
 
-from bot_globals import (MILESTONE_ROLES, STREAK_ROLES, VERIFIED_ROLE, client,
+from bot_globals import (MILESTONE_ROLES, STREAK_ROLES, VERIFIED_ROLE, bot,
                          logger)
 from database.models.server_model import Server
 
@@ -81,7 +81,7 @@ async def update_roles(server: Server):
 
 
 async def give_verified_role(user: discord.User, guild_id: int) -> None:
-    guild = client.get_guild(guild_id)
+    guild = bot.get_guild(guild_id)
 
     if not guild:
         return
@@ -112,7 +112,7 @@ async def give_verified_role(user: discord.User, guild_id: int) -> None:
 async def give_streak_role(user: discord.User, guild_id: int, streak: int) -> None:
     logger.info(
         "file: utils/roles.py ~ give_streak_role ~ run ~ user_id: %s ~ streak: %s", user.id, streak)
-    guild = client.get_guild(guild_id)
+    guild = bot.get_guild(guild_id)
 
     if not guild:
         return
@@ -153,7 +153,7 @@ async def give_milestone_role(user: discord.User, guild_id: int, total_solved: i
     logger.info(
         "file: utils/roles.py ~ give_milestone_role ~ run ~ user_id: %s, total_solved: %s, guild_id: %s", user.id, total_solved, guild_id)
 
-    guild = client.get_guild(guild_id)
+    guild = bot.get_guild(guild_id)
 
     if not guild:
         return

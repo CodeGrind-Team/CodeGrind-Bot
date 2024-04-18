@@ -1,6 +1,6 @@
 from beanie.odm.operators.update.array import Pull
 
-from bot_globals import client, logger
+from bot_globals import bot, logger
 from database.models.server_model import Server
 from database.models.user_model import User
 
@@ -14,11 +14,11 @@ async def remove_inactive_users() -> None:
         # So that we can access user.id
         await server.fetch_all_links()
 
-        guild = client.get_guild(server.id)
+        guild = bot.get_guild(server.id)
 
         delete_server = False
         # Delete server document if the bot isn't in the server anymore
-        if not guild or guild not in client.guilds:
+        if not guild or guild not in bot.guilds:
             delete_server = True
 
         for user in server.users:
