@@ -36,7 +36,7 @@ class RolesGroupCog(commands.GroupCog, name="roles"):
         server = await Server.find_one(
             Server.id == interaction.guild.id, fetch_links=True
         )
-        await update_roles(server)
+        await update_roles(interaction.guild, server)
 
         await interaction.followup.send(embed=roles_created_embed())
 

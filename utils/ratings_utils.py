@@ -1,7 +1,9 @@
 from typing import Dict
 
-from bot_globals import RATINGS
+from constants import RATINGS
 from utils.common_utils import to_thread
+
+# TODO: Come back to this
 
 
 def get_rating_data(title: str) -> Dict | None:

@@ -120,7 +120,7 @@ async def send_daily_question_and_update_stats(
             await send_leaderboard_winners(server, "last_week")
 
         if midday:
-            await update_roles(server)
+            await update_roles(bot, server)
 
     await bot.channel_logger.INFO("Completed updating server rankings")
 
