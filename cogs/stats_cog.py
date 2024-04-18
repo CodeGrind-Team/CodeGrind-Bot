@@ -26,7 +26,7 @@ class StatsCog(commands.Cog):
         """
         Command to display a user's stats.
 
-        :param interaction: The interaction context.
+        :param interaction: The Discord interaction.
         :param option: The stats card option to select.
         :param member: The member whose stats to display.
         """

@@ -1,19 +1,20 @@
 import asyncio
 import random
 import string
+from datetime import datetime
 
-import aiohttp
 import discord
 from beanie.odm.fields import WriteRules
 from beanie.odm.operators.update.array import AddToSet, Pull
 from bson import DBRef
 from discord.ext import commands
 
+from constants import GLOBAL_LEADERBOARD_ID
 from database.models.preference_model import Preference
 from database.models.projections import IdProjection
 from database.models.record_model import Record
 from database.models.server_model import Server
-from database.models.user_model import Stats, User
+from database.models.user_model import Stats, Submissions, User
 from embeds.users_embeds import (account_not_found_embed,
                                  account_permanently_deleted_embed,
                                  account_removed_embed,
@@ -24,8 +25,7 @@ from embeds.users_embeds import (account_not_found_embed,
 from middleware import (defer_interaction, ensure_server_document,
                         track_analytics)
 from middleware.database_middleware import update_user_preferences_prompt
-from utils.common_utils import convert_to_score
-from utils.questions_utils import UserStats, get_problems_solved_and_rank
+from utils.questions_utils import get_problems_solved_and_rank
 from utils.roles_utils import give_verified_role
 from views.register_modal import RegisterModal
 
@@ -41,6 +41,11 @@ class UsersCog(commands.Cog):
     @ensure_server_document
     @track_analytics
     async def add(self, interaction: discord.Interaction) -> None:
+        """
+        Adds a user to the server in the system.
+
+        :param interaction: The Discord interaction.
+        """
         server_id = interaction.guild.id
         user_id = interaction.user.id
 
@@ -51,7 +56,7 @@ class UsersCog(commands.Cog):
         else:
             register_modal = RegisterModal()
             await interaction.response.send_modal(register_modal)
-            self._register(interaction.followup.send,
+            self._register(interaction, interaction.followup.send, server_id,
                            user, register_modal.answer)
 
         await update_user_preferences_prompt(interaction)
@@ -63,6 +68,11 @@ class UsersCog(commands.Cog):
     @ensure_server_document
     @track_analytics
     async def update(self, interaction: discord.Interaction) -> None:
+        """
+        Initiates the preference updater prompt.
+
+        :param interaction: The Discord interaction.
+        """
         user_id = interaction.user.id
 
         user = await User.find_one(User.id == user_id)
@@ -83,6 +93,11 @@ class UsersCog(commands.Cog):
     async def remove(
         self, interaction: discord.Interaction, permanently_delete: bool = False
     ) -> None:
+        """
+        Removes (or permanently deletes) a user from the system for the selected server.
+
+        :param interaction: The Discord interaction.
+        """
         server_id = interaction.guild.id
         user_id = interaction.user.id
 
@@ -94,9 +109,8 @@ class UsersCog(commands.Cog):
                 await Server.find_one(Server.id == server_id).update(
                     Pull({Server.users: {"$id": user_id}})
                 )
-                # Global leaderboard
-                # TODO: create global_leaderboard_id enum
-                await Server.find_one(Server.id == 0).update(
+
+                await Server.find_one(Server.id == GLOBAL_LEADERBOARD_ID).update(
                     Pull({Server.users: {"$id": user_id}})
                 )
                 await User.find_one(User.id == user_id).delete()
@@ -137,15 +151,9 @@ class UsersCog(commands.Cog):
         Logs in a user to a server if user already exists.
 
         :param send_message: The webhook to send messages.
-        :type send_message: discord.Webhook
         :param user: The user to log in.
-        :type user: discord.User
         :param server_id: The ID of the server to log the user into.
-        :type server_id: int
         :param user_display_name: The display name of the user.
-        :type user_display_name: str
-
-        :return: None
         """
         await give_verified_role(user, server_id)
 
@@ -174,76 +182,107 @@ class UsersCog(commands.Cog):
             await send_message(embed=embed)
 
     async def _register(
-        self, send_message: discord.Webhook, user: discord.User, leetcode_id: str
+        self,
+        interaction: discord.Interaction,
+        send_message: discord.Webhook,
+        server_id: int,
+        user: discord.User,
+        leetcode_id: str
     ):
-        # Generate a random string for account linking
-        generated_string = "".join(random.choices(string.ascii_letters, k=8))
+        """
+        Registers a user to the system for the selected server.
 
-        embed = connect_account_instructions_embed(
-            generated_string, leetcode_id)
-        await send_message(embed=embed)
+        :param interaction: The Discord interaction.
+        :param send_message: The webhook to send messages.
+        :param server_id: The ID of the server to register the user into.
+        :param user: The user to register.
+        :param leetcode_id: The LeetCode ID of the user.
+        """
 
-        matched = await self._linking_process(leetcode_id)
+        matched = await self._linking_process(send_message, leetcode_id)
 
-        if matched:
-            stats = await get_problems_solved_and_rank(self.client.session, leetcode_id)
-            # ?! await clientSession.close()
-
-            if not stats:
-                return
-
-            user = User(
-                id=user.id,
-                leetcode_id=leetcode_id,
-                stats=Stats(easy=stats.submissions.easy,
-                            medium=stats.submissions.medium,
-                            hard=stats.submissions.hard)
-            )
-
-            record = Record()
-
-            # display_information=[
-            #         display_information,
-            #         DisplayInformation(
-            #             server_id=0,
-            #             name=interaction.user.name,
-            #         ),
-            #     ],
-
-            await Server.find_one(Server.id == server_id).update(
-                AddToSet({Server.users: user})
-            )
-            server = await Server.get(server_id)
-            # link rule to create a new document for the new link
-            await server.save(link_rule=WriteRules.WRITE)
-
-            # Add to the global leaderboard.
-            await Server.find_one(Server.id == 0).update(
-                AddToSet({Server.users: DBRef("users", user_id)})
-            )
-
-            await give_verified_role(interaction.user, interaction.guild.id)
-
-            self.client.logger.info(
-                "file: cogs/users.py ~ add ~ user has been added successfully \
-                    ~ leetcode_username: %s",
-                leetcode_username,
-            )
-
-            embed = profile_added_embed(leetcode_username)
-            await interaction.edit_original_response(embed=embed)
-        else:
-            self.client.logger.info(
-                "file: cogs/users.py ~ add ~ user has not been added \
-                    ~ leetcode_username: %s",
-                leetcode_username,
-            )
-
-            embed = profile_added_embed(leetcode_username, added=False)
+        if not matched:
+            embed = profile_added_embed(leetcode_id, added=False)
             await interaction.edit_original_response(embed=embed)
             return
 
-    async def _linking_process(self, generated_string: int, leetcode_id: str) -> None:
+        stats = await get_problems_solved_and_rank(self.client.session, leetcode_id)
+        # ?! await clientSession.close()
+
+        if not stats:
+            return
+
+        user = User(
+            id=user.id,
+            leetcode_id=leetcode_id,
+            stats=Stats(submissions=Submissions(
+                easy=stats.submissions.easy,
+                medium=stats.submissions.medium,
+                hard=stats.submissions.hard
+            ))
+        )
+
+        record = Record(
+            timestamp=datetime.now().replace(hour=0, minute=0, second=0, microsecond=0),
+            user=user,
+            submissions=Submissions(
+                easy=stats.submissions.easy,
+                medium=stats.submissions.medium,
+                hard=stats.submissions.hard
+            ))
+
+        preference_server = Preference(
+            user=user,
+            server=DBRef("servers", server_id),
+            # Use server username.
+            name=interaction.user.display_name,
+        )
+
+        preference_global = Preference(
+            user=user,
+            server=DBRef("servers", GLOBAL_LEADERBOARD_ID),
+            # User account username.
+            name=interaction.user.name,
+        )
+
+        await Server.find_one(Server.id == server_id).update(
+            AddToSet({Server.users: user})
+        )
+        server = await Server.get(server_id)
+        # ! Check how to do this properly
+        # ! Maybe issues with writeruling the user the using the user object in record
+        # ! preference_server and preference_global
+        # Link rule to create a new document for the new user link.
+        await server.save(link_rule=WriteRules.WRITE)
+        await record.save()
+        await preference_server.save()
+        await preference_global.save()
+
+        # Add to the global leaderboard.
+        await Server.find_one(Server.id == GLOBAL_LEADERBOARD_ID).update(
+            AddToSet({Server.users: user})
+        )
+
+        await give_verified_role(interaction.user, interaction.guild.id)
+
+        await interaction.edit_original_response(embed=profile_added_embed(leetcode_id))
+
+    async def _linking_process(self,
+                               send_message: discord.Webhook,
+                               leetcode_id: str) -> None:
+        """
+        Initiates the account linking process.
+
+        :param send_message: The webhook to send messages.
+        :param leetcode_id: The LeetCode ID of the user.
+        """
+
+        # Generate a random string for account linking
+        generated_string = "".join(random.choices(string.ascii_letters, k=8))
+
+        await send_message(embed=connect_account_instructions_embed(
+            generated_string, leetcode_id))
+
         profile_name = None
 
         # TODO: Use self.config
@@ -261,7 +300,7 @@ class UsersCog(commands.Cog):
             if not stats:
                 break
 
-            profile_name = stats["profile"]["realName"]
+            profile_name = stats.real_name
 
             if profile_name == generated_string:
                 break

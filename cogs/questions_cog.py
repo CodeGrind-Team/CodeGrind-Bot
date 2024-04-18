@@ -25,7 +25,7 @@ class QuestionsCog(commands.GroupCog, name="question"):
         """
         Command to search for a LeetCode question.
 
-        :param interaction: The interaction context.
+        :param interaction: The Discord interaction.
         :param name_id_or_url: The name, ID, or URL of the question to search.
         """
         embed = await search_question_embed(name_id_or_url)
@@ -38,7 +38,7 @@ class QuestionsCog(commands.GroupCog, name="question"):
         """
         Command to get the daily question.
 
-        :param interaction: The interaction context.
+        :param interaction: The Discord interaction.
         """
         embed = await daily_question_embed()
         await interaction.followup.send(embed=embed)
@@ -56,7 +56,7 @@ class QuestionsCog(commands.GroupCog, name="question"):
         """
         Command to get a random question of the selected difficulty.
 
-        :param interaction: The interaction context.
+        :param interaction: The Discord interaction.
         :param difficulty: The desired difficulty level of the question.
         """
         embed = await random_question_embed(difficulty)

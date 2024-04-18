@@ -17,7 +17,7 @@ class GeneralCog(commands.Cog):
         """
         Display help information.
 
-        :param interaction: The interaction context.
+        :param interaction: The Discord interaction.
         """
         embed = help_embed(COMMAND_CATEGORIES["Home"])
         embed.set_footer(text="Love our bot? Vote on top.gg using /vote")
@@ -35,7 +35,7 @@ class GeneralCog(commands.Cog):
         """
         Display voting information.
 
-        :param interaction: The interaction context.
+        :param interaction: The Discord interaction.
         """
         embed = discord.Embed(
             title="Vote for CodeGrind Bot on top.gg ",

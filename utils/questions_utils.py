@@ -50,6 +50,7 @@ class Submissions:
 
 @dataclass
 class UserStats:
+    real_name: str
     submissions: Submissions
 
 
@@ -426,6 +427,7 @@ async def get_problems_solved_and_rank(client_session: aiohttp.ClientSession,
         logger.warning("User %s not found", leetcode_username)
         return
 
+    real_name = matched_user["profile"]["realName"]
     submit_stats_global = matched_user.get("submitStatsGlobal", {})
     ac_submission_num = submit_stats_global.get("acSubmissionNum", [])
 
@@ -442,6 +444,9 @@ async def get_problems_solved_and_rank(client_session: aiohttp.ClientSession,
          for item in ac_submission_num if item["difficulty"] == "hard"),
         0)
 
-    return UserStats(submissions=Submissions(easy=easy_count,
-                                             medium=medium_count,
-                                             hard=hard_count))
+    return UserStats(real_name=real_name,
+                     submissions=Submissions(
+                         easy=easy_count,
+                         medium=medium_count,
+                         hard=hard_count
+                     ))

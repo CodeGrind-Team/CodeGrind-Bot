@@ -28,7 +28,7 @@ class LeaderboardsGroupCog(commands.GroupCog, name="leaderboard"):
         """
         Command to view the AllTime leaderboard.
 
-        :param interaction: The interaction context.
+        :param interaction: The Discord interaction.
         :param page: The page number of the leaderboard.
         """
 
@@ -44,7 +44,7 @@ class LeaderboardsGroupCog(commands.GroupCog, name="leaderboard"):
         """
         Command to view the Monthly leaderboard.
 
-        :param interaction: The interaction context.
+        :param interaction: The Discord interaction.
         :param page: The page number of the leaderboard.
         """
 
@@ -60,7 +60,7 @@ class LeaderboardsGroupCog(commands.GroupCog, name="leaderboard"):
         """
         Command to view the Weekly leaderboard.
 
-        :param interaction: The interaction context.
+        :param interaction: The Discord interaction.
         :param page: The page number of the leaderboard.
         """
 
@@ -76,7 +76,7 @@ class LeaderboardsGroupCog(commands.GroupCog, name="leaderboard"):
         """
         Command to view the Daily leaderboard.
 
-        :param interaction: The interaction context.
+        :param interaction: The Discord interaction.
         :param page: The page number of the leaderboard.
         """
 
@@ -93,7 +93,7 @@ class LeaderboardsGroupCog(commands.GroupCog, name="leaderboard"):
         """
         Command to view the Global AllTime leaderboard.
 
-        :param interaction: The interaction context.
+        :param interaction: The Discord interaction.
         :param page: The page number of the leaderboard.
         """
 
@@ -112,7 +112,7 @@ class LeaderboardsGroupCog(commands.GroupCog, name="leaderboard"):
         """
         Command to view the Global Monthly leaderboard.
 
-        :param interaction: The interaction context.
+        :param interaction: The Discord interaction.
         :param page: The page number of the leaderboard.
         """
 
@@ -129,7 +129,7 @@ class LeaderboardsGroupCog(commands.GroupCog, name="leaderboard"):
         """
         Command to view the Global Weekly leaderboard.
 
-        :param interaction: The interaction context.
+        :param interaction: The Discord interaction.
         :param page: The page number of the leaderboard.
         """
 
@@ -146,7 +146,7 @@ class LeaderboardsGroupCog(commands.GroupCog, name="leaderboard"):
         """
         Command to view the Global Daily leaderboard.
 
-        :param interaction: The interaction context.
+        :param interaction: The Discord interaction.
         :param page: The page number of the leaderboard.
         """
 
@@ -162,7 +162,7 @@ class LeaderboardsGroupCog(commands.GroupCog, name="leaderboard"):
         """
         Generates a response including the leaderboard embed.
 
-        :param interaction: The interaction context.
+        :param interaction: The Discord interaction.
         :param period: The period to generate the data for.
         :param page: The page number of the leaderboard.
         """

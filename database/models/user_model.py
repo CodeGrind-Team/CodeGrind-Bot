@@ -6,7 +6,8 @@ from pydantic import BaseModel, Field
 
 
 class Votes(BaseModel):
-    last_voted: Optional[datetime] = Field(default_factory=lambda: datetime.now(UTC))
+    last_voted: Optional[datetime] = Field(
+        default_factory=lambda: datetime.now(UTC))
     count: Optional[int] = 0
 
 
@@ -19,7 +20,6 @@ class Submissions(BaseModel):
 class Stats(BaseModel):
     submissions: Optional[Submissions] = Field(default_factory=Submissions)
     streak: Optional[int] = 0
-    timestamp: Optional[datetime] = Field(default_factory=lambda: datetime.now(UTC))
 
 
 class User(Document):

@@ -28,7 +28,7 @@ class RolesGroupCog(commands.GroupCog, name="roles"):
         """
         Command to enable CodeGrind roles assignment.
 
-        :param interaction: The interaction context.
+        :param interaction: The Discord interaction.
         """
 
         await create_roles(interaction.guild)
@@ -51,7 +51,7 @@ class RolesGroupCog(commands.GroupCog, name="roles"):
         """
         Command to disable CodeGrind roles assignment.
 
-        :param interaction: The interaction context.
+        :param interaction: The Discord interaction.
         """
         await remove_roles(interaction.guild)
 

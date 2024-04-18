@@ -34,6 +34,8 @@ class StatsCardOptions(Enum):
     # TODO: COMPETITIONS = 3
 
 
+GLOBAL_LEADERBOARD_ID = 0
+
 MILESTONE_ROLES = {
     1: ("Novice (1 pt)", discord.Colour.dark_grey()),
     100: ("Apprentice (100 pts)", discord.Colour.green()),

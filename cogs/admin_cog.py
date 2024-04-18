@@ -30,7 +30,7 @@ class AdminGroupCog(commands.GroupCog, name="settings"):
         """
         Command to change the server timezone.
 
-        :param interaction: The interaction context.
+        :param interaction: The Discord interaction.
         :param timezone: The PYTZ timezone to set.
         """
         if timezone not in pytz.all_timezones:
