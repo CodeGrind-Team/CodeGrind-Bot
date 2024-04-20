@@ -1,10 +1,9 @@
-import aiohttp
 from datetime import datetime
 
-
+import aiohttp
 from beanie.odm.operators.update.array import AddToSet
+from discord.ext import commands
 
-from bot_globals import bot, logger
 from database.models.server_model import Rankings, Server, UserRank
 from database.models.user_model import History, Submissions, User
 from utils.common_utils import calculate_scores
@@ -13,19 +12,15 @@ from utils.questions_utils import get_problems_solved_and_rank
 
 
 async def update_rankings(server: Server, now: datetime, timeframe: str) -> None:
-    logger.info(
-        "file: cogs/stats_utils.py ~ update_rankings ~ run ~ timeframe: %s", timeframe)
-
-    logger.info(
-        'file: cogs/stats_utils.py ~ update_rankings ~ current server ID: %s', server.id)
-
     if timeframe not in ["daily", "weekly"]:
         return
 
     score_field = {"daily": "yesterday", "weekly": "last_week"}
 
     users_sorted = sorted(server.users,
-                          key=lambda user: get_score(user, score_field[timeframe]), reverse=True)
+                          key=lambda user: get_score(
+                              user, score_field[timeframe]),
+                          reverse=True)
 
     lb_rankings = []
     place = 0
@@ -48,14 +43,8 @@ async def update_rankings(server: Server, now: datetime, timeframe: str) -> None
 
         await Server.find_one(Server.id == server.id).update(AddToSet({Server.rankings: rankings}))
 
-    logger.info(
-        'file: cogs/stats_utils.py ~ update_rankings ~ rankings updated successfully for %s timeframe', timeframe)
-
 
 async def update_stats(client_session: aiohttp.ClientSession, user: User, now: datetime, daily_reset: bool = False, weekly_reset: bool = False) -> None:
-    logger.info("file: cogs/stats_utils.py ~ update_stats ~ run ~ now: %s | daily_reset: %s",
-                now, daily_reset)
-
     leetcode_username = user.leetcode_username
 
     submissions_and_rank = await get_problems_solved_and_rank(client_session, leetcode_username)
@@ -111,15 +100,9 @@ async def update_stats(client_session: aiohttp.ClientSession, user: User, now: d
 
     await user.save()
 
-    logger.info(
-        'file: cogs/stats_utils.py ~ update_stats ~ user stats updated successfully: %s', leetcode_username)
 
-
-async def update_display_information_names(user: User) -> None:
-    logger.info(
-        "file: cogs/stats_utils.py ~ update_display_information_names ~ run ~ user: %s", user.id)
-
-    for i in range(len(user.display_information)-1, -1, -1):
+async def update_display_information_names(bot: commands.Bot, user: User) -> None:
+    for i in range(len(user.display_information) - 1, -1, -1):
         if user.display_information[i].server_id == 0:
             discord_user = bot.get_user(user.id)
 
@@ -136,8 +119,6 @@ async def update_display_information_names(user: User) -> None:
         member = guild.get_member(user.id)
 
         if not member:
-            logger.info(
-                "file: utils/stats.py ~ update_stats ~ user not a member of server ~ user_id: %s, server_id: %s", user.id, guild.id)
             continue
 
         user.display_information[i].name = member.display_name
