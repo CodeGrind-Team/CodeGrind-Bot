@@ -19,7 +19,7 @@ def defer_interaction(*, ephemeral_default: bool = False, user_preferences_promp
 
             await interaction.response.defer(ephemeral=ephemeral)
 
-            if not interaction.guild or not isinstance(interaction.channel, discord.TextChannel) or not isinstance(interaction.user, discord.Member):
+            if not interaction.guild or not isinstance(interaction.channel, (discord.TextChannel, discord.Thread)) or not isinstance(interaction.user, discord.Member):
                 embed = error_embed()
                 await interaction.followup.send(embed=embed)
                 return
