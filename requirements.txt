@@ -27,7 +27,7 @@ motor==3.2.0
 multidict==6.0.4
 pycodestyle==2.10.0
 pycparser==2.21
-pydantic==1.10.11
+pydantic==1.10.13
 pymongo==4.4.1
 python-dotenv==1.0.0
 pytz==2023.3
