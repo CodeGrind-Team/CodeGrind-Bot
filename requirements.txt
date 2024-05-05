@@ -15,7 +15,7 @@ charset-normalizer==3.2.0
 click==8.1.6
 colorama==0.4.6
 discord.py==2.3.1
-dnspython==2.4.0
+dnspython==2.6.1
 frozenlist==1.4.0
 h11==0.14.0
 html2image==2.0.3
