@@ -12,6 +12,7 @@ import platform
 from datetime import UTC, datetime
 
 import discord
+import redis
 import topgg
 from discord.ext import commands
 from discord.ext.commands import Context
@@ -21,9 +22,11 @@ from html2image import Html2Image
 from constants import GLOBAL_LEADERBOARD_ID
 from database.setup import init_mongodb_conn
 from utils.dev_utils import ChannelLogger
+from utils.leaderboards_utils import LeaderboardManager
 from utils.notifications_utils import (
     send_daily_question_and_update_stats,
-    send_daily_question_and_update_stats_schedule)
+    send_daily_question_and_update_stats_schedule,
+)
 
 if not os.path.isfile(f"{os.path.realpath(os.path.dirname(__file__))}/logs"):
     os.makedirs(f"{os.path.realpath(os.path.dirname(__file__))}/logs")
@@ -94,10 +97,10 @@ class DiscordBot(commands.Bot):
         self.html2image = Html2Image(
             browser_executable=os.getenv("BROWSER_EXECUTABLE_PATH")
         )
-        self.topggpy = None
+        self.leaderboards_manager = LeaderboardManager()
         self.channel_logger = None
+        self.topggpy = None
         # TODO: self.ratings = None
-        # TODO: self.session
 
     async def on_autopost_success(self):
         """Runs when stats are posted to topgg"""
@@ -116,6 +119,18 @@ class DiscordBot(commands.Bot):
             self.topggpy = topgg.DBLClient(
                 self, os.getenv("TOPGG_TOKEN"), autopost=True, post_shard_count=True
             )
+
+    async def on_guild_remove(self) -> None:
+        # TODO
+        pass
+
+    async def on_member_remove(self) -> None:
+        # TODO
+        pass
+
+    async def on_member_update(self) -> None:
+        # TODO
+        pass
 
     async def load_cogs(self) -> None:
         """
@@ -142,16 +157,17 @@ class DiscordBot(commands.Bot):
                 activity=discord.Game(name="Under Maintenance"),
             )
 
-        update_stats_on_start = os.getenv(
-            "UPDATE_STATS_ON_START", "False") == "True"
-        daily_reset_on_start = os.getenv(
-            "DAILY_RESET_ON_START", "False") == "True"
-        weekly_reset_on_start = os.getenv(
-            "WEEKLY_RESET_ON_START", "False") == "True"
+        update_stats_on_start = os.getenv("UPDATE_STATS_ON_START", "False") == "True"
+        daily_reset_on_start = os.getenv("DAILY_RESET_ON_START", "False") == "True"
+        weekly_reset_on_start = os.getenv("WEEKLY_RESET_ON_START", "False") == "True"
+        monthly_reset_on_start = os.getenv("MONTHLY_RESET_ON_START", "False") == "True"
 
         if update_stats_on_start or daily_reset_on_start or weekly_reset_on_start:
             await send_daily_question_and_update_stats(
-                update_stats_on_start, daily_reset_on_start, weekly_reset_on_start
+                update_stats_on_start,
+                daily_reset_on_start,
+                weekly_reset_on_start,
+                monthly_reset_on_start,
             )
 
     async def setup_hook(self) -> None:
@@ -169,8 +185,7 @@ class DiscordBot(commands.Bot):
         await init_mongodb_conn(os.getenv("MONGODB_URI"), GLOBAL_LEADERBOARD_ID)
         await self.load_cogs()
         await self.init_topgg()
-        self.channel_logger = ChannelLogger(
-            self, int(os.environ["LOGGING_CHANNEL_ID"]))
+        self.channel_logger = ChannelLogger(self, int(os.environ["LOGGING_CHANNEL_ID"]))
 
         send_daily_question_and_update_stats_schedule.start()
 

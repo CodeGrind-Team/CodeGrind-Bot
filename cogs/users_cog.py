@@ -3,28 +3,30 @@ import random
 import string
 from datetime import datetime
 
+import aiohttp
 import discord
 from beanie.odm.fields import WriteRules
-from beanie.odm.operators.update.array import AddToSet, Pull
+from beanie.odm.operators.update.array import AddToSet
 from bson import DBRef
 from discord.ext import commands
 
 from constants import GLOBAL_LEADERBOARD_ID
 from database.models.preference_model import Preference
-from database.models.projections import IdProjection
 from database.models.record_model import Record
 from database.models.server_model import Server
 from database.models.user_model import Stats, Submissions, User
-from embeds.users_embeds import (account_not_found_embed,
-                                 account_permanently_deleted_embed,
-                                 account_removed_embed,
-                                 connect_account_instructions_embed,
-                                 profile_added_embed,
-                                 synced_existing_user_embed,
-                                 user_already_added_in_server_embed)
-from middleware import (defer_interaction, ensure_server_document,
-                        track_analytics)
+from embeds.users_embeds import (
+    account_not_found_embed,
+    account_permanently_deleted_embed,
+    account_removed_embed,
+    connect_account_instructions_embed,
+    profile_added_embed,
+    synced_existing_user_embed,
+    user_already_added_in_server_embed,
+)
+from middleware import defer_interaction, ensure_server_document, track_analytics
 from middleware.database_middleware import update_user_preferences_prompt
+from utils.common_utils import convert_to_score
 from utils.questions_utils import get_problems_solved_and_rank
 from utils.roles_utils import give_verified_role
 from views.register_modal import RegisterModal
@@ -56,8 +58,13 @@ class UsersCog(commands.Cog):
         else:
             register_modal = RegisterModal()
             await interaction.response.send_modal(register_modal)
-            self._register(interaction, interaction.followup.send, server_id,
-                           user, register_modal.answer)
+            self._register(
+                interaction,
+                interaction.followup.send,
+                server_id,
+                user,
+                register_modal.answer,
+            )
 
         await update_user_preferences_prompt(interaction)
 
@@ -101,44 +108,34 @@ class UsersCog(commands.Cog):
         server_id = interaction.guild.id
         user_id = interaction.user.id
 
-        user_exists = await User.find_one(User.id == user_id).project(IdProjection)
+        user = await User.find_one(User.id == user_id)
 
-        if user_exists:
-            # delete the user
-            if permanently_delete:
-                await Server.find_one(Server.id == server_id).update(
-                    Pull({Server.users: {"$id": user_id}})
-                )
+        if not user:
+            await interaction.followup.send(embed=account_not_found_embed())
+            return
 
-                await Server.find_one(Server.id == GLOBAL_LEADERBOARD_ID).update(
-                    Pull({Server.users: {"$id": user_id}})
-                )
-                await User.find_one(User.id == user_id).delete()
-                embed = account_permanently_deleted_embed()
-                await interaction.followup.send(embed=embed)
-                return
+        if permanently_delete:
+            await delete_user(user_id)
+            # ! TODO
+            # await Server.find_one(Server.id == server_id).update(
+            #     Pull({Server.users: {"$id": user_id}})
+            # )
 
-            # unlink user from server(interaction, user_id)
-            # TODO: this is getting the entire user.
-            display_information = await User.find_one(
-                User.id == user_id, User.display_information.server_id == server_id
-            )
+            # await Server.find_one(Server.id == GLOBAL_LEADERBOARD_ID).update(
+            #     Pull({Server.users: {"$id": user_id}})
+            # )
+            # await user.delete()
+            await interaction.followup.send(embed=account_permanently_deleted_embed())
+            return
 
-            if display_information:
-                await User.find_one(User.id == user_id).update(
-                    Pull({User.display_information: {"server_id": server_id}})
-                )
+        await unlink_user(user_id, server_id)
+        # ! TODO
+        # await user.update(Pull({User.display_information: {"server_id": server_id}}))
+        # await Server.find_one(Server.id == server_id).update(
+        #     Pull({Server.users: {"$id": user_id}})
+        # )
 
-                await Server.find_one(Server.id == server_id).update(
-                    Pull({Server.users: {"$id": user_id}})
-                )
-
-                embed = account_removed_embed()
-                await interaction.followup.send(embed=embed)
-                return
-
-        embed = account_not_found_embed()
-        await interaction.followup.send(embed=embed)
+        await interaction.followup.send(embed=account_removed_embed())
 
     async def _login(
         self,
@@ -146,7 +143,7 @@ class UsersCog(commands.Cog):
         user: discord.User,
         server_id: int,
         user_display_name: str,
-    ):
+    ) -> None:
         """
         Logs in a user to a server if user already exists.
 
@@ -158,8 +155,7 @@ class UsersCog(commands.Cog):
         await give_verified_role(user, server_id)
 
         preference = await Preference.find_one(
-            Preference.user == user, Preference.server == DBRef(
-                "servers", server_id)
+            Preference.user == user, Preference.server == DBRef("servers", server_id)
         )
 
         if preference:
@@ -187,8 +183,8 @@ class UsersCog(commands.Cog):
         send_message: discord.Webhook,
         server_id: int,
         user: discord.User,
-        leetcode_id: str
-    ):
+        leetcode_id: str,
+    ) -> None:
         """
         Registers a user to the system for the selected server.
 
@@ -206,8 +202,8 @@ class UsersCog(commands.Cog):
             await interaction.edit_original_response(embed=embed)
             return
 
-        stats = await get_problems_solved_and_rank(self.bot.session, leetcode_id)
-        # ?! await clientSession.close()
+        async with aiohttp.ClientSession() as client_session:
+            stats = await get_problems_solved_and_rank(client_session, leetcode_id)
 
         if not stats:
             return
@@ -215,11 +211,13 @@ class UsersCog(commands.Cog):
         user = User(
             id=user.id,
             leetcode_id=leetcode_id,
-            stats=Stats(submissions=Submissions(
-                easy=stats.submissions.easy,
-                medium=stats.submissions.medium,
-                hard=stats.submissions.hard
-            ))
+            stats=Stats(
+                submissions=Submissions(
+                    easy=stats.submissions.easy,
+                    medium=stats.submissions.medium,
+                    hard=stats.submissions.hard,
+                )
+            ),
         )
 
         record = Record(
@@ -228,8 +226,10 @@ class UsersCog(commands.Cog):
             submissions=Submissions(
                 easy=stats.submissions.easy,
                 medium=stats.submissions.medium,
-                hard=stats.submissions.hard
-            ))
+                hard=stats.submissions.hard,
+                score=convert_to_score(**stats.submissions),
+            ),
+        )
 
         preference_server = Preference(
             user=user,
@@ -267,9 +267,9 @@ class UsersCog(commands.Cog):
 
         await interaction.edit_original_response(embed=profile_added_embed(leetcode_id))
 
-    async def _linking_process(self,
-                               send_message: discord.Webhook,
-                               leetcode_id: str) -> None:
+    async def _linking_process(
+        self, send_message: discord.Webhook, leetcode_id: str
+    ) -> None:
         """
         Initiates the account linking process.
 
@@ -280,8 +280,9 @@ class UsersCog(commands.Cog):
         # Generate a random string for account linking
         generated_string = "".join(random.choices(string.ascii_letters, k=8))
 
-        await send_message(embed=connect_account_instructions_embed(
-            generated_string, leetcode_id))
+        await send_message(
+            embed=connect_account_instructions_embed(generated_string, leetcode_id)
+        )
 
         profile_name = None
 
@@ -289,23 +290,23 @@ class UsersCog(commands.Cog):
         duration = 60  # seconds
         check_interval = 5  # seconds
 
-        # Check if the profile name matches the generated string
-        for _ in range(duration // check_interval):
-            stats = await get_problems_solved_and_rank(
-                # TODO: add clientsession
-                self.clientsession,
-                leetcode_id,
-            )
+        async with aiohttp.ClientSession() as client_session:
+            # Check if the profile name matches the generated string
+            for _ in range(duration // check_interval):
+                stats = await get_problems_solved_and_rank(
+                    client_session,
+                    leetcode_id,
+                )
 
-            if not stats:
-                break
+                if not stats:
+                    break
 
-            profile_name = stats.real_name
+                profile_name = stats.real_name
 
-            if profile_name == generated_string:
-                break
+                if profile_name == generated_string:
+                    break
 
-            await asyncio.sleep(check_interval)
+                await asyncio.sleep(check_interval)
 
         return profile_name == generated_string
 

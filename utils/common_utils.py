@@ -15,9 +15,11 @@ def to_thread(func: Callable) -> Callable:
 
     :return: The wrapper function.
     """
+
     @functools.wraps(func)
     async def wrapper(*args, **kwargs):
         return await asyncio.to_thread(func, *args, **kwargs)
+
     return wrapper
 
 
@@ -31,9 +33,11 @@ def convert_to_score(easy: int = 0, medium: int = 0, hard: int = 0) -> int:
 
     :return: The score.
     """
-    return (easy * DifficultyScore.EASY
-            + medium * DifficultyScore.MEDIUM
-            + hard * DifficultyScore.HARD)
+    return (
+        easy * DifficultyScore.EASY
+        + medium * DifficultyScore.MEDIUM
+        + hard * DifficultyScore.HARD
+    )
 
 
 def strftime_with_suffix(format: str, t: datetime) -> str:
@@ -45,12 +49,13 @@ def strftime_with_suffix(format: str, t: datetime) -> str:
 
     :return: The formatted string.
     """
+
     def suffix(d: int) -> str:
         """
         Get the suffix for the day.
 
         :param d: The day.
         """
-        return {1: 'st', 2: 'nd', 3: 'rd'}.get(d % 20, 'th')
+        return {1: "st", 2: "nd", 3: "rd"}.get(d % 20, "th")
 
-    return t.strftime(format).replace('{S}', str(t.day) + suffix(t.day))
+    return t.strftime(format).replace("{S}", str(t.day) + suffix(t.day))

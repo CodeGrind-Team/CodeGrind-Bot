@@ -4,16 +4,24 @@ from typing import Tuple
 
 import discord
 import requests
+from discord.ext import commands
 
-from bot_globals import hti
 from embeds.misc_embeds import error_embed
 from utils.common_utils import to_thread
 
 
 @to_thread
-def stats_embed(leetcode_username: str, display_name: str, extension: str | None = None) -> Tuple[discord.Embed, discord.File | None]:
-    embed = discord.Embed(title=display_name,
-                          url=f"https://leetcode.com/{leetcode_username}", colour=discord.Colour.orange())
+def stats_embed(
+    bot: commands.Bot,
+    leetcode_username: str,
+    display_name: str,
+    extension: str | None = None,
+) -> Tuple[discord.Embed, discord.File | None]:
+    embed = discord.Embed(
+        title=display_name,
+        url=f"https://leetcode.com/{leetcode_username}",
+        colour=discord.Colour.orange(),
+    )
 
     width = 500
     height = 200
@@ -36,7 +44,7 @@ def stats_embed(leetcode_username: str, display_name: str, extension: str | None
     except requests.exceptions.RequestException as e:
         return error_embed(), None
 
-    paths = hti.screenshot(url=url, size=(width, height))
+    paths = bot.html2image.screenshot(url=url, size=(width, height))
 
     with open(paths[0], "rb") as f:
         # read the file contents
@@ -46,8 +54,7 @@ def stats_embed(leetcode_username: str, display_name: str, extension: str | None
         # move the cursor to the beginning
         image_binary.seek(0)
 
-        file = discord.File(
-            fp=image_binary, filename=f"{leetcode_username}.png")
+        file = discord.File(fp=image_binary, filename=f"{leetcode_username}.png")
 
     os.remove(paths[0])
 
@@ -60,7 +67,8 @@ def invalid_username_embed() -> discord.Embed:
     embed = discord.Embed(
         title="Error",
         description="The username you entered is invalid",
-        colour=discord.Colour.red())
+        colour=discord.Colour.red(),
+    )
 
     return embed
 
@@ -69,6 +77,7 @@ def account_hidden_embed() -> discord.Embed:
     embed = discord.Embed(
         title="Cannot access data",
         description="The chosen user has their LeetCode details hidden as their `include_url` setting is set to OFF",
-        colour=discord.Colour.red())
+        colour=discord.Colour.red(),
+    )
 
     return embed

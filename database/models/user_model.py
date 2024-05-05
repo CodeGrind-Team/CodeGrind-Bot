@@ -6,15 +6,15 @@ from pydantic import BaseModel, Field
 
 
 class Votes(BaseModel):
-    last_voted: Optional[datetime] = Field(
-        default_factory=lambda: datetime.now(UTC))
     count: Optional[int] = 0
+    last_voted: Optional[datetime] = Field(default_factory=lambda: datetime.now(UTC))
 
 
 class Submissions(BaseModel):
     easy: Optional[int] = 0
     medium: Optional[int] = 0
     hard: Optional[int] = 0
+    score: Optional[int] = 0
 
 
 class Stats(BaseModel):

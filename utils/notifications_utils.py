@@ -9,17 +9,15 @@ from database.models.server_model import Server
 from database.models.user_model import User
 from embeds.questions_embeds import daily_question_embed
 from utils.analytics_utils import save_analytics
-from utils.leaderboards_utils import (send_leaderboard_winners,
-                                      update_global_leaderboard)
+from utils.leaderboards_utils import send_leaderboard_winners, update_global_leaderboard
 from utils.roles_utils import update_roles
 from utils.stats_utils import update_rankings, update_stats
 from utils.users_utils import remove_inactive_users
 
 
 async def send_daily_question(
-        bot: commands.Bot,
-        server: Server,
-        embed: discord.Embed) -> None:
+    bot: commands.Bot, server: Server, embed: discord.Embed
+) -> None:
     """
     Send the daily question to the server's daily question channels.
 
@@ -38,13 +36,10 @@ async def send_daily_question(
         await channel.send(embed=embed)
 
 
-@tasks.loop(time=[
-    time(hour=hour, minute=minute)
-    for hour in range(24)
-    for minute in [0, 30]
-])
-async def send_daily_question_and_update_stats_schedule(
-        bot: commands.Bot) -> None:
+@tasks.loop(
+    time=[time(hour=hour, minute=minute) for hour in range(24) for minute in [0, 30]]
+)
+async def send_daily_question_and_update_stats_schedule(bot: commands.Bot) -> None:
     """
     Schedule to send the daily question and update the stats.
     """
@@ -52,10 +47,12 @@ async def send_daily_question_and_update_stats_schedule(
 
 
 async def send_daily_question_and_update_stats(
-        bot: commands.Bot,
-        force_update_stats: bool = True,
-        force_daily_reset: bool = False,
-        force_weekly_reset: bool = False) -> None:
+    bot: commands.Bot,
+    force_update_stats: bool = True,
+    force_daily_reset: bool = False,
+    force_weekly_reset: bool = False,
+    force_monthly_reset: bool = False,
+) -> None:
     """
     Send the daily question and update the stats.
 
@@ -66,16 +63,20 @@ async def send_daily_question_and_update_stats(
     """
     bot.logger.info(
         "file: utils/notifications_utils.py ~ send_daily_question_and_update_stats ~ \
-            started")
+            started"
+    )
 
     now = datetime.now(UTC)
 
     daily_reset = (now.hour == 0 and now.minute == 0) or force_daily_reset
-    weekly_reset = (now.weekday() == 0
-                    and now.hour == 0
-                    and now.minute == 0) or force_weekly_reset
-    midday = (now.hour == 12 and now.minute == 0)
-    monthly = (now.day == 1 and now.hour == 12 and now.minute == 0)
+    weekly_reset = (
+        now.weekday() == 0 and now.hour == 0 and now.minute == 0
+    ) or force_weekly_reset
+    monthly = (
+        now.day == 1 and now.hour == 0 and now.minute == 0
+    ) or force_monthly_reset
+
+    midday = now.hour == 12 and now.minute == 0
 
     if daily_reset:
         embed = await daily_question_embed()
@@ -90,12 +91,11 @@ async def send_daily_question_and_update_stats(
         async with aiohttp.ClientSession() as client_session:
             tasks = []
             async for user in User.all():
-                task = asyncio.create_task(coro=update_stats(
-                    client_session,
-                    user,
-                    now,
-                    daily_reset,
-                    weekly_reset))
+                task = asyncio.create_task(
+                    coro=update_stats(
+                        client_session, user, now, daily_reset, weekly_reset
+                    )
+                )
 
                 tasks.append(task)
 
@@ -103,8 +103,9 @@ async def send_daily_question_and_update_stats(
 
         await update_global_leaderboard()
 
-        await bot.channel_logger.INFO("Completed updating users stats",
-                                      include_error_counts=True)
+        await bot.channel_logger.INFO(
+            "Completed updating users stats", include_error_counts=True
+        )
 
     await bot.channel_logger.INFO("Started updating server rankings")
     async for server in Server.all(fetch_links=True):
@@ -131,4 +132,5 @@ async def send_daily_question_and_update_stats(
 
     bot.logger.info(
         "file: utils/notifications_utils.py ~ send_daily_question_and_update_stats ~ \
-            ended")
+            ended"
+    )

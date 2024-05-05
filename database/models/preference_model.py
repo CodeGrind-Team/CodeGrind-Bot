@@ -14,6 +14,7 @@ class Preference(Document):
     name: str
     url: Optional[bool] = True
     anonymous: Optional[bool] = True
+
     last_updated: Optional[datetime]
 
     class Settings:

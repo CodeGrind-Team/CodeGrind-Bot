@@ -2,21 +2,13 @@ import discord
 from discord.ext import commands
 
 from constants import Period
-from middleware import (
-    defer_interaction,
-    ensure_server_document,
-    track_analytics,
-)
-from utils.leaderboards_utils import LeaderboardManager
-from database.models.server_model import Server
+from middleware import defer_interaction, ensure_server_document, track_analytics
+from utils.leaderboards_utils import generate_leaderboard_embed
 
 
 class LeaderboardsGroupCog(commands.GroupCog, name="leaderboard"):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
-        self.leaderboards_manager = LeaderboardManager()
-        super().__init__()
-        # TODO: Check if necessary
 
     @discord.app_commands.command(
         name="alltime", description="View the AllTime leaderboard"
@@ -166,11 +158,10 @@ class LeaderboardsGroupCog(commands.GroupCog, name="leaderboard"):
         :param period: The period to generate the data for.
         :param page: The page number of the leaderboard.
         """
-        server = await Server.find_one(Server.id == interaction.guild.id)
 
-        embed, view = await self.leaderboards_manager.generate_leaderboard_embed(
+        embed, view = await generate_leaderboard_embed(
             period,
-            server,
+            interaction.guild.id,
             interaction.user.id,
             global_leaderboard,
             page,

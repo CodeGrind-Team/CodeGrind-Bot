@@ -1,20 +1,34 @@
-from datetime import datetime
+from datetime import UTC, datetime
 from functools import wraps
 from typing import Callable
 
 import discord
-from beanie.odm.operators.update.general import Set
+from bson import DBRef
 
 from database.models.analytics_model import Analytics
+from database.models.preference_model import Preference
 from database.models.server_model import Server
-from database.models.user_model import User
 from embeds.users_embeds import preferences_update_prompt_embeds
 from views.user_settings_view import UserPreferencesPrompt
 
 
 def ensure_server_document(func: Callable) -> Callable:
+    """
+    Ensures that a server document exists in the database before executing the given
+    function.
+
+    If the server document does not exist, it creates a new one. This is used
+    as a decorator for functions interacting with server-specific data.
+
+    :param func: The function to wrap.
+
+    :return: The wrapped function that ensures the server document exists.
+    """
+
     @wraps(func)
-    async def wrapper(self, interaction: discord.Interaction, *args, **kwargs) -> Callable | None:
+    async def wrapper(
+        self, interaction: discord.Interaction, *args, **kwargs
+    ) -> Callable | None:
         server_id = interaction.guild.id
         server = await Server.get(server_id)
 
@@ -28,8 +42,21 @@ def ensure_server_document(func: Callable) -> Callable:
 
 
 def track_analytics(func: Callable) -> Callable:
+    """
+    Tracks user interaction analytics when the decorated function is executed.
+
+    This function tracks distinct users interacting with the bot and the number of
+    commands used each day. It used as a decorator to increase usage statistics.
+
+    :param func: The function to wrap.
+
+    :return: The wrapped function that tracks analytics data.
+    """
+
     @wraps(func)
-    async def wrapper(self, interaction: discord.Interaction, *args, **kwargs) -> Callable | None:
+    async def wrapper(
+        self, interaction: discord.Interaction, *args, **kwargs
+    ) -> Callable | None:
         analytics = await Analytics.find_all().to_list()
 
         if not analytics:
@@ -52,20 +79,36 @@ def track_analytics(func: Callable) -> Callable:
     return wrapper
 
 
-async def update_user_preferences_prompt(interaction: discord.Interaction, reminder: bool = False) -> None:
-    user = await User.find_one(
-        User.id == interaction.user.id)
+async def update_user_preferences_prompt(
+    interaction: discord.Interaction, reminder: bool = False
+) -> None:
+    """
+    Sends a prompt to update user preferences if certain conditions are met.
 
-    if not user:
+    This function checks if a user's preference needs updating, considering whether
+    it's a reminder and the last time the preference was updated. If the conditions are
+    met, it sends an interactive prompt to the user.
+
+    :param interaction: The Discord interaction that triggered the function.
+    :param reminder: Indicates if this is a reminder prompt. If `True`, the prompt is
+    sent only if the preference has not been updated in over 30 days.
+
+    :return: None.
+    """
+
+    preference = await Preference.find_one(
+        Preference.user == DBRef("users", interaction.user.id),
+        Preference.server == DBRef("servers", interaction.guild.id),
+    )
+
+    if not preference:
         return
 
-    display_information = next(
-        (di for di in user.display_information if di.server_id == interaction.guild.id), None)
-
-    if not display_information:
-        return
-
-    if reminder and display_information.last_updated and (datetime.utcnow() - display_information.last_updated).days <= 30:
+    if (
+        reminder
+        and preference.last_updated
+        and (datetime.now(UTC) - preference.last_updated).days <= 30
+    ):
         return
 
     pages, end_embed = preferences_update_prompt_embeds()
@@ -74,4 +117,5 @@ async def update_user_preferences_prompt(interaction: discord.Interaction, remin
     await interaction.followup.send(embed=pages[0].embed, view=view, ephemeral=True)
     await view.wait()
 
-    await User.find_one(User.id == interaction.user.id, User.display_information.server_id == interaction.guild.id).update(Set({"display_information.$.last_updated": datetime.utcnow()}))
+    preference.last_updated = datetime.now(UTC)
+    await preference.save_changes()

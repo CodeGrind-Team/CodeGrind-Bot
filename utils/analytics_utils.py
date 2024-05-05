@@ -13,9 +13,12 @@ async def save_analytics() -> None:
     else:
         analytics = analytics[0]
 
-    analytics.history.append(AnalyticsHistory(
-        distinct_users=analytics.distinct_users_today,
-        command_count=analytics.command_count_today))
+    analytics.history.append(
+        AnalyticsHistory(
+            distinct_users=analytics.distinct_users_today,
+            command_count=analytics.command_count_today,
+        )
+    )
 
     analytics.distinct_users_today = []
     analytics.command_count_today = 0

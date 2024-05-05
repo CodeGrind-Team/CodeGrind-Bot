@@ -1,7 +1,8 @@
 import discord
 from discord.ext import commands
 
-from embeds.general_embeds import COMMAND_CATEGORIES, help_embed
+from constants import COMMAND_CATEGORIES
+from embeds.general_embeds import help_embed
 from middleware import defer_interaction, track_analytics
 from views.commands_help_view import CommandTypeSelectView
 

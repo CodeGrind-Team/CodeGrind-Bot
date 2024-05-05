@@ -16,7 +16,7 @@ from middleware import (
 from views.channel_notification_select_view import ChannelsSelectView
 
 
-class ChannelsGroupCog(commands.GroupCog, name="notify-channel"):
+class NotificationsGroupCog(commands.GroupCog, name="notifications"):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
@@ -74,7 +74,8 @@ class ChannelsGroupCog(commands.GroupCog, name="notify-channel"):
 
     @discord.app_commands.command(
         name="disable",
-        description="Admins only: Stop channel from receiving selected notification types",
+        description="Admins only: Stop channel from receiving selected notification \
+            types",
     )
     @defer_interaction(ephemeral_default=True)
     @ensure_server_document
@@ -128,4 +129,4 @@ class ChannelsGroupCog(commands.GroupCog, name="notify-channel"):
 
 
 async def setup(bot: commands.Bot) -> None:
-    await bot.add_cog(ChannelsGroupCog(bot))
+    await bot.add_cog(NotificationsGroupCog(bot))
