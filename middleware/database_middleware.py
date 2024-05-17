@@ -97,8 +97,8 @@ async def update_user_preferences_prompt(
     """
 
     preference = await Preference.find_one(
-        Preference.user == DBRef("users", interaction.user.id),
-        Preference.server == DBRef("servers", interaction.guild.id),
+        Preference.user_id == interaction.user.id,
+        Preference.server_id == interaction.guild.id,
     )
 
     if not preference:

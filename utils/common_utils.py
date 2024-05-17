@@ -34,9 +34,9 @@ def convert_to_score(easy: int = 0, medium: int = 0, hard: int = 0) -> int:
     :return: The score.
     """
     return (
-        easy * DifficultyScore.EASY
-        + medium * DifficultyScore.MEDIUM
-        + hard * DifficultyScore.HARD
+        easy * DifficultyScore.EASY.value
+        + medium * DifficultyScore.MEDIUM.value
+        + hard * DifficultyScore.HARD.value
     )
 
 

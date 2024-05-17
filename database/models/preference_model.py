@@ -1,15 +1,12 @@
 from datetime import datetime
 from typing import Optional
 
-from beanie import Document, Indexed, Link
-
-from .server_model import Server
-from .user_model import User
+from beanie import Document, Indexed
 
 
 class Preference(Document):
-    user: Indexed(Link[User])  # type: ignore
-    server: Indexed(Link[Server])  # type: ignore
+    user_id: Indexed(int)  # type: ignore
+    server_id: Indexed(int)  # type: ignore
 
     name: str
     url: Optional[bool] = True

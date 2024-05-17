@@ -8,21 +8,26 @@ from embeds.channels_embeds import channel_remove_embed, channel_set_embed
 
 class NotificationOptionselect(discord.ui.Select):
     def __init__(
-            self,
-            selected_notification_options: list[discord.SelectOption],
-            available_notification_options: list[str]):
+        self,
+        selected_notification_options: list[discord.SelectOption],
+        available_notification_options: list[str],
+    ):
 
         self.selected_notification_options = selected_notification_options
         self.label_to_option = {
             "maintenance": NotificationOptions.MAINTENANCE,
             "daily question": NotificationOptions.DAILY_QUESTION,
-            "leaderboard winners": NotificationOptions.WINNERS
+            "leaderboard winners": NotificationOptions.WINNERS,
         }
 
         options = self._get_options(available_notification_options)
 
-        super().__init__(placeholder="Select notification types",
-                         max_values=len(options), min_values=1, options=options)
+        super().__init__(
+            placeholder="Select notification types",
+            max_values=len(options),
+            min_values=1,
+            options=options,
+        )
 
     async def callback(self, interaction: discord.Interaction) -> None:
         await interaction.response.defer()
@@ -32,8 +37,8 @@ class NotificationOptionselect(discord.ui.Select):
                 self.selected_notification_options.append(notification_option)
 
     def _get_options(
-            self,
-            available_notification_options: list[str]) -> list[discord.SelectOption]:
+        self, available_notification_options: list[str]
+    ) -> list[discord.SelectOption]:
         """
         Get the options for the select menu.
 
@@ -44,22 +49,24 @@ class NotificationOptionselect(discord.ui.Select):
         for notification_option in available_notification_options:
             if notification_option == NotificationOptions.MAINTENANCE:
                 select_option = discord.SelectOption(
-                    label="maintenance",
-                    description="Get bot updates and downtime")
+                    label="maintenance", description="Get bot updates and downtime"
+                )
 
                 options.append(select_option)
 
             elif notification_option == NotificationOptions.DAILY_QUESTION:
                 select_option = discord.SelectOption(
                     label="daily question",
-                    description="Get the daily question every midnight (UTC)")
+                    description="Get the daily question every midnight (UTC)",
+                )
 
                 options.append(select_option)
 
             elif notification_option == NotificationOptions.WINNERS:
                 select_option = discord.SelectOption(
                     label="leaderboard winners",
-                    description="Display the daily and weekly leaderboard winners")
+                    description="Display the daily and weekly leaderboard winners",
+                )
 
                 options.append(select_option)
 
@@ -68,12 +75,13 @@ class NotificationOptionselect(discord.ui.Select):
 
 class SaveButton(discord.ui.Button):
     def __init__(
-            self,
-            selected_notification_options: list[str],
-            adding: bool,
-            server_id: int,
-            channel_id: int,
-            channel_name: str):
+        self,
+        selected_notification_options: list[str],
+        adding: bool,
+        server_id: int,
+        channel_id: int,
+        channel_name: str,
+    ):
 
         self.adding = adding
         self.server_id = server_id
@@ -91,24 +99,27 @@ class SaveButton(discord.ui.Button):
             self.server_id,
             self.channel_id,
             self.adding,
-            self.selected_notification_options
+            self.selected_notification_options,
         )
 
         if self.adding:
             embed = channel_set_embed(
-                self.channel_name, self.selected_notification_options)
+                self.channel_name, self.selected_notification_options
+            )
             await interaction.response.edit_message(embed=embed, view=None)
 
         else:
             embed = channel_remove_embed(
-                self.channel_name, self.selected_notification_options)
+                self.channel_name, self.selected_notification_options
+            )
             await interaction.response.edit_message(embed=embed, view=None)
 
     async def _save_channel_options(
-            server_id: int,
-            channel_id: int,
-            adding: bool,
-            selected_notification_options: list[str]) -> None:
+        server_id: int,
+        channel_id: int,
+        adding: bool,
+        selected_notification_options: list[str],
+    ) -> None:
         """
         Save the selected options for the channel.
 
@@ -155,19 +166,30 @@ class SaveButton(discord.ui.Button):
 
 class ChannelsSelectView(discord.ui.View):
     def __init__(
-            self,
-            server_id: int,
-            channel_id: int,
-            channel_name: str,
-            available_notification_options: list[str],
-            adding: bool,
-            *,
-            timeout=180):
+        self,
+        server_id: int,
+        channel_id: int,
+        channel_name: str,
+        available_notification_options: list[str],
+        adding: bool,
+        *,
+        timeout=180
+    ):
 
         super().__init__(timeout=timeout)
 
         self.selected_notification_options = []
-        self.add_item(NotificationOptionselect(
-            self.selected_notification_options, available_notification_options))
-        self.add_item(SaveButton(self.selected_notification_options, adding,
-                      server_id, channel_id, channel_name))
+        self.add_item(
+            NotificationOptionselect(
+                self.selected_notification_options, available_notification_options
+            )
+        )
+        self.add_item(
+            SaveButton(
+                self.selected_notification_options,
+                adding,
+                server_id,
+                channel_id,
+                channel_name,
+            )
+        )

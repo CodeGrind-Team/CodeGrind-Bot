@@ -1,35 +1,15 @@
-import asyncio
-import random
-import string
-from datetime import datetime
-
-import aiohttp
 import discord
-from beanie.odm.fields import WriteRules
-from beanie.odm.operators.update.array import AddToSet
-from bson import DBRef
 from discord.ext import commands
 
-from constants import GLOBAL_LEADERBOARD_ID
-from database.models.preference_model import Preference
-from database.models.record_model import Record
-from database.models.server_model import Server
-from database.models.user_model import Stats, Submissions, User
+from database.models.user_model import User
 from embeds.users_embeds import (
     account_not_found_embed,
     account_permanently_deleted_embed,
     account_removed_embed,
-    connect_account_instructions_embed,
-    profile_added_embed,
-    synced_existing_user_embed,
-    user_already_added_in_server_embed,
 )
 from middleware import defer_interaction, ensure_server_document, track_analytics
 from middleware.database_middleware import update_user_preferences_prompt
-from utils.common_utils import convert_to_score
-from utils.questions_utils import get_problems_solved_and_rank
-from utils.roles_utils import give_verified_role
-from views.register_modal import RegisterModal
+from views.register_or_login_view import RegisterOrLoginView
 
 
 class UsersCog(commands.Cog):
@@ -48,25 +28,14 @@ class UsersCog(commands.Cog):
 
         :param interaction: The Discord interaction.
         """
-        server_id = interaction.guild.id
-        user_id = interaction.user.id
-
-        user = await User.get(User.id == user_id)
-
-        if user:
-            self._login(interaction.followup.send, user, server_id)
-        else:
-            register_modal = RegisterModal()
-            await interaction.response.send_modal(register_modal)
-            self._register(
-                interaction,
-                interaction.followup.send,
-                server_id,
-                user,
-                register_modal.answer,
-            )
-
-        await update_user_preferences_prompt(interaction)
+        await interaction.followup.send(
+            embed=discord.Embed(
+                title="Connect LeetCode Account",
+                description="Press the following button to start the process:",
+                colour=discord.Colour.blurple(),
+            ),
+            view=RegisterOrLoginView(self.bot),
+        )
 
     @discord.app_commands.command(
         name="update", description="Update your profile on this server's leaderboards"
@@ -136,179 +105,6 @@ class UsersCog(commands.Cog):
         # )
 
         await interaction.followup.send(embed=account_removed_embed())
-
-    async def _login(
-        self,
-        send_message: discord.Webhook,
-        user: discord.User,
-        server_id: int,
-        user_display_name: str,
-    ) -> None:
-        """
-        Logs in a user to a server if user already exists.
-
-        :param send_message: The webhook to send messages.
-        :param user: The user to log in.
-        :param server_id: The ID of the server to log the user into.
-        :param user_display_name: The display name of the user.
-        """
-        await give_verified_role(user, server_id)
-
-        preference = await Preference.find_one(
-            Preference.user == user, Preference.server == DBRef("servers", server_id)
-        )
-
-        if preference:
-            # User has already been added to the server.
-            embed = user_already_added_in_server_embed()
-            await send_message(embed=embed)
-        else:
-            # Add user's preferences for this server.
-            preference = Preference(
-                user=user,
-                server=DBRef("servers", server_id),
-                name=user_display_name,
-            )
-
-            await Server.find_one(Server.id == server_id).update(
-                AddToSet({Server.users: DBRef("users", user.id)})
-            )
-
-            embed = synced_existing_user_embed()
-            await send_message(embed=embed)
-
-    async def _register(
-        self,
-        interaction: discord.Interaction,
-        send_message: discord.Webhook,
-        server_id: int,
-        user: discord.User,
-        leetcode_id: str,
-    ) -> None:
-        """
-        Registers a user to the system for the selected server.
-
-        :param interaction: The Discord interaction.
-        :param send_message: The webhook to send messages.
-        :param server_id: The ID of the server to register the user into.
-        :param user: The user to register.
-        :param leetcode_id: The LeetCode ID of the user.
-        """
-
-        matched = await self._linking_process(send_message, leetcode_id)
-
-        if not matched:
-            embed = profile_added_embed(leetcode_id, added=False)
-            await interaction.edit_original_response(embed=embed)
-            return
-
-        async with aiohttp.ClientSession() as client_session:
-            stats = await get_problems_solved_and_rank(client_session, leetcode_id)
-
-        if not stats:
-            return
-
-        user = User(
-            id=user.id,
-            leetcode_id=leetcode_id,
-            stats=Stats(
-                submissions=Submissions(
-                    easy=stats.submissions.easy,
-                    medium=stats.submissions.medium,
-                    hard=stats.submissions.hard,
-                )
-            ),
-        )
-
-        record = Record(
-            timestamp=datetime.now().replace(hour=0, minute=0, second=0, microsecond=0),
-            user=user,
-            submissions=Submissions(
-                easy=stats.submissions.easy,
-                medium=stats.submissions.medium,
-                hard=stats.submissions.hard,
-                score=convert_to_score(**stats.submissions),
-            ),
-        )
-
-        preference_server = Preference(
-            user=user,
-            server=DBRef("servers", server_id),
-            # Use server username.
-            name=interaction.user.display_name,
-        )
-
-        preference_global = Preference(
-            user=user,
-            server=DBRef("servers", GLOBAL_LEADERBOARD_ID),
-            # User account username.
-            name=interaction.user.name,
-        )
-
-        await Server.find_one(Server.id == server_id).update(
-            AddToSet({Server.users: user})
-        )
-        server = await Server.get(server_id)
-        # ! Check how to do this properly
-        # ! Maybe issues with writeruling the user the using the user object in record
-        # ! preference_server and preference_global
-        # Link rule to create a new document for the new user link.
-        await server.save(link_rule=WriteRules.WRITE)
-        await record.save()
-        await preference_server.save()
-        await preference_global.save()
-
-        # Add to the global leaderboard.
-        await Server.find_one(Server.id == GLOBAL_LEADERBOARD_ID).update(
-            AddToSet({Server.users: user})
-        )
-
-        await give_verified_role(interaction.user, interaction.guild.id)
-
-        await interaction.edit_original_response(embed=profile_added_embed(leetcode_id))
-
-    async def _linking_process(
-        self, send_message: discord.Webhook, leetcode_id: str
-    ) -> None:
-        """
-        Initiates the account linking process.
-
-        :param send_message: The webhook to send messages.
-        :param leetcode_id: The LeetCode ID of the user.
-        """
-
-        # Generate a random string for account linking
-        generated_string = "".join(random.choices(string.ascii_letters, k=8))
-
-        await send_message(
-            embed=connect_account_instructions_embed(generated_string, leetcode_id)
-        )
-
-        profile_name = None
-
-        # TODO: Use self.config
-        duration = 60  # seconds
-        check_interval = 5  # seconds
-
-        async with aiohttp.ClientSession() as client_session:
-            # Check if the profile name matches the generated string
-            for _ in range(duration // check_interval):
-                stats = await get_problems_solved_and_rank(
-                    client_session,
-                    leetcode_id,
-                )
-
-                if not stats:
-                    break
-
-                profile_name = stats.real_name
-
-                if profile_name == generated_string:
-                    break
-
-                await asyncio.sleep(check_interval)
-
-        return profile_name == generated_string
 
 
 async def setup(bot: commands.Bot) -> None:

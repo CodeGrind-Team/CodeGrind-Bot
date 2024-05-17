@@ -4,6 +4,8 @@ from beanie import init_beanie
 from motor.motor_asyncio import AsyncIOMotorClient
 
 from .models.analytics_model import Analytics
+from .models.preference_model import Preference
+from .models.record_model import Record
 from .models.server_model import Server
 from .models.user_model import User
 
@@ -17,7 +19,8 @@ async def init_mongodb_conn(mongodb_uri: str, global_leaderboard_id: int) -> Non
     mongodb_client = AsyncIOMotorClient(mongodb_uri)
 
     await init_beanie(
-        database=mongodb_client.bot, document_models=[Server, User, Analytics]
+        database=mongodb_client.bot,
+        document_models=[Preference, Record, Server, User, Analytics],
     )
 
     # Create global leaderboard 'server' with id 0.

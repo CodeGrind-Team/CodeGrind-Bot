@@ -53,7 +53,7 @@ async def get_score(period: Period, user: User) -> int:
     # If a timestamp is defined, find the record starting from that time
     if record_timestamp:
         record = await Record.find_one(
-            Record.user == user,
+            Record.user_id == user.id,
             Record.timestamp >= record_timestamp,
             sort=Record.timestamp,
         )
@@ -169,7 +169,7 @@ async def build_leaderboard_page(
         # ? Check if this is possible or if dbref needs to be
         # ? specified on the id
         preference = await Preference.find_one(
-            Preference.user == user, Preference.server == server
+            Preference.user_id == user.id, Preference.server_id == server.id
         )
 
         if not preference:

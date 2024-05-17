@@ -1,15 +1,15 @@
 import discord
 
 from utils.questions_utils import (
-    get_daily_question,
-    get_question_info_from_title,
-    get_random_question,
+    fetch_daily_question,
+    fetch_question_info,
+    fetch_random_question,
     search_question,
 )
 
 
 async def daily_question_embed() -> discord.Embed:
-    question_title = await get_daily_question()
+    question_title = await fetch_daily_question()
 
     if not question_title:
         return question_error_embed()
@@ -29,7 +29,7 @@ async def search_question_embed(search_text) -> discord.Embed:
 
 
 async def random_question_embed(difficulty: str) -> discord.Embed:
-    question_title = await get_random_question(difficulty)
+    question_title = await fetch_random_question(difficulty)
 
     if not question_title:
         return question_error_embed()
@@ -39,7 +39,7 @@ async def random_question_embed(difficulty: str) -> discord.Embed:
 
 
 async def question_embed(question_title: str) -> discord.Embed:
-    info = await get_question_info_from_title(question_title)
+    info = await fetch_question_info(question_title)
 
     if not info:
         return question_error_embed()

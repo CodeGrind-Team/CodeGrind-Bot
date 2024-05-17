@@ -11,7 +11,6 @@ import requests
 from discord.ext import commands
 
 from utils.common_utils import to_thread
-from utils.ratings_utils import fetch_rating_data
 
 URL = "https://leetcode.com/graphql"
 HEADERS = {
@@ -338,7 +337,7 @@ def fetch_question_info(
         # Get question rating
         question_rating = None
         if not is_paid_only:
-            rating_data = fetch_rating_data(title)
+            rating_data = bot.ratings.fetch_rating_data(title)
             if rating_data:
                 question_rating = int(rating_data["rating"])
 
@@ -368,13 +367,13 @@ def fetch_question_info(
 
 @backoff.on_exception(backoff.expo, RateLimitReached)
 async def fetch_problems_solved_and_rank(
-    bot: commands.Bot, client_session: aiohttp.ClientSession, leetcode_username: str
+    bot: commands.Bot, client_session: aiohttp.ClientSession, leetcode_id: str
 ) -> UserStats | None:
     """
     Retrieves the statistics of problems solved and rank of a LeetCode user.
 
     :param client_session: The aiohttp ClientSession to use for making requests.
-    :param leetcode_username: The LeetCode username.
+    :param leetcode_id: The LeetCode username.
 
     :return: Statistics of problems solved and rank of the user, or None if an error
     occurs.
@@ -382,8 +381,8 @@ async def fetch_problems_solved_and_rank(
 
     bot.logger.info(
         "file: utils/questions_utils.py ~ fetch_problems_solved_and_rank ~ run ~ \
-            leetcode_username: %s",
-        leetcode_username,
+            leetcode_id: %s",
+        leetcode_id,
     )
 
     data = {
@@ -402,13 +401,13 @@ async def fetch_problems_solved_and_rank(
             }
         }
         """,
-        "variables": {"username": leetcode_username},
+        "variables": {"username": leetcode_id},
     }
 
     bot.logger.info(
         "file: utils/questions_utils.py ~ fetch_problems_solved_and_rank ~ data \
             requesting ~ https://leetcode.com/%s",
-        leetcode_username,
+        leetcode_id,
     )
 
     async with semaphore:
@@ -434,7 +433,7 @@ async def fetch_problems_solved_and_rank(
         bot.logger.exception(
             "file: utils/questions_utils.py ~ fetch_problems_solved_and_rank ~ \
                 LeetCode username: % s ~ Error code: % s",
-            leetcode_username,
+            leetcode_id,
             response.status,
         )
 
@@ -445,7 +444,7 @@ async def fetch_problems_solved_and_rank(
         bot.logger.exception(
             "file: utils/questions_utils.py ~ fetch_problems_solved_and_rank ~ \
                 LeetCode username: %s ~ Error code: %s",
-            leetcode_username,
+            leetcode_id,
             response.status,
         )
         bot.channel_logger.forbidden()
@@ -454,7 +453,7 @@ async def fetch_problems_solved_and_rank(
         bot.logger.exception(
             "file: utils/questions_utils.py ~ fetch_problems_solved_and_rank ~ \
                 LeetCode username: %s ~ Error code: %s",
-            leetcode_username,
+            leetcode_id,
             response.status,
         )
         return
@@ -464,7 +463,7 @@ async def fetch_problems_solved_and_rank(
     matched_user = response_data.get("data", {}).get("matchedUser")
 
     if not matched_user:
-        bot.logger.warning("User %s not found", leetcode_username)
+        bot.logger.warning("User %s not found", leetcode_id)
         return
 
     real_name = matched_user["profile"]["realName"]

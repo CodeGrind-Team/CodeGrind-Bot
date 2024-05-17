@@ -4,6 +4,8 @@ from random import random
 
 import discord
 
+from discord.ext import commands
+
 
 class ChannelLogger:
     """
@@ -17,7 +19,7 @@ class ChannelLogger:
     :param channel_id: The ID of the Discord channel to log messages to.
     """
 
-    def __init__(self, bot: discord.Bot, channel_id: int) -> None:
+    def __init__(self, bot: commands.Bot, channel_id: int) -> None:
         self.bot = bot
         self.rate_limits = 0
         self.forbidden_count = 0

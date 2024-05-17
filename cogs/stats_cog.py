@@ -30,8 +30,6 @@ class StatsCog(commands.Cog):
         :param option: The stats card option to select.
         :param member: The member whose stats to display.
         """
-        server = await Server.find_one(User.id == interaction.user.id)
-
         user_id = member.id if member else interaction.user.id
         user = await User.find_one(User.id == user_id)
 
@@ -40,7 +38,7 @@ class StatsCog(commands.Cog):
             return
 
         preference = await Preference.find_one(
-            Preference.user == user, Preference.server == server
+            Preference.user_id == user_id, Preference.server_id == interaction.guild.id
         )
 
         if user.id != interaction.user.id and not preference.url:

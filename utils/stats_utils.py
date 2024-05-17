@@ -3,7 +3,7 @@ from datetime import datetime
 # ! replace commands.Bot with custom bot
 from database.models.record_model import Record
 from database.models.user_model import Submissions, User
-from utils.common_utils import calculate_scores
+from utils.common_utils import convert_to_score
 from utils.questions_utils import UserStats, fetch_problems_solved_and_rank
 
 
@@ -42,12 +42,12 @@ async def update_stats(user: User, store: bool = False) -> None:
     if store:
         record = Record(
             timestamp=datetime.now().replace(hour=0, minute=0, second=0, microsecond=0),
-            user=user,
+            user_id=user.id,
             submissions=Submissions(
                 easy=stats.submissions.easy,
                 medium=stats.submissions.medium,
                 hard=stats.submissions.hard,
-                score=calculate_scores(**stats.submissions),
+                score=convert_to_score(**stats.submissions),
             ),
         )
 

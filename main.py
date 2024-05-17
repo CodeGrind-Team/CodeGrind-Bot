@@ -12,7 +12,6 @@ import platform
 from datetime import UTC, datetime
 
 import discord
-import redis
 import topgg
 from discord.ext import commands
 from discord.ext.commands import Context
@@ -22,14 +21,17 @@ from html2image import Html2Image
 from constants import GLOBAL_LEADERBOARD_ID
 from database.setup import init_mongodb_conn
 from utils.dev_utils import ChannelLogger
-from utils.leaderboards_utils import LeaderboardManager
 from utils.notifications_utils import (
     send_daily_question_and_update_stats,
     send_daily_question_and_update_stats_schedule,
 )
+from utils.ratings_utils import Ratings
 
-if not os.path.isfile(f"{os.path.realpath(os.path.dirname(__file__))}/logs"):
-    os.makedirs(f"{os.path.realpath(os.path.dirname(__file__))}/logs")
+load_dotenv(find_dotenv())
+
+logs_path = os.path.join(os.path.dirname(__file__), "logs")
+if not os.path.isdir(logs_path):
+    os.makedirs(logs_path)
 
 intents = discord.Intents.default()
 intents.members = True
@@ -86,6 +88,7 @@ logger.addHandler(file_handler)
 class DiscordBot(commands.Bot):
     def __init__(self) -> None:
         super().__init__(
+            command_prefix=",",
             intents=intents,
             help_command=None,
         )
@@ -97,10 +100,8 @@ class DiscordBot(commands.Bot):
         self.html2image = Html2Image(
             browser_executable=os.getenv("BROWSER_EXECUTABLE_PATH")
         )
-        self.leaderboards_manager = LeaderboardManager()
         self.channel_logger = None
         self.topggpy = None
-        # TODO: self.ratings = None
 
     async def on_autopost_success(self):
         """Runs when stats are posted to topgg"""
@@ -120,17 +121,17 @@ class DiscordBot(commands.Bot):
                 self, os.getenv("TOPGG_TOKEN"), autopost=True, post_shard_count=True
             )
 
-    async def on_guild_remove(self) -> None:
-        # TODO
-        pass
+    # async def on_guild_remove(self) -> None:
+    #     # TODO
+    #     pass
 
-    async def on_member_remove(self) -> None:
-        # TODO
-        pass
+    # async def on_member_remove(self) -> None:
+    #     # TODO
+    #     pass
 
-    async def on_member_update(self) -> None:
-        # TODO
-        pass
+    # async def on_member_update(self) -> None:
+    #     # TODO
+    #     pass
 
     async def load_cogs(self) -> None:
         """
@@ -181,11 +182,12 @@ class DiscordBot(commands.Bot):
             f"Running on: {platform.system()} {platform.release()} ({os.name})"
         )
         self.logger.info("-------------------")
-        # TODO: await read_ratings_txt()
+
         await init_mongodb_conn(os.getenv("MONGODB_URI"), GLOBAL_LEADERBOARD_ID)
         await self.load_cogs()
         await self.init_topgg()
         self.channel_logger = ChannelLogger(self, int(os.environ["LOGGING_CHANNEL_ID"]))
+        self.ratings = await Ratings.create("ratings.txt")
 
         send_daily_question_and_update_stats_schedule.start()
 
@@ -274,8 +276,6 @@ class DiscordBot(commands.Bot):
         else:
             raise error
 
-
-load_dotenv(find_dotenv())
 
 bot = DiscordBot()
 bot.run(os.getenv("TOKEN"))

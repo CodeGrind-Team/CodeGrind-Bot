@@ -11,8 +11,7 @@ from embeds.questions_embeds import daily_question_embed
 from utils.analytics_utils import save_analytics
 from utils.leaderboards_utils import send_leaderboard_winners, update_global_leaderboard
 from utils.roles_utils import update_roles
-from utils.stats_utils import update_rankings, update_stats
-from utils.users_utils import remove_inactive_users
+from utils.stats_utils import update_stats
 
 
 async def send_daily_question(
@@ -113,11 +112,9 @@ async def send_daily_question_and_update_stats(
         await server.save()
 
         if daily_reset:
-            await update_rankings(server, now, "daily")
             await send_leaderboard_winners(server, "yesterday")
 
         if weekly_reset:
-            await update_rankings(server, now, "weekly")
             await send_leaderboard_winners(server, "last_week")
 
         if midday:

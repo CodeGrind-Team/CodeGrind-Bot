@@ -33,7 +33,7 @@ def leaderboard_embed(
     # ! add start and end update to footer
 
     embed.set_footer(
-        text=f"Easy: {DifficultyScore.easy} point, Medium: {DifficultyScore.medium} points, Hard: {DifficultyScore.hard} points\nUpdated on {last_updated}\nPage {page_i + 1}/{page_count}"
+        text=f"Easy: {DifficultyScore.EASY.value} point, Medium: {DifficultyScore.MEDIUM.value} points, Hard: {DifficultyScore.HARD.value} points\nUpdated on {last_updated}\nPage {page_i + 1}/{page_count}"
     )
 
     return embed
