@@ -9,7 +9,7 @@ from database.models.analytics_model import Analytics
 from database.models.preference_model import Preference
 from database.models.server_model import Server
 from embeds.users_embeds import preferences_update_prompt_embeds
-from views.user_settings_view import UserPreferencesPrompt
+from views.preferences_views import UserPreferencesPrompt
 
 
 def ensure_server_document(func: Callable) -> Callable:

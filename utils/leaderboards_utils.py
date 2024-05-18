@@ -12,7 +12,7 @@ from database.models.server_model import Server
 from database.models.user_model import User
 from embeds.leaderboards_embeds import empty_leaderboard_embed, leaderboard_embed
 from utils.common_utils import strftime_with_suffix
-from views.leaderboard_view import LeaderboardPagination
+from views.leaderboards_views import LeaderboardPagination
 
 
 async def get_user_and_score(user: User, period: Period) -> tuple[User, int]:

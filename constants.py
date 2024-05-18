@@ -36,9 +36,9 @@ class StatsCardOptions(Enum):
 
 
 class NotificationOptions(Enum):
+    MAINTENANCE = "maintenance"
     DAILY_QUESTION = "daily_question"
     WINNERS = "winners"
-    MAINTENANCE = "maintenance"
 
 
 GLOBAL_LEADERBOARD_ID = 0

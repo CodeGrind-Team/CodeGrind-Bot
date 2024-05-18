@@ -13,7 +13,7 @@ class RegisterOrLoginView(discord.ui.View):
         super().__init__(timeout=timeout)
 
     @discord.ui.button(label="Connect", style=discord.ButtonStyle.blurple)
-    async def yes(
+    async def connect(
         self, interaction: discord.Interaction, button: discord.ui.Button
     ) -> None:
         server_id = interaction.guild.id

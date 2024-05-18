@@ -4,7 +4,7 @@ from discord.ext import commands
 from constants import COMMAND_CATEGORIES
 from embeds.general_embeds import help_embed
 from middleware import defer_interaction, track_analytics
-from views.commands_help_view import CommandTypeSelectView
+from views.general_views import CommandCategorySelectView
 
 
 class GeneralCog(commands.Cog):
@@ -24,7 +24,7 @@ class GeneralCog(commands.Cog):
         embed.set_footer(text="Love our bot? Vote on top.gg using /vote")
 
         await interaction.followup.send(
-            embed=embed, view=CommandTypeSelectView(COMMAND_CATEGORIES)
+            embed=embed, view=CommandCategorySelectView(COMMAND_CATEGORIES)
         )
 
     @discord.app_commands.command(

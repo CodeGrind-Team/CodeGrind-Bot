@@ -9,7 +9,7 @@ from embeds.users_embeds import (
 )
 from middleware import defer_interaction, ensure_server_document, track_analytics
 from middleware.database_middleware import update_user_preferences_prompt
-from views.register_or_login_view import RegisterOrLoginView
+from views.user_views import RegisterOrLoginView
 
 
 class UsersCog(commands.Cog):
