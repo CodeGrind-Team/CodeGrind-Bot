@@ -101,19 +101,17 @@ async def register(
         name=interaction.user.name,
     )
 
-    await Server.find_one(Server.id == server_id).update(AddToSet({Server.users: user}))
-    # ! Check how to do this properly
-    # ! Maybe issues with writeruling the user the using the user object in record
-    # ! preference_server and preference_global
-    # Link rule to create a new document for the new user link.
-    await (await Server.get(server_id)).save(link_rule=WriteRules.WRITE)
+    await user.save()
     await record.create()
     await preference_server.create()
     await preference_global.create()
 
-    # Add to the global leaderboard.
+    await Server.find_one(Server.id == server_id).update(
+        AddToSet({Server.users: DBRef("users", user_id)})
+    )
+
     await Server.find_one(Server.id == GLOBAL_LEADERBOARD_ID).update(
-        AddToSet({Server.users: user})
+        AddToSet({Server.users: DBRef("users", user_id)})
     )
 
     await give_verified_role(interaction.guild, interaction.user)
