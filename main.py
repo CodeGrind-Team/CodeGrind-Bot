@@ -1,7 +1,8 @@
 """
 Copyright © Krypton 2019-2023 - https://github.com/kkrypt0nn (https://krypton.ninja)
 Description:
-🐍 A simple template to start to code your own and personalized discord bot in Python programming language.
+🐍 A simple template to start to code your own and personalized discord bot in Python
+programming language.
 
 Version: 6.1.0
 """
@@ -9,6 +10,7 @@ Version: 6.1.0
 import logging
 import os
 import platform
+from dataclasses import dataclass
 from datetime import UTC, datetime
 
 import discord
@@ -85,8 +87,24 @@ file_handler.setFormatter(file_handler_formatter)
 logger.addHandler(file_handler)
 
 
+@dataclass
+class Config:
+    DISCORD_TOKEN: str
+    MONGODB_URI: str
+    TOPGG_TOKEN: str
+    BROWSER_EXECUTABLE_PATH: str
+    LOGGING_CHANNEL_ID: int
+    SYNC_COMMANDS: bool
+    PRODUCTION: bool
+    MAINTENANCE: bool
+    UPDATE_STATS_ON_START: bool
+    DAILY_RESET_ON_START: bool
+    WEEKLY_RESET_ON_START: bool
+    MONTHLY_RESET_ON_START: bool
+
+
 class DiscordBot(commands.Bot):
-    def __init__(self) -> None:
+    def __init__(self, config: Config, logger: logging.Logger) -> None:
         super().__init__(
             command_prefix=",",
             intents=intents,
@@ -96,10 +114,9 @@ class DiscordBot(commands.Bot):
         This creates custom bot variables so that we can access these variables in cogs
         more easily.
         """
+        self.config = config
         self.logger = logger
-        self.html2image = Html2Image(
-            browser_executable=os.getenv("BROWSER_EXECUTABLE_PATH")
-        )
+        self.html2image = Html2Image(browser_executable=config.BROWSER_EXECUTABLE_PATH)
         self.channel_logger = None
         self.topggpy = None
 
@@ -116,9 +133,9 @@ class DiscordBot(commands.Bot):
         )
 
     async def init_topgg(self) -> None:
-        if os.getenv("PRODUCTION", "False") == "True":
+        if self.config.PRODUCTION:
             self.topggpy = topgg.DBLClient(
-                self, os.getenv("TOPGG_TOKEN"), autopost=True, post_shard_count=True
+                self, self.config.TOPGG_TOKEN, autopost=True, post_shard_count=True
             )
 
     # async def on_guild_remove(self) -> None:
@@ -152,16 +169,16 @@ class DiscordBot(commands.Bot):
     async def on_ready(self) -> None:
         self.logger.info("file: main.py ~ on_ready ~ start")
 
-        if os.getenv("MAINTENANCE", "False") == "True":
+        if self.config.MAINTENANCE:
             await self.change_presence(
                 status=discord.Status.do_not_disturb,
                 activity=discord.Game(name="Under Maintenance"),
             )
 
-        update_stats_on_start = os.getenv("UPDATE_STATS_ON_START", "False") == "True"
-        daily_reset_on_start = os.getenv("DAILY_RESET_ON_START", "False") == "True"
-        weekly_reset_on_start = os.getenv("WEEKLY_RESET_ON_START", "False") == "True"
-        monthly_reset_on_start = os.getenv("MONTHLY_RESET_ON_START", "False") == "True"
+        update_stats_on_start = self.config.UPDATE_STATS_ON_START
+        daily_reset_on_start = self.config.DAILY_RESET_ON_START
+        weekly_reset_on_start = self.config.WEEKLY_RESET_ON_START
+        monthly_reset_on_start = self.config.MONTHLY_RESET_ON_START
 
         if update_stats_on_start or daily_reset_on_start or weekly_reset_on_start:
             await send_daily_question_and_update_stats(
@@ -183,11 +200,15 @@ class DiscordBot(commands.Bot):
         )
         self.logger.info("-------------------")
 
-        await init_mongodb_conn(os.getenv("MONGODB_URI"), GLOBAL_LEADERBOARD_ID)
+        await init_mongodb_conn(self.config.MONGODB_URI, GLOBAL_LEADERBOARD_ID)
         await self.load_cogs()
         await self.init_topgg()
         self.channel_logger = ChannelLogger(self, int(os.environ["LOGGING_CHANNEL_ID"]))
         self.ratings = await Ratings.create("ratings.txt")
+
+        if self.config.SYNC_COMMANDS:
+            # Sync commands globally
+            await self.tree.sync()
 
         send_daily_question_and_update_stats_schedule.start()
 
@@ -277,5 +298,20 @@ class DiscordBot(commands.Bot):
             raise error
 
 
-bot = DiscordBot()
-bot.run(os.getenv("TOKEN"))
+config = Config(
+    os.getenv("DISCORD_TOKEN"),
+    os.getenv("MONGODB_URI"),
+    os.getenv("TOPGG_TOKEN"),
+    os.getenv("BROWSER_EXECUTABLE_PATH"),
+    int(os.getenv("LOGGING_CHANNEL_ID")),
+    os.getenv("SYNC_COMMANDS", "False") == "True",
+    os.getenv("PRODUCTION", "False") == "True",
+    os.getenv("MAINTENANCE", "False") == "True",
+    os.getenv("UPDATE_STATS_ON_START", "False") == "True",
+    os.getenv("DAILY_RESET_ON_START", "False") == "True",
+    os.getenv("WEEKLY_RESET_ON_START", "False") == "True",
+    os.getenv("MONTHLY_RESET_ON_START", "False") == "True",
+)
+
+bot = DiscordBot(config, logger)
+bot.run(config.DISCORD_TOKEN)

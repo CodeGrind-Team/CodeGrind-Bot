@@ -4,7 +4,6 @@ import discord
 def help_embed(description: str) -> discord.Embed:
     embed = discord.Embed(
         title="CodeGrind Bot Info & Commands",
-        url="https://github.com/CodeGrind-Team/CodeGrind-Bot/wiki/Commands",
         colour=discord.Colour.blurple(),
     )
 
