@@ -471,14 +471,14 @@ async def fetch_problems_solved_and_rank(
     ac_submission_num = submit_stats_global.get("acSubmissionNum", [])
 
     easy_count = next(
-        (item["count"] for item in ac_submission_num if item["difficulty"] == "easy"), 0
+        (item["count"] for item in ac_submission_num if item["difficulty"] == "Easy"), 0
     )
     medium_count = next(
-        (item["count"] for item in ac_submission_num if item["difficulty"] == "medium"),
+        (item["count"] for item in ac_submission_num if item["difficulty"] == "Medium"),
         0,
     )
     hard_count = next(
-        (item["count"] for item in ac_submission_num if item["difficulty"] == "hard"), 0
+        (item["count"] for item in ac_submission_num if item["difficulty"] == "Hard"), 0
     )
 
     return UserStats(

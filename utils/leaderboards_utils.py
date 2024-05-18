@@ -1,3 +1,4 @@
+import asyncio
 from datetime import UTC, datetime, timedelta
 
 import discord
@@ -12,6 +13,11 @@ from database.models.user_model import User
 from embeds.leaderboards_embeds import empty_leaderboard_embed, leaderboard_embed
 from utils.common_utils import strftime_with_suffix
 from views.leaderboard_view import LeaderboardPagination
+
+
+async def get_user_and_score(user: User, period: Period) -> tuple[User, int]:
+    score = await get_score(period, user)
+    return user, score
 
 
 async def get_score(period: Period, user: User) -> int:
@@ -52,10 +58,12 @@ async def get_score(period: Period, user: User) -> int:
 
     # If a timestamp is defined, find the record starting from that time
     if record_timestamp:
+        # Get's first document that matches the criteria based on the natural order.
+        # The natural order is when the document was added, which will be case for
+        # this collection, but note in case this changes in the future.
         record = await Record.find_one(
             Record.user_id == user.id,
             Record.timestamp >= record_timestamp,
-            sort=Record.timestamp,
         )
 
         if not record:
@@ -94,9 +102,7 @@ async def generate_leaderboard_embed(
     if not server:
         return empty_leaderboard_embed(), None
 
-    sorted_users: list[User] = sorted(
-        server.users, key=lambda user: get_score(period, user), reverse=True
-    )
+    sorted_users_with_score = await sort_users_by_score(server, period)
 
     pages: list[discord.Embed] = []
     num_pages = -(-len(server.users) // users_per_page)
@@ -105,10 +111,10 @@ async def generate_leaderboard_embed(
     prev_score = float("-inf")
 
     for page_index in range(num_pages):
-        page, place, prev_score = await build_leaderboard_page(
+        page_embed, place, prev_score = await build_leaderboard_page(
             period,
             server,
-            sorted_users,
+            sorted_users_with_score,
             winners_only,
             global_leaderboard,
             page_index,
@@ -117,7 +123,7 @@ async def generate_leaderboard_embed(
             place,
             prev_score,
         )
-        pages.append(page)
+        pages.append(page_embed)
 
     if len(pages) == 0:
         embed = empty_leaderboard_embed()
@@ -132,7 +138,7 @@ async def generate_leaderboard_embed(
 async def build_leaderboard_page(
     period: Period,
     server: Server,
-    sorted_users: list[User],
+    sorted_users: list[tuple[User, int]],
     winners_only: bool,
     global_leaderboard: bool,
     page_index: int,
@@ -160,11 +166,11 @@ async def build_leaderboard_page(
 
     leaderboard = []
 
-    for user in sorted_users[
+    for user, score in sorted_users[
         page_index * users_per_page : page_index * users_per_page + users_per_page
     ]:
 
-        profile_link = f"https://leetcode.com/{user.leetcode_username}"
+        profile_link = f"https://leetcode.com/{user.leetcode_id}"
 
         # ? Check if this is possible or if dbref needs to be
         # ? specified on the id
@@ -177,8 +183,7 @@ async def build_leaderboard_page(
 
         name = preference.name
         url = preference.url
-        visible = preference.visible
-        score = await get_score(period, user.id)
+        anonymous = preference.anonymous
 
         if score != prev_score:
             place += 1
@@ -190,7 +195,7 @@ async def build_leaderboard_page(
 
         display_name = (
             "Anonymous User"
-            if not visible and global_leaderboard
+            if anonymous and global_leaderboard
             else (f"[{name}]({profile_link})" if url else name)
         )
 
@@ -281,11 +286,11 @@ def get_rank_emoji(place: int, score: int) -> str:
     if score != 0:
         match place:
             case 1:
-                return RankEmoji.FIRST
+                return RankEmoji.FIRST.value
             case 2:
-                return RankEmoji.SECOND
+                return RankEmoji.SECOND.value
             case 3:
-                return RankEmoji.THIRD
+                return RankEmoji.THIRD.value
 
     return f"{place}\."  # noqa: W605
 
@@ -344,3 +349,13 @@ async def update_global_leaderboard() -> None:
         await Server.find_one(Server.id == GLOBAL_LEADERBOARD_ID).update(
             AddToSet({Server.users: user})
         )
+
+
+async def sort_users_by_score(server: Server, period: Period) -> list[User]:
+    coroutines = [get_user_and_score(user, period) for user in server.users]
+    users_with_scores = await asyncio.gather(*coroutines)
+    sorted_users_with_score = sorted(
+        users_with_scores, key=lambda pair: pair[1], reverse=True
+    )
+
+    return sorted_users_with_score

@@ -90,7 +90,7 @@ class LeaderboardsGroupCog(commands.GroupCog, name="leaderboard"):
         """
 
         await self._generate_leaderboard_response(
-            interaction, Period.ALLTIME, page, True
+            interaction, Period.ALLTIME, page=page, global_leaderboard=True
         )
 
     @discord.app_commands.command(
@@ -108,7 +108,9 @@ class LeaderboardsGroupCog(commands.GroupCog, name="leaderboard"):
         :param page: The page number of the leaderboard.
         """
 
-        await self._generate_leaderboard_response(interaction, Period.MONTH, page, True)
+        await self._generate_leaderboard_response(
+            interaction, Period.MONTH, page, global_leaderboard=True
+        )
 
     @discord.app_commands.command(
         name="global-weekly", description="View the Global Weekly leaderboard"
@@ -125,7 +127,9 @@ class LeaderboardsGroupCog(commands.GroupCog, name="leaderboard"):
         :param page: The page number of the leaderboard.
         """
 
-        await self._generate_leaderboard_response(interaction, Period.WEEK, page, True)
+        await self._generate_leaderboard_response(
+            interaction, Period.WEEK, page, global_leaderboard=True
+        )
 
     @discord.app_commands.command(
         name="global-daily", description="View the Global Daily leaderboard"
@@ -142,7 +146,9 @@ class LeaderboardsGroupCog(commands.GroupCog, name="leaderboard"):
         :param page: The page number of the leaderboard.
         """
 
-        await self._generate_leaderboard_response(interaction, Period.DAY, page, True)
+        await self._generate_leaderboard_response(
+            interaction, Period.DAY, page, global_leaderboard=True
+        )
 
     async def _generate_leaderboard_response(
         self,
@@ -163,8 +169,8 @@ class LeaderboardsGroupCog(commands.GroupCog, name="leaderboard"):
             period,
             interaction.guild.id,
             interaction.user.id,
-            global_leaderboard,
-            page,
+            global_leaderboard=global_leaderboard,
+            page=page,
         )
 
         await interaction.followup.send(embed=embed, view=view)

@@ -107,7 +107,7 @@ async def update_user_preferences_prompt(
     if (
         reminder
         and preference.last_updated
-        and (datetime.now(UTC) - preference.last_updated).days <= 30
+        and (datetime.now(UTC) - preference.last_updated.astimezone(UTC)).days <= 30
     ):
         return
 
