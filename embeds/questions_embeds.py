@@ -1,5 +1,8 @@
+import aiohttp
 import discord
+from discord.ext import commands
 
+from constants import Difficulty
 from utils.questions_utils import (
     fetch_daily_question,
     fetch_question_info,
@@ -8,55 +11,50 @@ from utils.questions_utils import (
 )
 
 
-async def daily_question_embed() -> discord.Embed:
-    question_title = await fetch_daily_question()
+async def daily_question_embed(
+    bot: commands.Bot, client_session: aiohttp.ClientSession
+) -> discord.Embed:
+    question_title = await fetch_daily_question(bot, client_session)
 
     if not question_title:
         return question_error_embed()
 
-    embed = await question_embed(question_title)
+    embed = await question_embed(bot, client_session, question_title)
     return embed
 
 
-async def search_question_embed(search_text) -> discord.Embed:
-    question_title = await search_question(search_text)
+async def search_question_embed(
+    bot: commands.Bot, client_session: aiohttp.ClientSession, search_text: str
+) -> discord.Embed:
+    question_title = await search_question(bot, client_session, search_text)
 
     if not question_title:
         return question_error_embed()
 
-    embed = await question_embed(question_title)
+    embed = await question_embed(bot, client_session, question_title)
     return embed
 
 
-async def random_question_embed(difficulty: str) -> discord.Embed:
-    question_title = await fetch_random_question(difficulty)
+async def random_question_embed(
+    bot: commands.Bot, client_session: aiohttp.ClientSession, difficulty: Difficulty
+) -> discord.Embed:
+    question_title = await fetch_random_question(bot, client_session, difficulty)
 
     if not question_title:
         return question_error_embed()
 
-    embed = await question_embed(question_title)
+    embed = await question_embed(bot, client_session, question_title)
     return embed
 
 
-async def question_embed(question_title: str) -> discord.Embed:
-    info = await fetch_question_info(question_title)
+# TODO: split into logic and embed
+async def question_embed(
+    bot: commands.Bot, client_session: aiohttp.ClientSession, question_title: str
+) -> discord.Embed:
+    info = await fetch_question_info(bot, client_session, question_title)
 
     if not info:
         return question_error_embed()
-
-    (
-        premium,
-        question_id,
-        difficulty,
-        title,
-        link,
-        total_accepted,
-        total_submission,
-        ac_rate,
-        question_rating,
-        description,
-        constraints,
-    ) = info
 
     colour_dict = {
         "Easy": discord.Colour.green(),
@@ -64,28 +62,32 @@ async def question_embed(question_title: str) -> discord.Embed:
         "Hard": discord.Colour.red(),
     }
     colour = (
-        colour_dict[difficulty] if difficulty in colour_dict else discord.Colour.blue()
+        colour_dict[info.difficulty]
+        if info.difficulty in colour_dict
+        else discord.Colour.blue()
     )
 
-    if premium:
-        return premium_question_embed(question_id, title, link, colour)
+    if info.premium:
+        return premium_question_embed(info.question_id, info.title, info.link, colour)
 
     embed = discord.Embed(
-        title=f"{question_id}. {title}",
-        url=link,
-        description=description,
+        title=f"{info.question_id}. {info.title}",
+        url=info.link,
+        description=info.description,
         colour=colour,
     )
 
-    embed.add_field(name="Constraints: ", value=constraints, inline=False)
+    # TODO: handle descriptions/examples larger than the limit https://www.pythondiscord.com/pages/guides/python-guides/discord-embed-limits/
+    embed.add_field(name="Example 1: ", value=info.example_one, inline=False)
+    embed.add_field(name="Difficulty: ", value=info.difficulty, inline=True)
 
-    embed.add_field(name="Difficulty: ", value=difficulty, inline=True)
-
-    if question_rating is not None:
-        embed.add_field(name="Zerotrac Rating: ", value=question_rating, inline=True)
+    if info.question_rating is not None:
+        embed.add_field(
+            name="Zerotrac Rating: ", value=f"||{info.question_rating}||", inline=True
+        )
 
     embed.set_footer(
-        text=f"Accepted: {total_accepted}  |  Submissions: {total_submission}  |  Acceptance Rate: {ac_rate}"
+        text=f"Accepted: {info.total_accepted}  |  Submissions: {info.total_submission}  |  Acceptance Rate: {info.ac_rate}"
     )
 
     return embed

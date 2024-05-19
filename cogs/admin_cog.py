@@ -18,7 +18,7 @@ class AdminGroupCog(commands.GroupCog, name="settings"):
         self.bot = bot
 
     @discord.app_commands.command(
-        name="timezone", description="Admins only: Change the timezone"
+        name="timezone", description="Admins only: Change the server's timezone"
     )
     @defer_interaction(ephemeral_default=True)
     @ensure_server_document
@@ -31,7 +31,7 @@ class AdminGroupCog(commands.GroupCog, name="settings"):
         Command to change the server timezone.
 
         :param interaction: The Discord interaction.
-        :param timezone: The PYTZ timezone to set.
+        :param timezone: The PYTZ timezone to set on the server.
         """
         if timezone not in pytz.all_timezones:
             embed = invalid_timezone_embed()

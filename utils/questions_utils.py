@@ -10,7 +10,7 @@ import markdownify
 import requests
 from discord.ext import commands
 
-from utils.common_utils import to_thread
+from constants import Difficulty
 
 URL = "https://leetcode.com/graphql"
 HEADERS = {
@@ -38,7 +38,7 @@ class QuestionInfo:
     ac_rate: float
     question_rating: int | None
     description: str | None
-    constraints: str | None
+    example_one: str | None
 
 
 @dataclass
@@ -59,7 +59,7 @@ class RateLimitReached(Exception):
         super().__init__("ExceptionWithStatusCode. Error: 429. Rate Limited.")
 
 
-def _parse_content(content: str) -> tuple[str, str]:
+def parse_content(content: str) -> tuple[str, str]:
     """
     Parses the content of a LeetCode question to extract description and constraints.
 
@@ -68,19 +68,27 @@ def _parse_content(content: str) -> tuple[str, str]:
     :return: A tuple containing the description and constraints of the question,
              or None if not found.
     """
-    example_position = content.find('<strong class="example">')
-    constraint_query_string = "<p><strong>Constraints:</strong></p>"
-    constraints_position = content.find(constraint_query_string)
-
-    description = _html_to_markdown(content[:example_position])
-    constraints = _html_to_markdown(
-        content[constraints_position + len(constraint_query_string) :]
+    position_example_one = content.find(
+        '<p><strong class="example">Example 1:</strong></p>'
+    )
+    position_example_two = content.find(
+        '<p><strong class="example">Example 2:</strong></p>'
     )
 
-    return description, constraints
+    description = html_to_markdown(content[:position_example_one])
+    example_one = html_to_markdown(
+        content[
+            position_example_one
+            + len(
+                '<p><strong class="example">Example 1:</strong></p>'
+            ) : position_example_two
+        ]
+    )
+
+    return description, example_one
 
 
-def _html_to_markdown(html: str) -> str:
+def html_to_markdown(html: str) -> str:
     """
     Converts HTML content to Markdown.
 
@@ -90,27 +98,26 @@ def _html_to_markdown(html: str) -> str:
     """
     # Remove all bold, italics, and underlines from code blocks as markdowns doesn't
     # support this.
-    tags_to_remove = [
-        "<b>",
-        "</b>",
-        "<em>",
-        "</em>",
-        "<strong>",
-        "</strong>",
-        "<u>",
-        "</u>",
-    ]
-
-    for tag in tags_to_remove:
-        html = html.replace(tag, "")
-
-    html = re.sub(r"<(code|pre)>(.*?)</\1>", "", html, flags=re.DOTALL)
+    html = re.sub(
+        r"(<code>|<pre>)(.*?)(<[/]code>|<[/]pre>)",
+        lambda m: m.group(0)
+        .replace("<b>", "")
+        .replace("</b>", "")
+        .replace("<em>", "")
+        .replace("</em>", "")
+        .replace("<strong>", "")
+        .replace("</strong>", "")
+        .replace("<u>", "")
+        .replace("</u>", ""),
+        html,
+        flags=re.DOTALL,
+    )
 
     subsitutions = [
         (r"<sup>", r"^"),
         (r"</sup>", r""),
         # Replace image tag with the url src of that image
-        (r'<img.*?src="(.*?)".*?>', r"\1"),
+        (r'<img.*?src="(.*?)".*?>', r""),
         (r"<style.*?>.*?</style>", r""),
         (r"&nbsp;", r" "),
     ]
@@ -126,8 +133,9 @@ def _html_to_markdown(html: str) -> str:
     return markdown
 
 
-@to_thread
-def fetch_random_question(bot: commands.Bot, difficulty: str) -> str | None:
+async def fetch_random_question(
+    bot: commands.Bot, client_session: aiohttp.ClientSession, difficulty: Difficulty
+) -> str | None:
     """
     Fetches a random LeetCode question title slug based on the given difficulty.
 
@@ -138,26 +146,32 @@ def fetch_random_question(bot: commands.Bot, difficulty: str) -> str | None:
     """
     bot.logger.info("file: utils/questions_utils.py ~ fetch_random_question ~ run")
 
+    payload = {
+        "operationName": "randomQuestion",
+        "query": """
+        query randomQuestion($categorySlug: String, $filters: QuestionListFilterInput) {
+            randomQuestion(categorySlug: $categorySlug, filters: $filters) {
+                titleSlug
+            }
+        }
+        """,
+        "variables": {
+            "categorySlug": "all-code-essentials",
+            "filters": (
+                {"difficulty": difficulty.name}
+                if difficulty != Difficulty.RANDOM
+                else {}
+            ),
+        },
+    }
+
     try:
-        response = requests.get("https://leetcode.com/api/problems/all/", timeout=10)
+        response = await client_session.post(
+            URL, json=payload, headers=HEADERS, timeout=10
+        )
         response.raise_for_status()
-        data = response.json()
 
-        difficulty_dict = {"easy": 1, "medium": 2, "hard": 3}
-
-        if difficulty in difficulty_dict:
-            questions = [
-                question
-                for question in data["stat_status_pairs"]
-                if question["difficulty"]["level"] == difficulty_dict[difficulty]
-            ]
-        else:
-            questions = data["stat_status_pairs"]
-
-        question = random.choice(questions)
-        return question["stat"]["question__title_slug"]
-
-    except requests.RequestException as e:
+    except aiohttp.ClientError as e:
         bot.logger.exception(
             "file: cogs/questions.py ~ An error occurred while trying to get the \
                 question from LeetCode: %s",
@@ -166,16 +180,29 @@ def fetch_random_question(bot: commands.Bot, difficulty: str) -> str | None:
 
         return
 
+    try:
+        response_data = await response.json()
+        title_slug = response_data["data"]["randomQuestion"]["titleSlug"]
 
-@to_thread
-def fetch_daily_question(bot: commands.Bot) -> str | None:
+    except ValueError:
+        bot.logger.exception(
+            "file: cogs/questions.py ~ failed to decode json ~ %s",
+            response_data,
+        )
+        return
+
+    return title_slug
+
+
+async def fetch_daily_question(
+    bot: commands.Bot, client_session: aiohttp.ClientSession
+) -> str | None:
     """
     Fetches the title slug of the active daily coding challenge question.
 
     :return: The title slug of the daily coding challenge question,
              or None if an error occurs.
     """
-    # ! Use aiohttp
     bot.logger.info("file: utils/questions_utils.py ~ fetch_daily_question ~ run")
 
     data = {
@@ -192,22 +219,33 @@ def fetch_daily_question(bot: commands.Bot) -> str | None:
     }
 
     try:
-        response = requests.post(URL, json=data, headers=HEADERS, timeout=10)
+        response = await client_session.post(
+            URL, json=data, headers=HEADERS, timeout=10
+        )
         response.raise_for_status()
-        response_data = response.json()
 
-        return response_data["data"]["challenge"]["question"]["titleSlug"]
-
-    except requests.RequestException as e:
+    except aiohttp.ClientError as e:
         bot.logger.exception(
             "file: cogs/questions.py ~ Daily problem could not be retrieved: %s", e
         )
 
+    try:
+        response_data = await response.json()
+        title_slug = response_data["data"]["challenge"]["question"]["titleSlug"]
+
+    except ValueError:
+        bot.logger.exception(
+            "file: cogs/questions.py ~ failed to decode json ~ %s",
+            response_data,
+        )
         return
 
+    return title_slug
 
-@to_thread
-def search_question(bot: commands.Bot, text: str) -> str | None:
+
+async def search_question(
+    bot: commands.Bot, client_session: aiohttp.ClientSession, text: str
+) -> str | None:
     """
     Searches for a LeetCode question title slug based on the provided text.
 
@@ -218,7 +256,7 @@ def search_question(bot: commands.Bot, text: str) -> str | None:
     """
     bot.logger.info("file: utils/questions_utils.py ~ search_question ~ run")
 
-    data = {
+    payload = {
         "operationName": "problemsetQuestionList",
         "query": """
         query problemsetQuestionList(
@@ -249,9 +287,21 @@ def search_question(bot: commands.Bot, text: str) -> str | None:
     }
 
     try:
-        response = requests.post(URL, json=data, headers=HEADERS, timeout=10)
+        response = await client_session.post(
+            URL, json=payload, headers=HEADERS, timeout=10
+        )
         response.raise_for_status()
-        response_data = response.json()
+
+    except requests.RequestException as e:
+        bot.logger.exception(
+            "file: embeds/question_embeds.py ~ Daily problem could not be retrieved: \
+                %s",
+            e,
+        )
+        return
+
+    try:
+        response_data = await response.json()
 
         questions_matched_list = response_data["data"]["problemsetQuestionList"]
 
@@ -260,21 +310,18 @@ def search_question(bot: commands.Bot, text: str) -> str | None:
 
         question_title_slug = questions_matched_list["questions"][0]["titleSlug"]
 
-        return question_title_slug
-
-    except requests.RequestException as e:
+    except ValueError:
         bot.logger.exception(
-            "file: embeds/question_embeds.py ~ Daily problem could not be retrieved: \
-                %s",
-            e,
+            "file: cogs/questions.py ~ failed to decode json ~ %s",
+            response_data,
         )
-
         return
 
+    return question_title_slug
 
-@to_thread
-def fetch_question_info(
-    bot: commands.Bot, question_title_slug: str
+
+async def fetch_question_info(
+    bot: commands.Bot, client_session: aiohttp.ClientSession, question_title_slug: str
 ) -> QuestionInfo | None:
     """
     Retrieves information about a LeetCode question based on its title slug.
@@ -292,7 +339,7 @@ def fetch_question_info(
     )
 
     # Get question info
-    data = {
+    payload = {
         "operationName": "questionInfo",
         "query": """
         query questionInfo($titleSlug: String!) {
@@ -312,15 +359,21 @@ def fetch_question_info(
     }
 
     try:
-        response = requests.post(URL, json=data, headers=HEADERS, timeout=10)
+        response = await client_session.post(
+            URL, json=payload, headers=HEADERS, timeout=10
+        )
         response.raise_for_status()
 
-        response_data = response.json()
-        question = response_data.get("data", {}).get("question")
+    except aiohttp.ClientError as e:
+        bot.logger.exception(
+            "file: utils/questions_utils.py ~ fetch_problems_solved_and_rank ~ \
+                exception: %s",
+            e,
+        )
 
-        if not question:
-            bot.logger.warning("No question data found for %s", question_title_slug)
-            return None
+    try:
+        response_data = await response.json()
+        question = response_data.get("data", {}).get("question")
 
         question_id = question["questionFrontendId"]
         difficulty = question["difficulty"]
@@ -334,35 +387,36 @@ def fetch_question_info(
         total_submission = stats.get("totalSubmission", 0)
         ac_rate = stats.get("acRate", 0.0)
 
-        # Get question rating
-        question_rating = None
-        if not is_paid_only:
-            rating_data = bot.ratings.fetch_rating_data(title)
-            if rating_data:
-                question_rating = int(rating_data["rating"])
-
-        # Parse content for description and constraints
-        description, constraints = _parse_content(content)
-
-        return QuestionInfo(
-            premium=is_paid_only,
-            question_id=question_id,
-            difficulty=difficulty,
-            title=title,
-            link=link,
-            total_accepted=total_accepted,
-            total_submission=total_submission,
-            ac_rate=ac_rate,
-            question_rating=question_rating,
-            description=description,
-            constraints=constraints,
-        )
-
-    except requests.RequestException as e:
+    except ValueError:
         bot.logger.exception(
-            "file: cogs/questions.py ~ Question could not be retrieved: %s", e
+            "file: cogs/questions.py ~ failed to decode json ~ %s",
+            response_data,
         )
         return
+
+    # Get question rating
+    question_rating = None
+    if not is_paid_only:
+        rating_data = bot.ratings.fetch_rating_data(title)
+        if rating_data:
+            question_rating = int(rating_data["rating"])
+
+    # Parse content for description and example one
+    description, example_one = parse_content(content)
+
+    return QuestionInfo(
+        premium=is_paid_only,
+        question_id=question_id,
+        difficulty=difficulty,
+        title=title,
+        link=link,
+        total_accepted=total_accepted,
+        total_submission=total_submission,
+        ac_rate=ac_rate,
+        question_rating=question_rating,
+        description=description,
+        example_one=example_one,
+    )
 
 
 @backoff.on_exception(backoff.expo, RateLimitReached)
@@ -385,7 +439,7 @@ async def fetch_problems_solved_and_rank(
         leetcode_id,
     )
 
-    data = {
+    payload = {
         "operationName": "getProblemsSolvedAndRank",
         "query": """query getProblemsSolvedAndRank($username: String!) {
             matchedUser(username: $username) {
@@ -413,7 +467,7 @@ async def fetch_problems_solved_and_rank(
     async with semaphore:
         try:
             response = await client_session.post(
-                URL, json=data, headers=HEADERS, timeout=10
+                URL, json=payload, headers=HEADERS, timeout=10
             )
 
             # TODO: write why
@@ -458,28 +512,46 @@ async def fetch_problems_solved_and_rank(
         )
         return
 
-    response_data = await response.json()
+    try:
+        response_data = await response.json()
 
-    matched_user = response_data.get("data", {}).get("matchedUser")
+        matched_user = response_data.get["data"]["matchedUser"]
 
-    if not matched_user:
-        bot.logger.warning("User %s not found", leetcode_id)
+        real_name = matched_user["profile"]["realName"]
+        submit_stats_global = matched_user["submitStatsGlobal"]
+        ac_submission_num = submit_stats_global["acSubmissionNum"]
+
+        easy_count = next(
+            (
+                item["count"]
+                for item in ac_submission_num
+                if item["difficulty"] == "Easy"
+            ),
+            0,
+        )
+        medium_count = next(
+            (
+                item["count"]
+                for item in ac_submission_num
+                if item["difficulty"] == "Medium"
+            ),
+            0,
+        )
+        hard_count = next(
+            (
+                item["count"]
+                for item in ac_submission_num
+                if item["difficulty"] == "Hard"
+            ),
+            0,
+        )
+
+    except ValueError:
+        bot.logger.exception(
+            "file: cogs/questions.py ~ failed to decode json ~ %s",
+            response_data,
+        )
         return
-
-    real_name = matched_user["profile"]["realName"]
-    submit_stats_global = matched_user.get("submitStatsGlobal", {})
-    ac_submission_num = submit_stats_global.get("acSubmissionNum", [])
-
-    easy_count = next(
-        (item["count"] for item in ac_submission_num if item["difficulty"] == "Easy"), 0
-    )
-    medium_count = next(
-        (item["count"] for item in ac_submission_num if item["difficulty"] == "Medium"),
-        0,
-    )
-    hard_count = next(
-        (item["count"] for item in ac_submission_num if item["difficulty"] == "Hard"), 0
-    )
 
     return UserStats(
         real_name=real_name,

@@ -1,9 +1,18 @@
+from enum import Enum
+
 import discord
 from discord.ext import commands
 
 from constants import Period
 from middleware import defer_interaction, ensure_server_document, track_analytics
 from utils.leaderboards_utils import generate_leaderboard_embed
+
+
+class TimeFrame(Enum):
+    Daily = Period.DAY
+    Weekly = Period.WEEK
+    Monthly = Period.MONTH
+    AllTime = Period.ALLTIME
 
 
 class LeaderboardsGroupCog(commands.Cog):
@@ -13,28 +22,30 @@ class LeaderboardsGroupCog(commands.Cog):
     @discord.app_commands.command(
         name="leaderboard", description="View the leaderboard"
     )
+    @discord.app_commands.rename(global_leaderboard="global")
     @defer_interaction(user_preferences_prompt=True)
     @ensure_server_document
     @track_analytics
     async def leaderboard(
         self,
         interaction: discord.Interaction,
-        period: Period,
+        timeframe: TimeFrame,
         global_leaderboard: bool = False,
     ) -> None:
         """
         Command to view the AllTime leaderboard.
 
         :param interaction: The Discord interaction.
-        :param global_leaderboard: Whether to display the server or global leaderboard.
-        :param page: The page number of the leaderboard.
+        :param interaction: The period.
+        :param period: Select the time period for the leaderboard.
+        :param global_leaderboard: Whether to display the global leaderboard.
         """
 
         embed, view = await generate_leaderboard_embed(
-            period,
+            timeframe.value,
             interaction.guild.id,
             interaction.user.id,
-            global_leaderboard=global_leaderboard,
+            global_leaderboard,
             page=1,
         )
 
