@@ -25,6 +25,8 @@ class UsersCog(commands.Cog):
     async def add(self, interaction: discord.Interaction) -> None:
         """
         Adds a user to the server in the system.
+
+        # TODO explain the whole thing and why it has been written the way it is.
         """
         server_id = interaction.guild.id
         user_id = interaction.user.id

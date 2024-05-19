@@ -22,7 +22,7 @@ def user_already_added_in_server_embed() -> discord.Embed:
 
 
 def connect_account_instructions_embed(
-    generated_string: str, leetcode_username: str
+    generated_string: str, leetcode_id: str
 ) -> discord.Embed:
     embed = discord.Embed(title="Instructions", colour=discord.Colour.orange())
     embed.description = "Please temorarily change your LeetCode Account **Name** to the following generated sequence:"
@@ -31,7 +31,7 @@ def connect_account_instructions_embed(
         name="Generated Sequence", value=f"{generated_string}", inline=False
     )
 
-    embed.add_field(name="Username", value=f"{leetcode_username}", inline=False)
+    embed.add_field(name="Username", value=f"{leetcode_id}", inline=False)
 
     embed.add_field(
         name="Account Name Change",
@@ -48,12 +48,12 @@ def connect_account_instructions_embed(
     return embed
 
 
-def profile_added_embed(leetcode_username: str, added: bool = True) -> discord.Embed:
+def profile_added_embed(leetcode_id: str, added: bool = True) -> discord.Embed:
     embed = discord.Embed(
         title=f"LeetCode account {'' if added else 'not '}added",
         colour=discord.Colour.green() if added else discord.Colour.red(),
     )
-    embed.description = f"**LeetCode ID**: {leetcode_username}\n\nYou can now revert or change your LeetCode Name to whatever you desire."
+    embed.description = f"**LeetCode ID**: {leetcode_id}\n\nYou can now revert or change your LeetCode Name to whatever you desire."
 
     return embed
 

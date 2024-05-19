@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 
-from constants import StatsCardOptions
+from constants import StatsCardExtensions
 from database.models.preference_model import Preference
 from database.models.user_model import User
 from embeds.stats_embeds import account_hidden_embed, stats_embed
@@ -18,7 +18,7 @@ class StatsCog(commands.Cog):
     async def stats(
         self,
         interaction: discord.Interaction,
-        option: StatsCardOptions,
+        option: StatsCardExtensions,
         member: discord.Member | None = None,
     ) -> None:
         """
@@ -46,8 +46,9 @@ class StatsCog(commands.Cog):
         # but hasn't connected their account to the corresponding server,
         # then display_information is None.
         embed, file = await stats_embed(
-            user.leetcode_username,
-            (preference.name if preference else user.leetcode_username),
+            self.bot,
+            user.leetcode_id,
+            (preference.name if preference else user.leetcode_id),
             option,
         )
 

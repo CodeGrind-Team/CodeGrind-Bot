@@ -29,10 +29,11 @@ class RankEmoji(Enum):
     THIRD = "🥉"
 
 
-class StatsCardOptions(Enum):
-    ACTIVITY = 1
-    HEATMAP = 2
-    # TODO: COMPETITIONS = 3
+class StatsCardExtensions(Enum):
+    ACTIVITY = "activity"
+    HEATMAP = "heatmap"
+    CONTEST = "contest"
+    NONE = "none"
 
 
 class NotificationOptions(Enum):

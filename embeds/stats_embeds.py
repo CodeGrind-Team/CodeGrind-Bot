@@ -1,11 +1,11 @@
 import io
 import os
-from typing import Tuple
 
 import discord
 import requests
 from discord.ext import commands
 
+from constants import StatsCardExtensions
 from embeds.misc_embeds import error_embed
 from utils.common_utils import to_thread
 
@@ -13,35 +13,32 @@ from utils.common_utils import to_thread
 @to_thread
 def stats_embed(
     bot: commands.Bot,
-    leetcode_username: str,
+    leetcode_id: str,
     display_name: str,
-    extension: str | None = None,
-) -> Tuple[discord.Embed, discord.File | None]:
+    extension: StatsCardExtensions,
+) -> tuple[discord.Embed, discord.File | None]:
     embed = discord.Embed(
         title=display_name,
-        url=f"https://leetcode.com/{leetcode_username}",
+        url=f"https://leetcode.com/{leetcode_id}",
         colour=discord.Colour.orange(),
     )
 
     width = 500
     height = 200
-    if extension is not None:
-        if extension == "activity":
-            height = 400
-        elif extension == "heatmap":
-            height = 350
+    if extension in (StatsCardExtensions.ACTIVITY, StatsCardExtensions.CONTEST):
+        height = 400
+    elif extension == StatsCardExtensions.HEATMAP:
+        height = 350
 
-    url = f"https://leetcard.jacoblin.cool/{leetcode_username}?theme=dark&animation=false&width={width}&height={height}&ext={extension}"
+    url = f"https://leetcard.jacoblin.cool/{leetcode_id}?theme=dark&animation=false&width={width}&height={height}&ext={extension.value}"
 
     # Making sure the website is reachable before running hti.screenshot()
     # as the method will stall if url isn't reachable.
     try:
         response = requests.get(url)
+        response.raise_for_status()
 
-        if response.status_code != 200:
-            return error_embed(), None
-
-    except requests.exceptions.RequestException as e:
+    except requests.exceptions.RequestException:
         return error_embed(), None
 
     paths = bot.html2image.screenshot(url=url, size=(width, height))
@@ -54,11 +51,11 @@ def stats_embed(
         # move the cursor to the beginning
         image_binary.seek(0)
 
-        file = discord.File(fp=image_binary, filename=f"{leetcode_username}.png")
+        file = discord.File(fp=image_binary, filename=f"{leetcode_id}.png")
 
     os.remove(paths[0])
 
-    embed.set_image(url=f"attachment://{leetcode_username}.png")
+    embed.set_image(url=f"attachment://{leetcode_id}.png")
 
     return embed, file
 

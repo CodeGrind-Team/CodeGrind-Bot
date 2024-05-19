@@ -4,7 +4,7 @@ from .user_model import Submissions
 
 
 class IdProjection(BaseModel):
-    id: int = Field(alias='_id')
+    id: int = Field(alias="_id")
 
 
 class SubmissionsProjection(BaseModel):
@@ -12,4 +12,4 @@ class SubmissionsProjection(BaseModel):
 
 
 class LeetCodeUsernameProjection(BaseModel):
-    leetcode_username: str
+    leetcode_id: str
