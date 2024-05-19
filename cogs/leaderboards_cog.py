@@ -44,7 +44,7 @@ class LeaderboardsCog(commands.Cog):
             timeframe.value,
             interaction.guild.id,
             interaction.user.id,
-            global_leaderboard,
+            global_leaderboard=global_leaderboard,
             page=1,
         )
 

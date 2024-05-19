@@ -97,6 +97,7 @@ async def generate_leaderboard_embed(
 
     :return: The leaderboard embed and view.
     """
+    server_id = server_id if not global_leaderboard else GLOBAL_LEADERBOARD_ID
     server = await Server.find_one(Server.id == server_id, fetch_links=True)
 
     if not server:
@@ -129,7 +130,7 @@ async def generate_leaderboard_embed(
         embed = empty_leaderboard_embed()
         pages.append(embed)
 
-    page = page - 1 if page > 0 else 0
+    page = max(page - 1, 0)
     view = None if winners_only else LeaderboardPagination(author_user_id, pages, page)
 
     return pages[page], view

@@ -16,7 +16,6 @@ from datetime import UTC, datetime
 import discord
 import topgg
 from discord.ext import commands
-from discord.ext.commands import Context
 from dotenv import find_dotenv, load_dotenv
 from html2image import Html2Image
 
