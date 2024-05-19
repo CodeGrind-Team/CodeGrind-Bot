@@ -1,0 +1,33 @@
+import discord
+from discord.ext import commands
+
+from database.models.server_model import Server
+from embeds.roles_embeds import roles_created_embed, roles_removed_embed
+from utils.roles_utils import create_roles, remove_roles, update_roles
+
+
+class RolesView(discord.ui.View):
+    @discord.ui.button(label="Enable", style=discord.ButtonStyle.blurple)
+    async def enable(
+        self, interaction: discord.Interaction, button: discord.ui.Button
+    ) -> None:
+        await interaction.response.defer()
+
+        await create_roles(interaction.guild)
+
+        server = await Server.find_one(
+            Server.id == interaction.guild.id, fetch_links=True
+        )
+        await update_roles(interaction.guild, server)
+
+        await interaction.followup.send(embed=roles_created_embed())
+
+    @discord.ui.button(label="Disable", style=discord.ButtonStyle.blurple)
+    async def disable(
+        self, interaction: discord.Interaction, button: discord.ui.Button
+    ) -> None:
+        await interaction.response.defer()
+
+        await remove_roles(interaction.guild)
+
+        await interaction.followup.send(embed=roles_removed_embed())

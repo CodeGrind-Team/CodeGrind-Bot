@@ -15,7 +15,7 @@ class TimeFrame(Enum):
     AllTime = Period.ALLTIME
 
 
-class LeaderboardsGroupCog(commands.Cog):
+class LeaderboardsCog(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
@@ -52,4 +52,4 @@ class LeaderboardsGroupCog(commands.Cog):
 
 
 async def setup(bot: commands.Bot) -> None:
-    await bot.add_cog(LeaderboardsGroupCog(bot))
+    await bot.add_cog(LeaderboardsCog(bot))

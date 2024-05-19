@@ -31,6 +31,7 @@ class AdminGroupCog(commands.GroupCog, name="settings"):
         :param interaction: The Discord interaction.
         :param timezone: The PYTZ timezone to set on the server.
         """
+        # TODO: modal
         if timezone not in pytz.all_timezones:
             embed = invalid_timezone_embed()
             await interaction.followup.send(embed=embed)

@@ -9,7 +9,7 @@ from middleware import (
 from views.channels_views import SelectOperatorView
 
 
-class NotificationsGroupCog(commands.Cog):
+class NotificationsCog(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
@@ -45,4 +45,4 @@ class NotificationsGroupCog(commands.Cog):
 
 
 async def setup(bot: commands.Bot) -> None:
-    await bot.add_cog(NotificationsGroupCog(bot))
+    await bot.add_cog(NotificationsCog(bot))

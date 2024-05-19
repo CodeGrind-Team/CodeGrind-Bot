@@ -13,8 +13,12 @@ async def create_roles_from_string(guild: discord.Guild, role: str) -> None:
     role_found = discord.utils.get(guild.roles, name=role)
     if not role_found:
         guild.me.guild_permissions.manage_roles
-        await guild.create_role(name=role, colour=discord.Colour.light_gray(),
-                                hoist=False, mentionable=False)
+        await guild.create_role(
+            name=role,
+            colour=discord.Colour.light_gray(),
+            hoist=False,
+            mentionable=False,
+        )
 
 
 async def create_roles_from_dict(guild: discord.Guild, roles: dict) -> None:
@@ -28,8 +32,9 @@ async def create_roles_from_dict(guild: discord.Guild, roles: dict) -> None:
         role_name, role_colour = roles[role]
         role_found = discord.utils.get(guild.roles, name=role_name)
         if not role_found:
-            await guild.create_role(name=role_name, colour=role_colour,
-                                    hoist=False, mentionable=False)
+            await guild.create_role(
+                name=role_name, colour=role_colour, hoist=False, mentionable=False
+            )
 
 
 async def remove_roles_from_string(guild: discord.Guild, role: str) -> None:
@@ -100,36 +105,35 @@ async def update_roles(guild: discord.Guild, server: Server) -> None:
         return
 
     for user in server.users:
-        await give_verified_role(user, server.id)
-        await give_streak_role(user, server.id, user.scores.streak)
-        await give_milestone_role(user, server.id, user.submissions.total_score)
+        member = guild.get_member(user.id)
+
+        if not member:
+            continue
+
+        await give_verified_role(guild, member)
+        await give_streak_role(guild, member, user.stats.streak)
+        await give_milestone_role(guild, member, user.stats.submissions.score)
 
 
-async def give_verified_role(guild: discord.Guild, user: discord.User) -> None:
+async def give_verified_role(guild: discord.Guild, member: discord.Member) -> None:
     """
     Give the verified role to a user.
 
     :param guild: The guild in which to give the role.
     :param user: The user to whom to give the role.
     """
-    user = guild.get_member(user.id)
-
-    if not user:
-        return
-
     role = discord.utils.get(guild.roles, name=VERIFIED_ROLE)
 
     # Check if the role exists
     if not role:
         return
 
-    await user.add_roles(role)
+    await member.add_roles(role)
 
 
 async def give_streak_role(
-        guild: discord.Guild,
-        user: discord.User,
-        streak: int) -> None:
+    guild: discord.Guild, member: discord.Member, streak: int
+) -> None:
     """
     Give a streak role to a user based on their streak.
 
@@ -137,11 +141,6 @@ async def give_streak_role(
     :param user: The user to whom to give the role.
     :param streak: The streak of the user.
     """
-    user = guild.get_member(user.id)
-
-    if not user:
-        return
-
     role_to_assign = None
 
     for role_streak, (role_name, _) in STREAK_ROLES.items():
@@ -154,18 +153,17 @@ async def give_streak_role(
     for role_milestone, _ in STREAK_ROLES.items():
         role_name, _ = STREAK_ROLES[role_milestone]
         role = discord.utils.get(guild.roles, name=role_name)
-        if role and role in user.roles:
-            await user.remove_roles(role)
+        if role and role in member.roles:
+            await member.remove_roles(role)
 
     if role_to_assign:
-        # Give the user the appropriate role.
-        await user.add_roles(role_to_assign)
+        # Give the member the appropriate role.
+        await member.add_roles(role_to_assign)
 
 
 async def give_milestone_role(
-        guild: discord.Guild,
-        user: discord.User,
-        total_solved: int) -> None:
+    guild: discord.Guild, member: discord.Member, total_solved: int
+) -> None:
     """
     Give a milestone role to a user based on their total solved milestones.
 
@@ -173,9 +171,6 @@ async def give_milestone_role(
     :param user: The user to whom to give the role.
     :param total_solved: The total solved milestones of the user.
     """
-    if not user:
-        return
-
     role_to_assign = None
 
     for role_milestone, (role_name, _) in MILESTONE_ROLES.items():
@@ -186,9 +181,9 @@ async def give_milestone_role(
     for role_milestone, _ in MILESTONE_ROLES.items():
         role_name, _ = MILESTONE_ROLES[role_milestone]
         role = discord.utils.get(guild.roles, name=role_name)
-        if role and role in user.roles:
-            await user.remove_roles(role)
+        if role and role in member.roles:
+            await member.remove_roles(role)
 
     if role_to_assign:
-        # Give the user the appropriate role
-        await user.add_roles(role_to_assign)
+        # Give the member the appropriate role
+        await member.add_roles(role_to_assign)
