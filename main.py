@@ -138,17 +138,17 @@ class DiscordBot(commands.Bot):
                 self, self.config.TOPGG_TOKEN, autopost=True, post_shard_count=True
             )
 
-    # async def on_guild_remove(self) -> None:
-    #     # TODO
-    #     pass
+    async def on_guild_remove(self) -> None:
+        # TODO: data removal
+        pass
 
-    # async def on_member_remove(self) -> None:
-    #     # TODO
-    #     pass
+    async def on_member_remove(self) -> None:
+        # TODO: data removal
+        pass
 
-    # async def on_member_update(self) -> None:
-    #     # TODO
-    #     pass
+    async def on_member_update(self) -> None:
+        # TODO: data removal
+        pass
 
     async def load_cogs(self) -> None:
         """

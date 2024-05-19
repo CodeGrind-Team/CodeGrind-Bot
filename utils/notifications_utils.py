@@ -8,7 +8,6 @@ from discord.ext import commands, tasks
 from database.models.server_model import Server
 from database.models.user_model import User
 from embeds.questions_embeds import daily_question_embed
-from utils.analytics_utils import save_analytics
 from utils.leaderboards_utils import send_leaderboard_winners, update_global_leaderboard
 from utils.roles_utils import update_roles
 from utils.stats_utils import update_stats
@@ -82,8 +81,6 @@ async def send_daily_question_and_update_stats(
 
         async for server in Server.all(fetch_links=True):
             await send_daily_question(server, embed)
-
-        await save_analytics()
 
     if force_update_stats:
         await bot.channel_logger.INFO("Started updating users stats")

@@ -4,7 +4,7 @@ import discord
 from discord.ext import commands
 
 from constants import Period
-from middleware import defer_interaction, ensure_server_document, track_analytics
+from middleware import defer_interaction, ensure_server_document
 from utils.leaderboards_utils import generate_leaderboard_embed
 
 
@@ -25,7 +25,6 @@ class LeaderboardsGroupCog(commands.Cog):
     @discord.app_commands.rename(global_leaderboard="global")
     @defer_interaction(user_preferences_prompt=True)
     @ensure_server_document
-    @track_analytics
     async def leaderboard(
         self,
         interaction: discord.Interaction,

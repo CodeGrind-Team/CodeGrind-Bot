@@ -7,7 +7,6 @@ from middleware import (
     admins_only,
     defer_interaction,
     ensure_server_document,
-    track_analytics,
 )
 from utils.roles_utils import create_roles, remove_roles, update_roles
 
@@ -23,7 +22,6 @@ class RolesGroupCog(commands.GroupCog, name="roles"):
     @defer_interaction(ephemeral_default=True)
     @ensure_server_document
     @admins_only
-    @track_analytics
     async def enable(self, interaction: discord.Interaction):
         """
         Command to enable CodeGrind roles assignment.
@@ -46,7 +44,6 @@ class RolesGroupCog(commands.GroupCog, name="roles"):
     @defer_interaction(ephemeral_default=True)
     @ensure_server_document
     @admins_only
-    @track_analytics
     async def disable(self, interaction: discord.Interaction):
         """
         Command to disable CodeGrind roles assignment.

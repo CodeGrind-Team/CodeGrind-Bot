@@ -8,7 +8,7 @@ from embeds.questions_embeds import (
     random_question_embed,
     search_question_embed,
 )
-from middleware import defer_interaction, track_analytics
+from middleware import defer_interaction
 
 
 class QuestionsCog(commands.GroupCog, name="problem"):
@@ -19,7 +19,6 @@ class QuestionsCog(commands.GroupCog, name="problem"):
         name="search", description="Search for a LeetCode problem"
     )
     @defer_interaction()
-    @track_analytics
     async def search_problem(
         self, interaction: discord.Interaction, name_id_or_url: str
     ) -> None:
@@ -42,7 +41,6 @@ class QuestionsCog(commands.GroupCog, name="problem"):
         name="daily", description="Get the problem of the day"
     )
     @defer_interaction()
-    @track_analytics
     async def daily_question(self, interaction: discord.Interaction) -> None:
         """
         Command to get the daily question.
@@ -58,7 +56,6 @@ class QuestionsCog(commands.GroupCog, name="problem"):
         name="random", description="Get a random problem of your chosen difficulty"
     )
     @defer_interaction()
-    @track_analytics
     async def random_question(
         self,
         interaction: discord.Interaction,

@@ -3,7 +3,7 @@ from discord.ext import commands
 
 from constants import COMMAND_CATEGORIES
 from embeds.general_embeds import help_embed
-from middleware import defer_interaction, track_analytics
+from middleware import defer_interaction
 from views.general_views import CommandCategorySelectView
 
 
@@ -13,7 +13,6 @@ class GeneralCog(commands.Cog):
 
     @discord.app_commands.command(name="help", description="Help with CodeGrind Bot")
     @defer_interaction(ephemeral_default=True)
-    @track_analytics
     async def help(self, interaction: discord.Interaction) -> None:
         """
         Display help information.
@@ -31,7 +30,6 @@ class GeneralCog(commands.Cog):
         name="vote", description="Vote for the CodeGrind Bot on top.gg"
     )
     @defer_interaction(ephemeral_default=True)
-    @track_analytics
     async def vote(self, interaction: discord.Interaction) -> None:
         """
         Display voting information.

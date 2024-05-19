@@ -5,7 +5,6 @@ from middleware import (
     admins_only,
     defer_interaction,
     ensure_server_document,
-    track_analytics,
 )
 from views.channels_views import SelectOperatorView
 
@@ -21,7 +20,6 @@ class NotificationsGroupCog(commands.Cog):
     @defer_interaction(ephemeral_default=True)
     @ensure_server_document
     @admins_only
-    @track_analytics
     async def notifications(
         self,
         interaction: discord.Interaction,

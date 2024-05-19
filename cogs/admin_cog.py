@@ -9,7 +9,6 @@ from middleware import (
     admins_only,
     defer_interaction,
     ensure_server_document,
-    track_analytics,
 )
 
 
@@ -23,7 +22,6 @@ class AdminGroupCog(commands.GroupCog, name="settings"):
     @defer_interaction(ephemeral_default=True)
     @ensure_server_document
     @admins_only
-    @track_analytics
     async def set_timezone(
         self, interaction: discord.Interaction, timezone: str
     ) -> None:

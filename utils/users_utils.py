@@ -5,9 +5,9 @@ from datetime import datetime
 
 import aiohttp
 import discord
-from beanie.odm.fields import WriteRules
-from beanie.odm.operators.update.array import AddToSet
+from beanie.odm.operators.update.array import AddToSet, Pull
 from bson import DBRef
+from discord.ext import commands
 
 from constants import GLOBAL_LEADERBOARD_ID
 from database.models.preference_model import Preference
@@ -23,7 +23,6 @@ from embeds.users_embeds import (
 from utils.common_utils import convert_to_score
 from utils.questions_utils import fetch_problems_solved_and_rank
 from utils.roles_utils import give_verified_role
-from discord.ext import commands
 
 
 async def register(
@@ -208,6 +207,27 @@ async def linking_process(
             await asyncio.sleep(check_interval)
 
     return profile_name == generated_string
+
+
+async def unlink_user_from_server(user_id: int, server_id: int) -> None:
+    await Preference.find_many(
+        Preference.user_id == user_id, Preference.server_id == server_id
+    ).delete()
+
+    await Server.find_one(Server.id == server_id).update(
+        Pull({Server.users: {"$id": user_id}})
+    )
+
+
+async def delete_user(user_id: int) -> None:
+    async for preference in Preference.find_many(Preference.user_id == user_id):
+        await Server.find_one(Server.id == preference.server_id).update(
+            Pull({Server.users: {"$id": user_id}})
+        )
+
+    await Preference.find_many(Preference.user_id == user_id).delete()
+    await Record.find_many(Record.user_id == user_id).delete()
+    await User.find_one(User.id == user_id).delete()
 
 
 # async def remove_inactive_users(bot: commands.Bot) -> None:

@@ -515,7 +515,7 @@ async def fetch_problems_solved_and_rank(
     try:
         response_data = await response.json()
 
-        matched_user = response_data.get["data"]["matchedUser"]
+        matched_user = response_data["data"]["matchedUser"]
 
         real_name = matched_user["profile"]["realName"]
         submit_stats_global = matched_user["submitStatsGlobal"]

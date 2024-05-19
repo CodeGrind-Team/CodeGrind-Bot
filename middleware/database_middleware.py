@@ -3,9 +3,7 @@ from functools import wraps
 from typing import Callable
 
 import discord
-from bson import DBRef
 
-from database.models.analytics_model import Analytics
 from database.models.preference_model import Preference
 from database.models.server_model import Server
 from embeds.users_embeds import preferences_update_prompt_embeds
@@ -35,44 +33,6 @@ def ensure_server_document(func: Callable) -> Callable:
         if not server:
             server = Server(id=server_id)
             await server.create()
-
-        return await func(self, interaction, *args, **kwargs)
-
-    return wrapper
-
-
-def track_analytics(func: Callable) -> Callable:
-    """
-    Tracks user interaction analytics when the decorated function is executed.
-
-    This function tracks distinct users interacting with the bot and the number of
-    commands used each day. It used as a decorator to increase usage statistics.
-
-    :param func: The function to wrap.
-
-    :return: The wrapped function that tracks analytics data.
-    """
-
-    @wraps(func)
-    async def wrapper(
-        self, interaction: discord.Interaction, *args, **kwargs
-    ) -> Callable | None:
-        analytics = await Analytics.find_all().to_list()
-
-        if not analytics:
-            analytics = Analytics()
-            await analytics.create()
-        else:
-            analytics = analytics[0]
-
-        if interaction.user.id not in analytics.distinct_users_total:
-            analytics.distinct_users_total.append(interaction.user.id)
-
-        if interaction.user.id not in analytics.distinct_users_today:
-            analytics.distinct_users_today.append(interaction.user.id)
-
-        analytics.command_count_today += 1
-        await analytics.save()
 
         return await func(self, interaction, *args, **kwargs)
 

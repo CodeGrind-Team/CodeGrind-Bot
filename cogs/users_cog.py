@@ -7,8 +7,9 @@ from embeds.users_embeds import (
     account_permanently_deleted_embed,
     account_removed_embed,
 )
-from middleware import defer_interaction, ensure_server_document, track_analytics
+from middleware import defer_interaction, ensure_server_document
 from middleware.database_middleware import update_user_preferences_prompt
+from utils.users_utils import delete_user, unlink_user_from_server
 from views.user_views import RegisterOrLoginView
 
 
@@ -21,12 +22,9 @@ class UsersCog(commands.Cog):
     )
     @defer_interaction(ephemeral_default=True)
     @ensure_server_document
-    @track_analytics
     async def add(self, interaction: discord.Interaction) -> None:
         """
         Adds a user to the server in the system.
-
-        :param interaction: The Discord interaction.
         """
         await interaction.followup.send(
             embed=discord.Embed(
@@ -42,12 +40,9 @@ class UsersCog(commands.Cog):
     )
     @defer_interaction(ephemeral_default=True)
     @ensure_server_document
-    @track_analytics
     async def update(self, interaction: discord.Interaction) -> None:
         """
         Initiates the preference updater prompt.
-
-        :param interaction: The Discord interaction.
         """
         user_id = interaction.user.id
 
@@ -65,14 +60,13 @@ class UsersCog(commands.Cog):
     )
     @defer_interaction(ephemeral_default=True)
     @ensure_server_document
-    @track_analytics
     async def remove(
-        self, interaction: discord.Interaction, permanently_delete: bool = False
+        self, interaction: discord.Interaction, permanently: bool = False
     ) -> None:
         """
         Removes (or permanently deletes) a user from the system for the selected server.
 
-        :param interaction: The Discord interaction.
+        :param permanently: Delete server specific user data or all stored user data.
         """
         server_id = interaction.guild.id
         user_id = interaction.user.id
@@ -83,28 +77,16 @@ class UsersCog(commands.Cog):
             await interaction.followup.send(embed=account_not_found_embed())
             return
 
-        if permanently_delete:
+        embed = None
+        if permanently:
             await delete_user(user_id)
-            # ! TODO
-            # await Server.find_one(Server.id == server_id).update(
-            #     Pull({Server.users: {"$id": user_id}})
-            # )
+            embed = account_permanently_deleted_embed()
 
-            # await Server.find_one(Server.id == GLOBAL_LEADERBOARD_ID).update(
-            #     Pull({Server.users: {"$id": user_id}})
-            # )
-            # await user.delete()
-            await interaction.followup.send(embed=account_permanently_deleted_embed())
-            return
+        else:
+            await unlink_user_from_server(user_id, server_id)
+            embed = account_removed_embed()
 
-        await unlink_user(user_id, server_id)
-        # ! TODO
-        # await user.update(Pull({User.display_information: {"server_id": server_id}}))
-        # await Server.find_one(Server.id == server_id).update(
-        #     Pull({Server.users: {"$id": user_id}})
-        # )
-
-        await interaction.followup.send(embed=account_removed_embed())
+        await interaction.followup.send(embed=embed)
 
 
 async def setup(bot: commands.Bot) -> None:
