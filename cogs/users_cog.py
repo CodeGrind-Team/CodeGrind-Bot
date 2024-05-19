@@ -9,8 +9,8 @@ from embeds.users_embeds import (
 )
 from middleware import defer_interaction, ensure_server_document
 from middleware.database_middleware import update_user_preferences_prompt
-from utils.users_utils import delete_user, unlink_user_from_server
-from views.user_views import RegisterOrLoginView
+from utils.users_utils import delete_user, login, unlink_user_from_server
+from views.user_views import LoginView
 
 
 class UsersCog(commands.Cog):
@@ -26,14 +26,28 @@ class UsersCog(commands.Cog):
         """
         Adds a user to the server in the system.
         """
-        await interaction.followup.send(
-            embed=discord.Embed(
-                title="Connect LeetCode Account",
-                description="Press the following button to start the process:",
-                colour=discord.Colour.blurple(),
-            ),
-            view=RegisterOrLoginView(self.bot),
-        )
+        server_id = interaction.guild.id
+        user_id = interaction.user.id
+
+        user = await User.find_one(User.id == user_id)
+
+        if user:
+            await login(
+                interaction,
+                interaction.followup.send,
+                user_id,
+                server_id,
+                interaction.user.display_name,
+            )
+        else:
+            await interaction.followup.send(
+                embed=discord.Embed(
+                    title="Connect LeetCode Account",
+                    description="Press the following button to start the process:",
+                    colour=discord.Colour.blurple(),
+                ),
+                view=LoginView(self.bot),
+            )
 
     @discord.app_commands.command(
         name="update", description="Update your profile on this server's leaderboards"
