@@ -219,16 +219,19 @@ class DiscordBot(commands.Bot):
 
         :param context: The context of the command that has been executed.
         """
+        if not interaction.command:
+            return
+
         full_command_name = interaction.command.qualified_name
         split = full_command_name.split(" ")
         executed_command = str(split[0])
         if interaction.guild is not None:
             self.logger.info(
-                f"Executed {executed_command} command in {interaction.guild.name} (ID: {interaction.guild.id}) by {interaction.user.name} (ID: {interaction.user.id})"
+                f"Executed /{executed_command} command in {interaction.guild.name} (ID: {interaction.guild.id}) by {interaction.user.name} (ID: {interaction.user.id})"
             )
         else:
             self.logger.info(
-                f"Executed {executed_command} command by {interaction.user.name} (ID: {interaction.user.id}) in DMs"
+                f"Executed /{executed_command} command by {interaction.user.name} (ID: {interaction.user.id}) in DMs"
             )
 
 
