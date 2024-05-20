@@ -13,7 +13,7 @@ from embeds.questions_embeds import (
 from middleware import defer_interaction
 
 
-class QuestionsCog(commands.GroupCog, name="problem"):
+class ProblemsCog(commands.GroupCog, name="problem"):
     def __init__(self, bot: DiscordBot) -> None:
         self.bot = bot
 
@@ -66,4 +66,4 @@ class QuestionsCog(commands.GroupCog, name="problem"):
 
 
 async def setup(bot: DiscordBot) -> None:
-    await bot.add_cog(QuestionsCog(bot))
+    await bot.add_cog(ProblemsCog(bot))

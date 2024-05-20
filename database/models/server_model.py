@@ -19,7 +19,13 @@ class Server(Document):
     users: Optional[List[Link[User]]] = []
     timezone: Optional[str] = "UTC"
     channels: Optional[Channel] = Field(default_factory=Channel)
-    last_updated: Optional[datetime] = Field(default_factory=lambda: datetime.now(UTC))
+
+    last_update_start: Optional[datetime] = Field(
+        default_factory=lambda: datetime.now(UTC)
+    )
+    last_update_end: Optional[datetime] = Field(
+        default_factory=lambda: datetime.now(UTC)
+    )
 
     class Settings:
         name = "servers"

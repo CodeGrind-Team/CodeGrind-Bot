@@ -3,7 +3,6 @@ from datetime import UTC, datetime
 from random import random
 
 import discord
-
 from discord.ext import commands
 
 
@@ -49,13 +48,13 @@ class ChannelLogger:
         :param include_error_counts: If `True`, includes rate limit and forbidden
         counts in the log.
         """
-        if include_error_counts:
+        if include_error_counts and self.rate_limits > 0:
             message += f". Rate limited {self.rate_limits} times"
             self.rate_limits = 0
 
         await self.log(message, discord.Colour.blue())
 
-        if include_error_counts:
+        if include_error_counts and self.forbidden_count > 0:
             await self.WARNING(f"Forbidden {self.forbidden_count} times.")
             self.forbidden_count = 0
 
@@ -67,7 +66,7 @@ class ChannelLogger:
 
         :param message: The warning message to log.
         """
-        await self.log(message, discord.Colour.orange())
+        await self.log(message, discord.Colour.orange(), silent=False)
 
     async def error(
         self,
@@ -80,7 +79,7 @@ class ChannelLogger:
 
         :param message: The error message to log.
         """
-        await self.log(message, discord.Colour.red(), True)
+        await self.log(message, discord.Colour.red(), silent=False)
 
     async def exception(self, message: str) -> None:
         """
@@ -90,9 +89,11 @@ class ChannelLogger:
 
         :param message: The exception message to log.
         """
-        await self.log(message, discord.Colour.red(), True)
+        await self.log(message, discord.Colour.red())
 
-    async def log(self, message: str, colour: discord.Colour, silent: bool) -> None:
+    async def log(
+        self, message: str, colour: discord.Colour, silent: bool = True
+    ) -> None:
         """
         Log a message to the designated Discord channel with a specified color.
 

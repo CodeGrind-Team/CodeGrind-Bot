@@ -30,6 +30,7 @@ class Ratings:
     def _read_ratings_txt(self, filename: str) -> None:
         ratings = {}
 
+        # TODO use async library
         with open(filename, "r", encoding="UTF-8") as file:
             lines = file.readlines()
 

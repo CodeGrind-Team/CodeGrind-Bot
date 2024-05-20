@@ -2,7 +2,6 @@ import asyncio
 from datetime import UTC, datetime, timedelta
 
 import discord
-from beanie.odm.operators.update.array import AddToSet
 from discord.ext import commands
 
 from constants import GLOBAL_LEADERBOARD_ID, Period, RankEmoji
@@ -12,64 +11,115 @@ from utils.common_utils import strftime_with_suffix
 from views.leaderboards_views import LeaderboardPagination
 
 
-async def get_user_and_score(user: User, period: Period) -> tuple[User, int]:
-    score = await get_score(period, user)
-    return user, score
-
-
-async def get_score(period: Period, user: User) -> int:
+async def get_score(user: User, period: Period, previous: bool) -> int:
     """
     Get the score for a given period for a user.
 
+    :param user: The user to retrieve the score for.
     :param period: The period for which to retrieve the score.
-    :param user_id: The ID of the user to retrieve the score for.
+    :param previous: Whether to get the score for the previous period.
 
     :return: The calculated score for the specified period.
     """
 
-    current_score = user.stats.submissions.score
-    record_timestamp: datetime | None = None
+    if period == Period.ALLTIME:
+        return user.stats.submissions.score
 
+    record_timestamp_end: datetime | None = None
+    record_timestamp_start: datetime | None = None
+
+    # Determine the start and end timestamps based on the specified period
     match period:
         case Period.DAY:
             # Midnight today
-            record_timestamp = datetime.now().replace(
+            record_timestamp_end = datetime.now(UTC).replace(
                 hour=0, minute=0, second=0, microsecond=0
             )
+            record_timestamp_start = record_timestamp_end - timedelta(days=1)
 
         case Period.WEEK:
             # Midnight of the current week's start (Monday)
-            current_day = datetime.now().weekday()
-            record_timestamp = datetime.now().replace(
+            record_timestamp_end = datetime.now(UTC).replace(
                 hour=0, minute=0, second=0, microsecond=0
-            ) - timedelta(days=current_day)
+            ) - timedelta(days=datetime.now(UTC).weekday())
+            record_timestamp_start = record_timestamp_end - timedelta(weeks=1)
 
         case Period.MONTH:
             # Midnight of the first day of the current month
-            record_timestamp = datetime.now().replace(
+            record_timestamp_end = datetime.now(UTC).replace(
                 day=1, hour=0, minute=0, second=0, microsecond=0
             )
+            record_timestamp_start = (record_timestamp_end - timedelta(days=1)).replace(
+                day=1
+            )
 
-        case Period.ALLTIME:
-            return current_score
+    if previous:
+        record_end = await Record.find_one(
+            Record.user_id == user.id,
+            Record.timestamp == record_timestamp_end,
+        )
+        if not record_end:
+            return 0
 
-    # If a timestamp is defined, find the record starting from that time
-    if record_timestamp:
-        # Get's first document that matches the criteria based on the natural order.
-        # The natural order is when the document was added, which will be case for
-        # this collection, but note in case this changes in the future.
+        record_start = await Record.find_one(
+            Record.user_id == user.id,
+            record_timestamp_start <= Record.timestamp < record_end.timestamp,
+        )
+        if not record_start:
+            return 0
+
+        score_end = record_end.submissions.score
+        score_start = record_start.submissions.score
+        return score_end - score_start
+
+    else:
+        current_score = user.stats.submissions.score
         record = await Record.find_one(
             Record.user_id == user.id,
-            Record.timestamp >= record_timestamp,
+            Record.timestamp >= record_timestamp_end,
         )
-
         if not record:
             return 0
 
         previous_score = record.submissions.score
         return current_score - previous_score
 
-    return 0
+
+async def get_user_and_score(
+    user: User, period: Period, previous: bool
+) -> tuple[User, int]:
+    """
+    Get the score for a given period for a user.
+
+    :param period: The period for which to retrieve the score.
+    :param user_id: The ID of the user to retrieve the score for.
+    :param previous: Whether to display the leaderboard of one period before.
+
+    :return: A tuple of the user and their score.
+    """
+    score = await get_score(user, period, previous)
+    return user, score
+
+
+async def sort_users_by_score(
+    server: Server, period: Period, previous: bool
+) -> list[User]:
+    """
+    Sort the users on a server by their score for a given period.
+
+    :param server: The server containing the users to sort.
+    :param period: The period for which to retrieve and sort the scores.
+    :param previous: Whether to display the leaderboard of one period before.
+
+    :return: A list of users sorted by their score in descending order.
+    """
+    coroutines = [get_user_and_score(user, period, previous) for user in server.users]
+    users_with_scores = await asyncio.gather(*coroutines)
+    sorted_users_with_score = sorted(
+        users_with_scores, key=lambda _, score: score, reverse=True
+    )
+
+    return sorted_users_with_score
 
 
 async def generate_leaderboard_embed(
@@ -78,6 +128,7 @@ async def generate_leaderboard_embed(
     author_user_id: int | None = None,
     winners_only: bool = False,
     global_leaderboard: bool = False,
+    previous: bool = False,
     page: int = 1,
     users_per_page: int = 10,
 ) -> tuple[discord.Embed, discord.ui.View]:
@@ -89,6 +140,7 @@ async def generate_leaderboard_embed(
     :param author_user_id: The author's user ID.
     :param winners_only: Whether to display only the winners.
     :param global_leaderboard: Whether to display the global leaderboard.
+    :param previous: Whether to display the leaderboard of one period before.
     :param page: The page number.
     :param users_per_page: The number of users per page.
 
@@ -100,7 +152,7 @@ async def generate_leaderboard_embed(
     if not server:
         return empty_leaderboard_embed(), None
 
-    sorted_users_with_score = await sort_users_by_score(server, period)
+    sorted_users_with_score = await sort_users_by_score(server, period, previous)
 
     pages: list[discord.Embed] = []
     num_pages = -(-len(server.users) // users_per_page)
@@ -115,6 +167,7 @@ async def generate_leaderboard_embed(
             sorted_users_with_score,
             winners_only,
             global_leaderboard,
+            previous,
             page_index,
             users_per_page,
             num_pages,
@@ -170,8 +223,6 @@ async def build_leaderboard_page(
 
         profile_link = f"https://leetcode.com/{user.leetcode_id}"
 
-        # ? Check if this is possible or if dbref needs to be
-        # ? specified on the id
         preference = await Preference.find_one(
             Preference.user_id == user.id, Preference.server_id == server.id
         )
@@ -213,7 +264,7 @@ def get_title(period: Period, winners_only: bool, global_leaderboard: bool) -> s
     """
     Get the title of the leaderboard.
 
-    :param period: The period.
+    :param period: The leaderboard's period.
     :param winners_only: Whether to display only the winners.
     :param global_leaderboard: Whether to display the global leaderboard.
 
@@ -245,31 +296,34 @@ def get_winners_title(period: Period) -> str:
 
     :return: The title of the winners leaderboard.
     """
-    time_interval_text = ""
+    title = ""
 
-    if period == Period.DAY:
-        time_interval_text = strftime_with_suffix(
-            "{S} %b %Y", datetime.now() - timedelta(days=1)
-        )
-        return f"Today's Winners ({time_interval_text})"
+    match period:
+        case Period.DAY:
+            time_interval_text = strftime_with_suffix(
+                "{S} %b %Y", datetime.now(UTC) - timedelta(days=1)
+            )
+            title = f"Today's Winners ({time_interval_text})"
 
-    elif period == Period.WEEK:
-        start_timestamp = strftime_with_suffix(
-            "{S} %b %Y", datetime.now(UTC) - timedelta(weeks=1)
-        )
-        end_timestamp = strftime_with_suffix(
-            "{S} %b %Y", datetime.now(UTC) - timedelta(days=1)
-        )
-        return f"Last Week's Winners ({start_timestamp} - {end_timestamp})"
+        case Period.WEEK:
+            start_timestamp = strftime_with_suffix(
+                "{S} %b %Y", datetime.now(UTC) - timedelta(weeks=1)
+            )
+            end_timestamp = strftime_with_suffix(
+                "{S} %b %Y", datetime.now(UTC) - timedelta(days=1)
+            )
+            title = f"Last Week's Winners ({start_timestamp} - {end_timestamp})"
 
-    elif period == Period.MONTH:
-        start_timestamp = strftime_with_suffix(
-            "{S} %b %Y", (datetime.now(UTC) - timedelta(days=1)).replace(day=1)
-        )
-        end_timestamp = strftime_with_suffix(
-            "{S} %b %Y", datetime.now(UTC) - timedelta(days=1)
-        )
-        return f"Last Month's Winners ({start_timestamp} - {end_timestamp})"
+        case Period.MONTH:
+            start_timestamp = strftime_with_suffix(
+                "{S} %b %Y", (datetime.now(UTC) - timedelta(days=1)).replace(day=1)
+            )
+            end_timestamp = strftime_with_suffix(
+                "{S} %b %Y", datetime.now(UTC) - timedelta(days=1)
+            )
+            title = f"Last Month's Winners ({start_timestamp} - {end_timestamp})"
+
+    return title
 
 
 def get_rank_emoji(place: int, score: int) -> str:
@@ -299,12 +353,11 @@ async def send_leaderboard_winners(
     """
     Send the leaderboard winners to the specified channels on a Discord server.
 
-    This function sends the leaderboard winners' embed to a list of specified channels
+    Sends the leaderboard winners' embed to a list of specified channels
     within a given Discord server. It checks each channel to ensure it's valid and a
     text channel, and handles forbidden (permission-related) errors when attempting to
     send the embed.
 
-    :param bot: The Discord bot instance used to get the channels and send messages.
     :param server: The server instance containing the list of channel IDs where the
     leaderboard winners will be announced.
     :param period: The period for which the leaderboard is being sent (e.g., weekly,
@@ -319,7 +372,7 @@ async def send_leaderboard_winners(
 
         try:
             embed, view = await generate_leaderboard_embed(
-                period, server.id, winners_only=True
+                period, server.id, winners_only=True, previous=True
             )
 
             await channel.send(embed=embed, view=view)
@@ -339,21 +392,11 @@ async def send_leaderboard_winners(
     )
 
 
-async def update_global_leaderboard() -> None:
-    """
-    Add all users to the global server in case anyone is missing.
-    """
-    async for user in User.all():
-        await Server.find_one(Server.id == GLOBAL_LEADERBOARD_ID).update(
-            AddToSet({Server.users: user})
-        )
-
-
-async def sort_users_by_score(server: Server, period: Period) -> list[User]:
-    coroutines = [get_user_and_score(user, period) for user in server.users]
-    users_with_scores = await asyncio.gather(*coroutines)
-    sorted_users_with_score = sorted(
-        users_with_scores, key=lambda pair: pair[1], reverse=True
-    )
-
-    return sorted_users_with_score
+# async def update_global_leaderboard() -> None:
+#     """
+#     Add all users to the global server in case anyone is missing.
+#     """
+#     async for user in User.all():
+#         await Server.find_one(Server.id == GLOBAL_LEADERBOARD_ID).update(
+#             AddToSet({Server.users: user})
+#         )

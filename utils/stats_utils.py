@@ -2,24 +2,33 @@ from datetime import datetime
 
 # ! replace commands.Bot with custom bot
 from database.models import Record, Submissions, User
-from utils.common_utils import convert_to_score
+
 from utils.questions_utils import UserStats, fetch_problems_solved_and_rank
+import aiohttp
+from bot import DiscordBot
 
 
-async def update_stats(user: User, store: bool = False) -> None:
+async def update_stats(
+    bot: DiscordBot,
+    client_session: aiohttp.ClientSession,
+    user: User,
+    daily_reset: bool = False,
+) -> None:
     """
     Update a user's problem-solving statistics and optionally store them as a record.
 
     This function fetches updated statistics for a user, assigns the new values to the
     user's submission statistics, and optionally creates a record with the updated
-    stats. If the fetched stats are invalid or not found, the function exits early.
+    stats.
 
     :param user: The user whose stats are being updated.
-    :param store: If `True`, a new record is created and stored with the updated
-    statistics.
+    :param daily_reset: If `True`, a new record is created and stored with the updated
+    stats.
     """
 
-    stats: UserStats = await fetch_problems_solved_and_rank()
+    stats: UserStats = await fetch_problems_solved_and_rank(
+        bot, client_session, user.leetcode_id
+    )
 
     if not stats:
         return
@@ -32,13 +41,13 @@ async def update_stats(user: User, store: bool = False) -> None:
         user.stats.submissions.hard,
         user.stats.submissions.score,
     ) = (
-        UserStats.submissions.easy,
-        UserStats.submissions.medium,
-        UserStats.submissions.hard,
-        UserStats.submissions.score,
+        stats.submissions.easy,
+        stats.submissions.medium,
+        stats.submissions.hard,
+        stats.submissions.score,
     )
 
-    if store:
+    if daily_reset:
         record = Record(
             timestamp=datetime.now().replace(hour=0, minute=0, second=0, microsecond=0),
             user_id=user.id,
@@ -46,29 +55,13 @@ async def update_stats(user: User, store: bool = False) -> None:
                 easy=stats.submissions.easy,
                 medium=stats.submissions.medium,
                 hard=stats.submissions.hard,
-                score=convert_to_score(**stats.submissions),
+                score=stats.submissions.score,
             ),
         )
 
-    await record.save()
+        await record.save()
+
     await user.save_changes()
-
-    # TODO: not needed anymore
-    # await update_display_information_names(user)
-
-    # TODO: not needed / move somewhere else
-    # if Period.DAY in reset_periods:
-    #     # Increments the streak if the user has submitted a problem today
-    #     user.scores.streak += user.scores.day_score > 0
-
-    #     user.scores.yesterday_score = day_score
-    #     user.scores.day_score = 0
-    #     user.scores.start_of_day_total_score = total_score
-
-    # if Period.WEEK in reset_periods:
-    #     user.scores.last_week_score = week_score
-    #     user.scores.week_score = 0
-    #     user.scores.start_of_week_total_score = total_score
 
 
 # async def update_display_information_names(bot: commands.Bot, user: User) -> None:

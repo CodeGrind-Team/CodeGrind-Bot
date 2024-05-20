@@ -10,14 +10,7 @@ from bson import DBRef
 from discord.ext import commands
 
 from constants import GLOBAL_LEADERBOARD_ID
-from database.models import (
-    Preference,
-    Record,
-    Server,
-    Stats,
-    Submissions,
-    User,
-)
+from database.models import Preference, Record, Server, Stats, Submissions, User
 from embeds.users_embeds import (
     connect_account_instructions_embed,
     profile_added_embed,
@@ -40,7 +33,6 @@ async def register(
     """
     Registers a user to the system for the selected server.
 
-    :param interaction: The Discord interaction.
     :param send_message: The webhook to send messages.
     :param server_id: The ID of the server to register the user into.
     :param user: The user to register.
@@ -132,7 +124,6 @@ async def login(
     """
     Logs in a user to a server if user already exists.
 
-    :interaction: The Discord interaction.
     :param send_message: The webhook to send messages.
     :param user_id: The user to log in.
     :param server_id: The ID of the server to log the user into.
@@ -214,6 +205,12 @@ async def linking_process(
 
 
 async def unlink_user_from_server(user_id: int, server_id: int) -> None:
+    """
+    Removes user's profile for specified server.
+
+    :param send_message: The webhook to send messages.
+    :param leetcode_id: The LeetCode ID of the user.
+    """
     await Preference.find_many(
         Preference.user_id == user_id, Preference.server_id == server_id
     ).delete()
@@ -224,6 +221,11 @@ async def unlink_user_from_server(user_id: int, server_id: int) -> None:
 
 
 async def delete_user(user_id: int) -> None:
+    """
+    Deletes all of user's stored information.
+
+    :param user_id: The user's id.
+    """
     async for preference in Preference.find_many(Preference.user_id == user_id):
         await Server.find_one(Server.id == preference.server_id).update(
             Pull({Server.users: {"$id": user_id}})

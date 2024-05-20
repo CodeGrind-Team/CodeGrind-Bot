@@ -11,6 +11,7 @@ import requests
 from discord.ext import commands
 
 from constants import Difficulty
+from utils.common_utils import convert_to_score
 
 URL = "https://leetcode.com/graphql"
 HEADERS = {
@@ -46,6 +47,7 @@ class Submissions:
     easy: int
     medium: int
     hard: int
+    score: int
 
 
 @dataclass
@@ -555,5 +557,12 @@ async def fetch_problems_solved_and_rank(
 
     return UserStats(
         real_name=real_name,
-        submissions=Submissions(easy=easy_count, medium=medium_count, hard=hard_count),
+        submissions=Submissions(
+            easy=easy_count,
+            medium=medium_count,
+            hard=hard_count,
+            score=convert_to_score(
+                easy=easy_count, medium=medium_count, hard=hard_count
+            ),
+        ),
     )
