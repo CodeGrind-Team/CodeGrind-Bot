@@ -4,8 +4,7 @@ from typing import Callable
 
 import discord
 
-from database.models.preference_model import Preference
-from database.models.server_model import Server
+from database.models import Preference, Server
 from embeds.users_embeds import preferences_update_prompt_embeds
 from views.preferences_views import UserPreferencesPrompt
 

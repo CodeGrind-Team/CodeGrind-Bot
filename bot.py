@@ -18,7 +18,7 @@ from discord.ext import commands
 from html2image import Html2Image
 
 from constants import GLOBAL_LEADERBOARD_ID
-from database.setup import init_mongodb_conn
+from database.setup import initialise_mongodb_conn
 from utils.dev_utils import ChannelLogger
 from utils.notifications_utils import (
     send_daily_question_and_update_stats,
@@ -142,7 +142,7 @@ class DiscordBot(commands.Bot):
         )
         self.logger.info("-------------------")
 
-        await init_mongodb_conn(self.config.MONGODB_URI, GLOBAL_LEADERBOARD_ID)
+        await initialise_mongodb_conn(self.config.MONGODB_URI, GLOBAL_LEADERBOARD_ID)
         await self.load_cogs()
         await self.init_topgg()
         self.channel_logger = ChannelLogger(self, int(os.environ["LOGGING_CHANNEL_ID"]))

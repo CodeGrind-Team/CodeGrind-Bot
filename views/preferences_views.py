@@ -3,7 +3,7 @@ from dataclasses import dataclass
 import discord
 from beanie.odm.operators.update.general import Set
 
-from database.models.user_model import User
+from database.models import User
 
 
 @dataclass

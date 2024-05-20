@@ -1,7 +1,6 @@
 import discord
-from discord.ext import commands
 
-from database.models.server_model import Server
+from database.models import Server
 from embeds.roles_embeds import roles_created_embed, roles_removed_embed
 from utils.roles_utils import create_roles, remove_roles, update_roles
 

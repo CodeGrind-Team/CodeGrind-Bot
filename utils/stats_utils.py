@@ -1,8 +1,7 @@
 from datetime import datetime
 
 # ! replace commands.Bot with custom bot
-from database.models.record_model import Record
-from database.models.user_model import Submissions, User
+from database.models import Record, Submissions, User
 from utils.common_utils import convert_to_score
 from utils.questions_utils import UserStats, fetch_problems_solved_and_rank
 

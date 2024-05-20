@@ -4,7 +4,7 @@ from typing import Callable
 
 import discord
 
-from database.models.user_model import User
+from database.models import User
 from embeds.topgg_embeds import topgg_not_voted
 
 

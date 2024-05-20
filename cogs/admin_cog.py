@@ -5,7 +5,7 @@ from discord import app_commands
 from discord.ext import commands
 
 from bot import DiscordBot
-from database.models.server_model import Server
+from database.models import Server
 from embeds.admin_embeds import invalid_timezone_embed, timezone_updated_embed
 from middleware import defer_interaction, ensure_server_document
 

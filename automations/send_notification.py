@@ -12,8 +12,7 @@ from beanie import init_beanie
 from dotenv import load_dotenv, find_dotenv
 from motor.motor_asyncio import AsyncIOMotorClient
 from bot_globals import client
-from database.models.server_model import Server
-from database.models.user_model import User
+from database.models import Server, User
 
 load_dotenv(find_dotenv())
 

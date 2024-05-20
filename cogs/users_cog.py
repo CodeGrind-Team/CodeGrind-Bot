@@ -3,7 +3,7 @@ from discord import app_commands
 from discord.ext import commands
 
 from bot import DiscordBot
-from database.models.user_model import User
+from database.models import User
 from embeds.users_embeds import (
     account_not_found_embed,
     account_permanently_deleted_embed,

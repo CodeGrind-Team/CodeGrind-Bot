@@ -3,7 +3,7 @@ from beanie.odm.operators.update.array import AddToSet, Pull
 from discord.ext import commands
 
 from constants import NotificationOptions
-from database.models.server_model import Server
+from database.models import Server
 from embeds.channels_embeds import (
     channel_receiving_all_notification_options_embed,
     channel_receiving_no_notification_options_embed,

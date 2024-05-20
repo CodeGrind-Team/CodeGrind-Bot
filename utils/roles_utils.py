@@ -1,6 +1,6 @@
 import discord
 from constants import MILESTONE_ROLES, STREAK_ROLES, VERIFIED_ROLE
-from database.models.server_model import Server
+from database.models import Server
 
 
 async def create_roles_from_string(guild: discord.Guild, role: str) -> None:

@@ -5,8 +5,7 @@ import aiohttp
 import discord
 from discord.ext import commands, tasks
 
-from database.models.server_model import Server
-from database.models.user_model import User
+from database.models import Server, User
 from embeds.questions_embeds import daily_question_embed
 from utils.leaderboards_utils import send_leaderboard_winners, update_global_leaderboard
 from utils.roles_utils import update_roles

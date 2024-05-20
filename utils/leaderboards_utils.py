@@ -6,10 +6,7 @@ from beanie.odm.operators.update.array import AddToSet
 from discord.ext import commands
 
 from constants import GLOBAL_LEADERBOARD_ID, Period, RankEmoji
-from database.models.preference_model import Preference
-from database.models.record_model import Record
-from database.models.server_model import Server
-from database.models.user_model import User
+from database.models import Preference, Record, Server, User
 from embeds.leaderboards_embeds import empty_leaderboard_embed, leaderboard_embed
 from utils.common_utils import strftime_with_suffix
 from views.leaderboards_views import LeaderboardPagination

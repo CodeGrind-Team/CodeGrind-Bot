@@ -10,10 +10,14 @@ from bson import DBRef
 from discord.ext import commands
 
 from constants import GLOBAL_LEADERBOARD_ID
-from database.models.preference_model import Preference
-from database.models.record_model import Record
-from database.models.server_model import Server
-from database.models.user_model import Stats, Submissions, User
+from database.models import (
+    Preference,
+    Record,
+    Server,
+    Stats,
+    Submissions,
+    User,
+)
 from embeds.users_embeds import (
     connect_account_instructions_embed,
     profile_added_embed,
