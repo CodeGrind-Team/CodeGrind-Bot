@@ -14,7 +14,7 @@ from datetime import UTC, datetime
 import discord
 from dotenv import find_dotenv, load_dotenv
 
-from bot import Config, DiscordBot, on_error
+from bot import Config, DiscordBot, LoggingFormatter, on_error
 
 if __name__ == "__main__":
     load_dotenv(find_dotenv())
@@ -29,6 +29,10 @@ if __name__ == "__main__":
     logger = logging.getLogger("discord_bot")
     logger.setLevel(logging.INFO)
 
+    # Console handler
+    console_handler = logging.StreamHandler()
+    console_handler.setFormatter(LoggingFormatter())
+
     # File handler
     file_handler = logging.FileHandler(
         filename=f"logs/{datetime.now(UTC).strftime('%Y%m%d-%H%M%S')}.log",
@@ -40,7 +44,8 @@ if __name__ == "__main__":
     )
     file_handler.setFormatter(file_handler_formatter)
 
-    logger.addHandler(file_handler)
+    logger.addHandler(console_handler)
+    logging.getLogger().addHandler(file_handler)
 
     config = Config(
         os.getenv("DISCORD_TOKEN"),
