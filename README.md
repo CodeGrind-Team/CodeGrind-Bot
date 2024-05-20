@@ -81,6 +81,8 @@ The steps for setting up a testing version of the bot can be found in our [Setup
 
 Distributed under the GPL-3.0 License. See [LICENSE](https://github.com/CodeGrind-Team/CodeGrind-Bot/blob/main/LICENSE) for more information.
 
+However, some files are licensed differently. Specifically, the `./main.py` and `./bot.py` files are licensed under the Apache License 2.0. These files include code from [Python-Discord-Bot-Template](https://github.com/kkrypt0nn/Python-Discord-Bot-Template) and require attribution as specified in their headers.
+
 ## Acknowledgements
 
 - [ReadME-Generator](https://github.com/ShaanCoding/ReadME-Generator)

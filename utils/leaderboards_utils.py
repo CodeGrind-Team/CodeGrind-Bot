@@ -390,13 +390,3 @@ async def send_leaderboard_winners(
             leaderboard sent to channels",
         period,
     )
-
-
-# async def update_global_leaderboard() -> None:
-#     """
-#     Add all users to the global server in case anyone is missing.
-#     """
-#     async for user in User.all():
-#         await Server.find_one(Server.id == GLOBAL_LEADERBOARD_ID).update(
-#             AddToSet({Server.users: user})
-#         )

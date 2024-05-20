@@ -59,7 +59,7 @@ async def update_stats(
             ),
         )
 
-        await record.save()
+        await record.create()
 
     await user.save_changes()
 
