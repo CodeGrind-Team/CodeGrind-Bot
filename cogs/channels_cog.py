@@ -1,11 +1,7 @@
 import discord
 from discord.ext import commands
 
-from middleware import (
-    admins_only,
-    defer_interaction,
-    ensure_server_document,
-)
+from middleware import defer_interaction, ensure_server_document
 from views.channels_views import SelectOperatorView
 
 
@@ -17,9 +13,9 @@ class NotificationsCog(commands.Cog):
         name="notifications",
         description="Admins only: enable or disable channel notifications",
     )
+    @commands.has_permissions(administrator=True)
     @defer_interaction(ephemeral_default=True)
     @ensure_server_document
-    @admins_only
     async def notifications(
         self,
         interaction: discord.Interaction,

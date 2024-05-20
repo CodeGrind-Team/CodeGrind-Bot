@@ -3,5 +3,4 @@ from .database_middleware import (
     update_user_preferences_prompt,
 )
 from .discord_middleware import defer_interaction
-from .permissions_middleware import admins_only
 from .topgg_middleware import topgg_vote_required

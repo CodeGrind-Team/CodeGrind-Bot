@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 
-from middleware import admins_only, defer_interaction, ensure_server_document
+from middleware import defer_interaction, ensure_server_document
 from views.roles_views import RolesView
 
 
@@ -13,10 +13,10 @@ class RolesCog(commands.Cog):
         name="roles",
         # description="Admins only: enable or disable CodeGrind roles",
     )
+    @commands.has_permissions(administrator=True)
     @discord.app_commands.checks.bot_has_permissions(manage_roles=True)
     @defer_interaction(ephemeral_default=True)
     @ensure_server_document
-    @admins_only
     async def roles(self, interaction: discord.Interaction) -> None:
         """
         Command to enable or disable CodeGrind roles assignment.
