@@ -1,6 +1,8 @@
 import discord
+from discord import app_commands
 from discord.ext import commands
 
+from bot import DiscordBot
 from database.models.user_model import User
 from embeds.users_embeds import (
     account_not_found_embed,
@@ -14,20 +16,17 @@ from views.user_views import LoginView
 
 
 class UsersCog(commands.Cog):
-    def __init__(self, bot: commands.Bot) -> None:
+    def __init__(self, bot: DiscordBot) -> None:
         self.bot = bot
 
-    @discord.app_commands.command(
-        name="add", description="Connect your LeetCode account to this server"
-    )
+    @app_commands.command(name="add")
     @defer_interaction(ephemeral_default=True)
     @ensure_server_document
     async def add(self, interaction: discord.Interaction) -> None:
         """
-        Adds a user to the server in the system.
-
-        # TODO explain the whole thing and why it has been written the way it is.
+        Connect your LeetCode account to this server's CodeGrind leaderboards
         """
+        # TODO explain the whole thing and why it has been written the way it is.
         server_id = interaction.guild.id
         user_id = interaction.user.id
 
@@ -51,14 +50,12 @@ class UsersCog(commands.Cog):
                 view=LoginView(self.bot),
             )
 
-    @discord.app_commands.command(
-        name="update", description="Update your profile on this server's leaderboards"
-    )
+    @app_commands.command(name="update")
     @defer_interaction(ephemeral_default=True)
     @ensure_server_document
     async def update(self, interaction: discord.Interaction) -> None:
         """
-        Initiates the preference updater prompt.
+        Update your CodeGrind profile in this server
         """
         user_id = interaction.user.id
 
@@ -71,18 +68,16 @@ class UsersCog(commands.Cog):
         embed = account_not_found_embed()
         await interaction.followup.send(embed=embed)
 
-    @discord.app_commands.command(
-        name="remove", description="Remove your profile from this server's leaderboard"
-    )
+    @app_commands.command(name="remove")
     @defer_interaction(ephemeral_default=True)
     @ensure_server_document
     async def remove(
         self, interaction: discord.Interaction, permanently: bool = False
     ) -> None:
         """
-        Removes (or permanently deletes) a user from the system for the selected server.
+        Remove your profile from this server's leaderboard
 
-        :param permanently: Delete server specific user data or all stored user data.
+        :param permanently: Permanently delete all of CodeGrind's stored data on you.
         """
         server_id = interaction.guild.id
         user_id = interaction.user.id
@@ -105,5 +100,5 @@ class UsersCog(commands.Cog):
         await interaction.followup.send(embed=embed)
 
 
-async def setup(bot: commands.Bot) -> None:
+async def setup(bot: DiscordBot) -> None:
     await bot.add_cog(UsersCog(bot))

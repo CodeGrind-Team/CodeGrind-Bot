@@ -1,6 +1,8 @@
 import discord
+from discord import app_commands
 from discord.ext import commands
 
+from bot import DiscordBot
 from constants import COMMAND_CATEGORIES
 from embeds.general_embeds import help_embed
 from middleware import defer_interaction
@@ -8,16 +10,14 @@ from views.general_views import CommandCategorySelectView
 
 
 class GeneralCog(commands.Cog):
-    def __init__(self, bot: commands.Bot) -> None:
+    def __init__(self, bot: DiscordBot) -> None:
         self.bot = bot
 
-    @discord.app_commands.command(name="help", description="Help with CodeGrind Bot")
+    @app_commands.command(name="help")
     @defer_interaction(ephemeral_default=True)
     async def help(self, interaction: discord.Interaction) -> None:
         """
-        Display help information.
-
-        :param interaction: The Discord interaction.
+        Help with CodeGrind Bot commands
         """
         embed = help_embed(COMMAND_CATEGORIES["Home"])
         embed.set_footer(text="Love our bot? Vote on top.gg using /vote")
@@ -26,15 +26,11 @@ class GeneralCog(commands.Cog):
             embed=embed, view=CommandCategorySelectView(COMMAND_CATEGORIES)
         )
 
-    @discord.app_commands.command(
-        name="vote", description="Vote for the CodeGrind Bot on top.gg"
-    )
+    @app_commands.command(name="vote")
     @defer_interaction(ephemeral_default=True)
     async def vote(self, interaction: discord.Interaction) -> None:
         """
-        Display voting information.
-
-        :param interaction: The Discord interaction.
+        Vote for the CodeGrind Bot on top.gg
         """
         embed = discord.Embed(
             title="Vote for CodeGrind Bot on top.gg ",
@@ -45,5 +41,5 @@ class GeneralCog(commands.Cog):
         await interaction.followup.send(embed=embed)
 
 
-async def setup(bot: commands.Bot) -> None:
+async def setup(bot: DiscordBot) -> None:
     await bot.add_cog(GeneralCog(bot))

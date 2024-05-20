@@ -1,18 +1,17 @@
 import discord
+from discord import app_commands
 from discord.ext import commands
 
+from bot import DiscordBot
 from middleware import defer_interaction, ensure_server_document
 from views.channels_views import SelectOperatorView
 
 
 class NotificationsCog(commands.Cog):
-    def __init__(self, bot: commands.Bot) -> None:
+    def __init__(self, bot: DiscordBot) -> None:
         self.bot = bot
 
-    @discord.app_commands.command(
-        name="notifications",
-        description="Admins only: enable or disable channel notifications",
-    )
+    @app_commands.command(name="notifications")
     @commands.has_permissions(administrator=True)
     @defer_interaction(ephemeral_default=True)
     @ensure_server_document
@@ -22,11 +21,10 @@ class NotificationsCog(commands.Cog):
         channel: discord.TextChannel | None = None,
     ) -> None:
         """
-        Command to enable notifications for a channel.
+        Admins only: enable/disable daily channel notifications
 
-        :param interaction: The Discord interaction.
         :param channel: The text channel to enable notifications for.
-        If None, defaults to the channel where the command was invoked.
+        If none provided, defaults to the channel where the command was ran.
         """
         if not channel:
             channel = interaction.channel
@@ -40,5 +38,5 @@ class NotificationsCog(commands.Cog):
         )
 
 
-async def setup(bot: commands.Bot) -> None:
+async def setup(bot: DiscordBot) -> None:
     await bot.add_cog(NotificationsCog(bot))

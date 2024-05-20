@@ -1,42 +1,39 @@
 from enum import Enum
 
 import discord
+from discord import app_commands
 from discord.ext import commands
 
+from bot import DiscordBot
 from constants import Period
 from middleware import defer_interaction, ensure_server_document
 from utils.leaderboards_utils import generate_leaderboard_embed
 
 
-class TimeFrame(Enum):
-    Daily = Period.DAY
-    Weekly = Period.WEEK
-    Monthly = Period.MONTH
-    AllTime = Period.ALLTIME
-
-
 class LeaderboardsCog(commands.Cog):
-    def __init__(self, bot: commands.Bot) -> None:
+    class TimeFrameField(Enum):
+        Daily = Period.DAY
+        Weekly = Period.WEEK
+        Monthly = Period.MONTH
+        AllTime = Period.ALLTIME
+
+    def __init__(self, bot: DiscordBot) -> None:
         self.bot = bot
 
-    @discord.app_commands.command(
-        name="leaderboard", description="View the leaderboard"
-    )
-    @discord.app_commands.rename(global_leaderboard="global")
+    @app_commands.command(name="leaderboard")
+    @app_commands.rename(global_leaderboard="global")
     @defer_interaction(user_preferences_prompt=True)
     @ensure_server_document
     async def leaderboard(
         self,
         interaction: discord.Interaction,
-        timeframe: TimeFrame,
+        timeframe: TimeFrameField,
         global_leaderboard: bool = False,
     ) -> None:
         """
-        Command to view the AllTime leaderboard.
+        View the leaderboard
 
-        :param interaction: The Discord interaction.
-        :param interaction: The period.
-        :param period: Select the time period for the leaderboard.
+        :param period: Select the leaderboard's timeframe.
         :param global_leaderboard: Whether to display the global leaderboard.
         """
 
@@ -51,5 +48,5 @@ class LeaderboardsCog(commands.Cog):
         await interaction.followup.send(embed=embed, view=view)
 
 
-async def setup(bot: commands.Bot) -> None:
+async def setup(bot: DiscordBot) -> None:
     await bot.add_cog(LeaderboardsCog(bot))

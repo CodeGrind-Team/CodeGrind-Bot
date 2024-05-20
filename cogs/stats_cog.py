@@ -1,6 +1,8 @@
 import discord
+from discord import app_commands
 from discord.ext import commands
 
+from bot import DiscordBot
 from constants import StatsCardExtensions
 from database.models.preference_model import Preference
 from database.models.user_model import User
@@ -10,23 +12,25 @@ from middleware import defer_interaction
 
 
 class StatsCog(commands.Cog):
-    def __init__(self, bot) -> None:
+    def __init__(self, bot: DiscordBot) -> None:
         self.bot = bot
 
-    @discord.app_commands.command(name="stats", description="Displays a user's stats")
+    @app_commands.command(name="stats")
     @defer_interaction()
     async def stats(
         self,
         interaction: discord.Interaction,
-        option: StatsCardExtensions,
-        member: discord.Member | None = None,
+        extension: StatsCardExtensions,
+        user: discord.Member | None = None,
     ) -> None:
         """
-        Command to display a user's stats.
+        Displays a user's stats
 
-        :param option: The stats card option to select.
-        :param member: The member whose stats to display.
+        :param extension: The stats extension to add to the card.
+        :param member: The user whose stats to display.
+        If none provided, defaults to the user who ran the command.
         """
+        member = user
         user_id = member.id if member else interaction.user.id
         user = await User.find_one(User.id == user_id)
 
@@ -49,7 +53,7 @@ class StatsCog(commands.Cog):
             self.bot,
             user.leetcode_id,
             (preference.name if preference else user.leetcode_id),
-            option,
+            extension,
         )
 
         if not file:
@@ -59,5 +63,5 @@ class StatsCog(commands.Cog):
         await interaction.followup.send(embed=embed, file=file)
 
 
-async def setup(bot: commands.Bot) -> None:
+async def setup(bot: DiscordBot) -> None:
     await bot.add_cog(StatsCog(bot))

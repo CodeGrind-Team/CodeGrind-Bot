@@ -1,7 +1,9 @@
 import aiohttp
 import discord
+from discord import app_commands
 from discord.ext import commands
 
+from bot import DiscordBot
 from constants import Difficulty
 from embeds.questions_embeds import (
     daily_question_embed,
@@ -12,20 +14,17 @@ from middleware import defer_interaction
 
 
 class QuestionsCog(commands.GroupCog, name="problem"):
-    def __init__(self, bot: commands.Bot) -> None:
+    def __init__(self, bot: DiscordBot) -> None:
         self.bot = bot
 
-    @discord.app_commands.command(
-        name="search", description="Search for a LeetCode problem"
-    )
+    @app_commands.command(name="search")
     @defer_interaction()
     async def search_problem(
         self, interaction: discord.Interaction, name_id_or_url: str
     ) -> None:
         """
-        Command to search for a LeetCode question.
+        Search for a LeetCode problem
 
-        :param interaction: The Discord interaction.
         :param name_id_or_url: The name, ID, or URL of the question to search.
         """
         # TODO: use modal
@@ -37,24 +36,18 @@ class QuestionsCog(commands.GroupCog, name="problem"):
 
         await interaction.followup.send(embed=embed)
 
-    @discord.app_commands.command(
-        name="daily", description="Get the problem of the day"
-    )
+    @app_commands.command(name="daily")
     @defer_interaction()
     async def daily_question(self, interaction: discord.Interaction) -> None:
         """
-        Command to get the daily question.
-
-        :param interaction: The Discord interaction.
+        Get LeetCode's problem of the day
         """
         async with aiohttp.ClientSession() as client_session:
             embed = await daily_question_embed(self.bot, client_session)
 
         await interaction.followup.send(embed=embed)
 
-    @discord.app_commands.command(
-        name="random", description="Get a random problem of your chosen difficulty"
-    )
+    @app_commands.command(name="random")
     @defer_interaction()
     async def random_question(
         self,
@@ -62,10 +55,9 @@ class QuestionsCog(commands.GroupCog, name="problem"):
         difficulty: Difficulty = Difficulty.RANDOM,
     ) -> None:
         """
-        Command to get a random question of the selected difficulty.
+        Get a random LeetCode problem of your chosen difficulty
 
-        :param interaction: The Discord interaction.
-        :param difficulty: The desired difficulty level of the question.
+        :param difficulty: The desired difficulty level for the question
         """
         async with aiohttp.ClientSession() as client_session:
             embed = await random_question_embed(self.bot, client_session, difficulty)
@@ -73,5 +65,5 @@ class QuestionsCog(commands.GroupCog, name="problem"):
         await interaction.followup.send(embed=embed)
 
 
-async def setup(bot: commands.Bot) -> None:
+async def setup(bot: DiscordBot) -> None:
     await bot.add_cog(QuestionsCog(bot))

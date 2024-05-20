@@ -1,6 +1,7 @@
 import discord
 import pytz
 from beanie.odm.operators.update.general import Set
+from discord import app_commands
 from discord.ext import commands
 
 from bot import DiscordBot
@@ -15,9 +16,9 @@ class AdminGroupCog(commands.GroupCog, name="settings"):
 
     async def _timezone_autocomplete(
         self, _: discord.Interaction, current: str
-    ) -> list[discord.app_commands.Choice[str]]:
+    ) -> list[app_commands.Choice[str]]:
         """
-        Autocomplete handler for timezone selection.
+        Autocomplete handler for timezone selection
         """
         # Doesn't show anything if nothing was typed in the field.
         if not current:
@@ -25,17 +26,17 @@ class AdminGroupCog(commands.GroupCog, name="settings"):
 
         # Number of choices is capped at 25.
         choices = [
-            discord.app_commands.Choice(name=choice, value=choice)
+            app_commands.Choice(name=choice, value=choice)
             for choice in pytz.common_timezones_set
             if current.lower() in choice.lower()
         ][:25]
 
         return choices
 
-    @discord.app_commands.command(
+    @app_commands.command(
         name="timezone", description="Admins only: Change the server's timezone"
     )
-    @discord.app_commands.autocomplete(timezone=_timezone_autocomplete)
+    @app_commands.autocomplete(timezone=_timezone_autocomplete)
     @commands.has_permissions(administrator=True)
     @defer_interaction(ephemeral_default=True)
     @ensure_server_document
