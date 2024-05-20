@@ -9,7 +9,7 @@ from utils.roles_utils import create_roles, remove_roles, update_roles
 class RolesView(discord.ui.View):
     @discord.ui.button(label="Enable", style=discord.ButtonStyle.blurple)
     async def enable(
-        self, interaction: discord.Interaction, button: discord.ui.Button
+        self, interaction: discord.Interaction, _: discord.ui.Button
     ) -> None:
         await interaction.response.defer()
 
@@ -24,7 +24,7 @@ class RolesView(discord.ui.View):
 
     @discord.ui.button(label="Disable", style=discord.ButtonStyle.blurple)
     async def disable(
-        self, interaction: discord.Interaction, button: discord.ui.Button
+        self, interaction: discord.Interaction, _: discord.ui.Button
     ) -> None:
         await interaction.response.defer()
 

@@ -33,9 +33,7 @@ class UserPreferencesPrompt(discord.ui.View):
         self.curr_embed.set_footer(text=f"Question {page_num+1} of {len(self.pages)}")
 
     @discord.ui.button(label="Yes", style=discord.ButtonStyle.blurple)
-    async def yes(
-        self, interaction: discord.Interaction, button: discord.ui.Button
-    ) -> None:
+    async def yes(self, interaction: discord.Interaction, _: discord.ui.Button) -> None:
         guild_id = interaction.guild.id if not self.to_global_server else 0
 
         await User.find_one(
@@ -45,9 +43,7 @@ class UserPreferencesPrompt(discord.ui.View):
         await self.increment_page(interaction)
 
     @discord.ui.button(label="No", style=discord.ButtonStyle.gray)
-    async def no(
-        self, interaction: discord.Interaction, button: discord.ui.Button
-    ) -> None:
+    async def no(self, interaction: discord.Interaction, _: discord.ui.Button) -> None:
         guild_id = interaction.guild.id if not self.to_global_server else 0
 
         await User.find_one(

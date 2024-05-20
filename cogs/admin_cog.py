@@ -12,6 +12,20 @@ from middleware import (
 )
 
 
+async def timezone_autocomplete(
+    _: discord.Interaction, current: str
+) -> list[discord.app_commands.Choice[str]]:
+    if not current:
+        return []
+
+    choices = [
+        discord.app_commands.Choice(name=choice, value=choice)
+        for choice in pytz.common_timezones
+        if current.lower() in choice.lower()
+    ][:25]
+    return choices
+
+
 class AdminGroupCog(commands.GroupCog, name="settings"):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
@@ -19,6 +33,7 @@ class AdminGroupCog(commands.GroupCog, name="settings"):
     @discord.app_commands.command(
         name="timezone", description="Admins only: Change the server's timezone"
     )
+    @discord.app_commands.autocomplete(timezone=timezone_autocomplete)
     @defer_interaction(ephemeral_default=True)
     @ensure_server_document
     @admins_only
@@ -26,12 +41,10 @@ class AdminGroupCog(commands.GroupCog, name="settings"):
         self, interaction: discord.Interaction, timezone: str
     ) -> None:
         """
-        Command to change the server timezone.
+        Command to change the server's timezone.
 
-        :param interaction: The Discord interaction.
-        :param timezone: The PYTZ timezone to set on the server.
+        :param timezone: Type your timezone.
         """
-        # TODO: modal
         if timezone not in pytz.all_timezones:
             embed = invalid_timezone_embed()
             await interaction.followup.send(embed=embed)

@@ -6,7 +6,9 @@ from embeds.general_embeds import not_creator_embed
 
 
 class LeaderboardPagination(discord.ui.View):
-    def __init__(self, user_id: int, pages: List[discord.Embed], page: int = 0, *, timeout=180):
+    def __init__(
+        self, user_id: int, pages: List[discord.Embed], page: int = 0, *, timeout=180
+    ):
         super().__init__(timeout=timeout)
         self.page = page
         self.user_id = user_id
@@ -26,9 +28,15 @@ class LeaderboardPagination(discord.ui.View):
             self.next.disabled, self.next.style = True, discord.ButtonStyle.gray
             self.end.disabled, self.end.style = True, discord.ButtonStyle.gray
 
-    @discord.ui.button(label='<<', style=discord.ButtonStyle.blurple)
-    async def start(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
-        if self.user_id is None or interaction.user.id != self.user_id or interaction.message is None:
+    @discord.ui.button(label="<<", style=discord.ButtonStyle.blurple)
+    async def start(
+        self, interaction: discord.Interaction, button: discord.ui.Button
+    ) -> None:
+        if (
+            self.user_id is None
+            or interaction.user.id != self.user_id
+            or interaction.message is None
+        ):
             embed = not_creator_embed()
             await interaction.response.send_message(embed=embed, ephemeral=True)
             return
@@ -43,9 +51,15 @@ class LeaderboardPagination(discord.ui.View):
 
         await interaction.response.edit_message(view=self)
 
-    @discord.ui.button(label='<', style=discord.ButtonStyle.blurple)
-    async def previous(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
-        if self.user_id is None or interaction.user.id != self.user_id or interaction.message is None:
+    @discord.ui.button(label="<", style=discord.ButtonStyle.blurple)
+    async def previous(
+        self, interaction: discord.Interaction, button: discord.ui.Button
+    ) -> None:
+        if (
+            self.user_id is None
+            or interaction.user.id != self.user_id
+            or interaction.message is None
+        ):
             embed = not_creator_embed()
             await interaction.response.send_message(embed=embed, ephemeral=True)
             return
@@ -63,9 +77,15 @@ class LeaderboardPagination(discord.ui.View):
 
         await interaction.response.edit_message(view=self)
 
-    @discord.ui.button(label='>', style=discord.ButtonStyle.blurple)
-    async def next(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
-        if self.user_id is None or interaction.user.id != self.user_id or interaction.message is None:
+    @discord.ui.button(label=">", style=discord.ButtonStyle.blurple)
+    async def next(
+        self, interaction: discord.Interaction, button: discord.ui.Button
+    ) -> None:
+        if (
+            self.user_id is None
+            or interaction.user.id != self.user_id
+            or interaction.message is None
+        ):
             embed = not_creator_embed()
             await interaction.response.send_message(embed=embed, ephemeral=True)
             return
@@ -83,9 +103,15 @@ class LeaderboardPagination(discord.ui.View):
 
         await interaction.response.edit_message(view=self)
 
-    @discord.ui.button(label='>>', style=discord.ButtonStyle.blurple)
-    async def end(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
-        if self.user_id is None or interaction.user.id != self.user_id or interaction.message is None:
+    @discord.ui.button(label=">>", style=discord.ButtonStyle.blurple)
+    async def end(
+        self, interaction: discord.Interaction, button: discord.ui.Button
+    ) -> None:
+        if (
+            self.user_id is None
+            or interaction.user.id != self.user_id
+            or interaction.message is None
+        ):
             embed = not_creator_embed()
             await interaction.response.send_message(embed=embed, ephemeral=True)
             return
@@ -100,8 +126,10 @@ class LeaderboardPagination(discord.ui.View):
 
         await interaction.response.edit_message(view=self)
 
-    @discord.ui.button(label='🗑️', style=discord.ButtonStyle.red)
-    async def delete(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
+    @discord.ui.button(label="🗑️", style=discord.ButtonStyle.red)
+    async def delete(
+        self, interaction: discord.Interaction, button: discord.ui.Button
+    ) -> None:
         if interaction.user.id != self.user_id or interaction.message is None:
             embed = not_creator_embed()
             await interaction.response.send_message(embed=embed, ephemeral=True)

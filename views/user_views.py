@@ -12,7 +12,7 @@ class LoginView(discord.ui.View):
 
     @discord.ui.button(label="Connect", style=discord.ButtonStyle.blurple)
     async def connect(
-        self, interaction: discord.Interaction, button: discord.ui.Button
+        self, interaction: discord.Interaction, _: discord.ui.Button
     ) -> None:
         await interaction.response.send_modal(RegisterModal(self.bot))
         await update_user_preferences_prompt(interaction)
