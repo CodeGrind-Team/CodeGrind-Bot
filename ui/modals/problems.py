@@ -2,7 +2,7 @@ import aiohttp
 import discord
 from discord.ext import commands
 
-from embeds.problems import search_question_embed
+from ui.embeds.problems import search_question_embed
 
 
 class ProblemSearchModal(discord.ui.Modal, title="Search for a LeetCode problem"):

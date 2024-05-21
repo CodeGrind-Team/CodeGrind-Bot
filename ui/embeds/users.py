@@ -1,6 +1,6 @@
 import discord
 
-from views.preferences import EmbedAndField
+from ui.views.preferences import EmbedAndField
 
 
 def synced_existing_user_embed() -> discord.Embed:

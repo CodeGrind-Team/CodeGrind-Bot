@@ -162,7 +162,7 @@ class DiscordBot(commands.Bot):
             # Sync commands globally
             await self.tree.sync()
 
-        send_daily_question_and_update_stats_schedule.start()
+        send_daily_question_and_update_stats_schedule.start(self)
 
     async def on_interaction(self, interaction: discord.Interaction) -> None:
         """

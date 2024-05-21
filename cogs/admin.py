@@ -6,7 +6,7 @@ from discord.ext import commands
 
 from bot import DiscordBot
 from database.models import Server
-from embeds.admin import timezone_invalid_embed, timezone_updated_embed
+from ui.embeds.settings import timezone_invalid_embed, timezone_updated_embed
 from middleware import defer_interaction, ensure_server_document
 
 

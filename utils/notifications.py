@@ -8,7 +8,7 @@ from discord.ext import commands, tasks
 
 from constants import Period
 from database.models import Server, User
-from embeds.problems import daily_question_embed
+from ui.embeds.problems import daily_question_embed
 from utils.leaderboards import send_leaderboard_winners
 from utils.roles import update_roles
 from utils.stats import update_stats

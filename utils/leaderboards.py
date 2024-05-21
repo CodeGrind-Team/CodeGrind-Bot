@@ -6,9 +6,9 @@ from discord.ext import commands
 
 from constants import GLOBAL_LEADERBOARD_ID, Period, RankEmoji
 from database.models import Preference, Record, Server, User
-from embeds.leaderboards import empty_leaderboard_embed, leaderboard_embed
+from ui.embeds.leaderboards import empty_leaderboard_embed, leaderboard_embed
 from utils.common import strftime_with_suffix
-from views.leaderboards import LeaderboardPagination
+from ui.views.leaderboards import LeaderboardPagination
 
 
 async def get_score(user: User, period: Period, previous: bool) -> int:

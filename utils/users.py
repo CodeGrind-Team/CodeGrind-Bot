@@ -11,7 +11,7 @@ from discord.ext import commands
 
 from constants import GLOBAL_LEADERBOARD_ID
 from database.models import Preference, Record, Server, Stats, Submissions, User
-from embeds.users import (
+from ui.embeds.users import (
     connect_account_instructions_embed,
     profile_added_embed,
     synced_existing_user_embed,

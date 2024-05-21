@@ -4,9 +4,9 @@ from discord.ext import commands
 
 from bot import DiscordBot
 from constants import COMMAND_CATEGORIES
-from embeds.general import help_embed
+from ui.embeds.general import help_embed
 from middleware import defer_interaction
-from views.general import CommandCategorySelectView
+from ui.views.general import CommandCategorySelectView
 
 
 class GeneralCog(commands.Cog):

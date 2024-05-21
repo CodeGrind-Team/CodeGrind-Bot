@@ -2,8 +2,8 @@ from typing import Dict
 
 import discord
 
-from embeds.general import help_embed
-from embeds.misc import error_embed
+from ui.embeds.general import help_embed
+from ui.embeds.misc import error_embed
 
 
 class CommandCategorySelect(discord.ui.Select):

@@ -63,7 +63,9 @@ def channel_set_embed(
     channel_name: str, selected_options: list[NotificationOptions]
 ) -> discord.Embed:
     embed = discord.Embed(title="Success", colour=discord.Colour.green())
-    embed.description = f"**#{channel_name}** will now receive **{'**,** '.join(map(lambda option: option.value, selected_options))}** notifications"
+    embed.description = f"""**#{channel_name}** will now receive
+      **{'**,** '.join(map(lambda option: option.value, selected_options))}**
+        notifications"""
 
     return embed
 

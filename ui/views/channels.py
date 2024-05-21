@@ -4,7 +4,7 @@ from discord.ext import commands
 
 from constants import NotificationOptions
 from database.models import Server
-from embeds.channels import (
+from ui.embeds.channels import (
     channel_receiving_all_notification_options_embed,
     channel_receiving_no_notification_options_embed,
     channel_remove_embed,
