@@ -1,6 +1,7 @@
+from typing import TYPE_CHECKING
+
 import discord
 from beanie.odm.operators.update.array import AddToSet, Pull
-from discord.ext import commands
 
 from constants import NotificationOptions
 from database.models import Server
@@ -11,6 +12,10 @@ from ui.embeds.channels import (
     channel_set_embed,
     set_channels_instructions_embed,
 )
+
+if TYPE_CHECKING:
+    # To prevent circular imports
+    from bot import DiscordBot
 
 
 class NotificationOptionSelect(discord.ui.Select):
@@ -210,7 +215,7 @@ class ChannelsSelectView(discord.ui.View):
 
 class SelectOperatorView(discord.ui.View):
     def __init__(
-        self, bot: commands.Bot, channel: discord.TextChannel, *, timeout=180
+        self, bot: DiscordBot, channel: discord.TextChannel, *, timeout=180
     ) -> None:
         self.bot = bot
         self.channel = channel

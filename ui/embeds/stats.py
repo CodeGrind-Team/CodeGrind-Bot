@@ -1,18 +1,22 @@
 import io
 import os
+from typing import TYPE_CHECKING
 
 import discord
 import requests
-from discord.ext import commands
 
 from constants import StatsCardExtensions
 from ui.embeds.misc import error_embed
 from utils.common import to_thread
 
+if TYPE_CHECKING:
+    # To prevent circular imports
+    from bot import DiscordBot
+
 
 @to_thread
 def stats_embed(
-    bot: commands.Bot,
+    bot: DiscordBot,
     leetcode_id: str,
     display_name: str,
     extension: StatsCardExtensions,

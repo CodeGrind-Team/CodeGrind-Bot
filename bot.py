@@ -155,7 +155,7 @@ class DiscordBot(commands.Bot):
         await initialise_mongodb_conn(self.config.MONGODB_URI, GLOBAL_LEADERBOARD_ID)
         await self.load_cogs()
         await self.init_topgg()
-        self.channel_logger = ChannelLogger(self, int(os.environ["LOGGING_CHANNEL_ID"]))
+        self.channel_logger = ChannelLogger(self, self.config.LOGGING_CHANNEL_ID)
         self.ratings = await Ratings.create("ratings.txt")
 
         if self.config.SYNC_COMMANDS:

@@ -1,12 +1,17 @@
+from typing import TYPE_CHECKING
+
 import discord
 from discord import app_commands
 from discord.ext import commands
 
-from bot import DiscordBot
 from constants import COMMAND_CATEGORIES
-from ui.embeds.general import help_embed
 from middleware import defer_interaction
+from ui.embeds.general import help_embed
 from ui.views.general import CommandCategorySelectView
+
+if TYPE_CHECKING:
+    # To prevent circular imports
+    from bot import DiscordBot
 
 
 class GeneralCog(commands.Cog):

@@ -1,13 +1,18 @@
+from typing import TYPE_CHECKING
+
 import discord
 from discord import app_commands
 from discord.ext import commands
 
-from bot import DiscordBot
 from constants import StatsCardExtensions
 from database.models import Preference, User
+from middleware import defer_interaction
 from ui.embeds.stats import account_hidden_embed, stats_embed
 from ui.embeds.users import account_not_found_embed
-from middleware import defer_interaction
+
+if TYPE_CHECKING:
+    # To prevent circular imports
+    from bot import DiscordBot
 
 
 class StatsCog(commands.Cog):

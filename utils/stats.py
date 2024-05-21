@@ -65,26 +65,3 @@ async def update_stats(
         await record.create()
 
     await user.save_changes()
-
-
-# async def update_display_information_names(bot: commands.Bot, user: User) -> None:
-#     for i in range(len(user.display_information) - 1, -1, -1):
-#         if user.display_information[i].server_id == 0:
-#             discord_user = bot.get_user(user.id)
-
-#             if discord_user:
-#                 user.display_information[i].name = discord_user.name
-
-#             continue
-
-#         guild = bot.get_guild(user.display_information[i].server_id)
-
-#         if not guild:
-#             continue
-
-#         member = guild.get_member(user.id)
-
-#         if not member:
-#             continue
-
-#         user.display_information[i].name = member.display_name

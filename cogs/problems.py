@@ -1,13 +1,18 @@
+from typing import TYPE_CHECKING
+
 import aiohttp
 import discord
 from discord import app_commands
 from discord.ext import commands
 
-from bot import DiscordBot
 from constants import Difficulty
-from ui.embeds.problems import daily_question_embed, random_question_embed
 from middleware import defer_interaction
+from ui.embeds.problems import daily_question_embed, random_question_embed
 from ui.modals.problems import ProblemSearchModal
+
+if TYPE_CHECKING:
+    # To prevent circular imports
+    from bot import DiscordBot
 
 
 class ProblemsCog(commands.GroupCog, name="problem"):

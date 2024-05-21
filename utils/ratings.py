@@ -1,24 +1,28 @@
 import aiohttp
+from discord.ext import tasks
 
 
 class Ratings:
     @classmethod
     async def create(cls, filepath: str):
-        # add logger
         self = cls()
         self.filepath = filepath
         self.ratings = {}
-        await self.update_txt_file()
+        await self.update_ratings()
         return self
 
     def fetch_rating(self, title: str) -> dict[str, float] | None:
         return self.ratings.get(title.lower())
+    
+    @tasks.loop(seconds=10)
+    async def update_ratings_schedule(bot) -> None:
+        # 168 hours = 1 week
 
-    async def update_txt_file(self) -> None:
+    async def update_ratings(self) -> None:
         # TODO: add to schedule (1 week)
         url = """https://raw.githubusercontent.com/zerotrac/leetcode_problem_rating
         /main/ratings.txt"""
-
+        print("YEEEHAAA")
         async with aiohttp.ClientSession() as client_session:
             try:
                 response = await client_session.get(url)

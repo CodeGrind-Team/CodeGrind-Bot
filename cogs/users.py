@@ -1,21 +1,26 @@
+from typing import TYPE_CHECKING
+
 import discord
 from discord import app_commands
 from discord.ext import commands
 
-from bot import DiscordBot
 from database.models import User
-from ui.embeds.users import (
-    account_not_found_embed,
-    account_permanently_deleted_embed,
-    account_removed_embed,
-)
 from middleware import (
     defer_interaction,
     ensure_server_document,
     update_user_preferences_prompt,
 )
-from utils.users import delete_user, login, unlink_user_from_server
+from ui.embeds.users import (
+    account_not_found_embed,
+    account_permanently_deleted_embed,
+    account_removed_embed,
+)
 from ui.views.users import LoginView
+from utils.users import delete_user, login, unlink_user_from_server
+
+if TYPE_CHECKING:
+    # To prevent circular imports
+    from bot import DiscordBot
 
 
 class UsersCog(commands.Cog):

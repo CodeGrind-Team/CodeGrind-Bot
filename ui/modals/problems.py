@@ -1,8 +1,13 @@
+from typing import TYPE_CHECKING
+
 import aiohttp
 import discord
-from discord.ext import commands
 
 from ui.embeds.problems import search_question_embed
+
+if TYPE_CHECKING:
+    # To prevent circular imports
+    from bot import DiscordBot
 
 
 class ProblemSearchModal(discord.ui.Modal, title="Search for a LeetCode problem"):
@@ -12,7 +17,7 @@ class ProblemSearchModal(discord.ui.Modal, title="Search for a LeetCode problem"
         required=True,
     )
 
-    def __init__(self, bot: commands.Bot) -> None:
+    def __init__(self, bot: DiscordBot) -> None:
         self.bot = bot
         super().__init__()
 

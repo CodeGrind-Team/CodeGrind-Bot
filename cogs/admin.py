@@ -1,13 +1,18 @@
+from typing import TYPE_CHECKING
+
 import discord
 import pytz
 from beanie.odm.operators.update.general import Set
 from discord import app_commands
 from discord.ext import commands
 
-from bot import DiscordBot
 from database.models import Server
-from ui.embeds.settings import timezone_invalid_embed, timezone_updated_embed
 from middleware import defer_interaction, ensure_server_document
+from ui.embeds.settings import timezone_invalid_embed, timezone_updated_embed
+
+if TYPE_CHECKING:
+    # To prevent circular imports
+    from bot import DiscordBot
 
 
 class AdminGroupCog(commands.GroupCog, name="settings"):

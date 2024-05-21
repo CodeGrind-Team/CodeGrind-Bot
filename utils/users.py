@@ -2,12 +2,12 @@ import asyncio
 import random
 import string
 from datetime import datetime
+from typing import TYPE_CHECKING
 
 import aiohttp
 import discord
 from beanie.odm.operators.update.array import AddToSet, Pull
 from bson import DBRef
-from discord.ext import commands
 
 from constants import GLOBAL_LEADERBOARD_ID
 from database.models import Preference, Record, Server, Stats, Submissions, User
@@ -21,9 +21,13 @@ from utils.common import convert_to_score
 from utils.problems import fetch_problems_solved_and_rank
 from utils.roles import give_verified_role
 
+if TYPE_CHECKING:
+    # To prevent circular imports
+    from bot import DiscordBot
+
 
 async def register(
-    bot: commands.Bot,
+    bot: DiscordBot,
     interaction: discord.Interaction,
     send_message: discord.Webhook,
     server_id: int,
@@ -159,7 +163,7 @@ async def login(
 
 
 async def linking_process(
-    bot: commands.Bot, send_message: discord.Webhook, leetcode_id: str
+    bot: DiscordBot, send_message: discord.Webhook, leetcode_id: str
 ) -> None:
     """
     Initiates the account linking process.
@@ -236,7 +240,7 @@ async def delete_user(user_id: int) -> None:
     await User.find_one(User.id == user_id).delete()
 
 
-# async def remove_inactive_users(bot: commands.Bot) -> None:
+# async def remove_inactive_users(bot: DiscordBot) -> None:
 #     """
 #     Remove users and servers that are inactive.
 

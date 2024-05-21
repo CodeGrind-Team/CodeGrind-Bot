@@ -1,10 +1,11 @@
 import asyncio
 from datetime import UTC, datetime, time
+from typing import TYPE_CHECKING
 
 import aiohttp
 import discord
 from beanie.odm.operators.update.general import Set
-from discord.ext import commands, tasks
+from discord.ext import tasks
 
 from constants import Period
 from database.models import Server, User
@@ -13,9 +14,13 @@ from utils.leaderboards import send_leaderboard_winners
 from utils.roles import update_roles
 from utils.stats import update_stats
 
+if TYPE_CHECKING:
+    # To prevent circular imports
+    from bot import DiscordBot
+
 
 async def send_daily_question(
-    bot: commands.Bot, server: Server, embed: discord.Embed
+    bot: DiscordBot, server: Server, embed: discord.Embed
 ) -> None:
     """
     Send the daily question to the server's daily question channels.
@@ -37,7 +42,7 @@ async def send_daily_question(
 @tasks.loop(
     time=[time(hour=hour, minute=minute) for hour in range(24) for minute in [0, 30]]
 )
-async def send_daily_question_and_update_stats_schedule(bot: commands.Bot) -> None:
+async def send_daily_question_and_update_stats_schedule(bot: DiscordBot) -> None:
     """
     Schedule to send the daily question and update the stats.
     """
@@ -45,7 +50,7 @@ async def send_daily_question_and_update_stats_schedule(bot: commands.Bot) -> No
 
 
 async def send_daily_question_and_update_stats(
-    bot: commands.Bot,
+    bot: DiscordBot,
     force_update_stats: bool = True,
     force_daily_reset: bool = False,
     force_weekly_reset: bool = False,
@@ -83,23 +88,23 @@ async def send_daily_question_and_update_stats(
             await send_daily_question(server, embed)
 
     if force_update_stats:
-        await bot.channel_logger.INFO("Started updating users stats")
+        await bot.channel_logger.info("Started updating users stats")
 
         # Update users' stats.
         async with aiohttp.ClientSession() as client_session:
             tasks = []
             async for user in User.all():
-                task = asyncio.create_task(coro=update_stats(client_session, user))
+                task = asyncio.create_task(coro=update_stats(bot, client_session, user))
 
                 tasks.append(task)
 
             await asyncio.gather(*tasks)
 
-        await bot.channel_logger.INFO(
+        await bot.channel_logger.info(
             "Completed updating users stats", include_error_counts=True
         )
 
-    await bot.channel_logger.INFO("Started updating server rankings")
+    await bot.channel_logger.info("Started updating server rankings")
 
     async for server in Server.all(fetch_links=True):
         await Server.find_one(Server.id == server.id).update(
@@ -123,7 +128,7 @@ async def send_daily_question_and_update_stats(
         if midday:
             await update_roles(bot, server)
 
-    await bot.channel_logger.INFO("Completed updating server rankings")
+    await bot.channel_logger.info("Completed updating server rankings")
 
     bot.logger.info(
         "file: utils/notifications.py ~ send_daily_question_and_update_stats ~ \

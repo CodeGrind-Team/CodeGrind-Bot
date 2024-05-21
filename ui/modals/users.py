@@ -1,6 +1,12 @@
+from typing import TYPE_CHECKING
+
 import discord
-from discord.ext import commands
+
 from utils.users import register
+
+if TYPE_CHECKING:
+    # To prevent circular imports
+    from bot import DiscordBot
 
 
 class RegisterModal(
@@ -10,7 +16,7 @@ class RegisterModal(
         label="Enter your LeetCode ID:", style=discord.TextStyle.short, required=True
     )
 
-    def __init__(self, bot: commands.Bot) -> None:
+    def __init__(self, bot: DiscordBot) -> None:
         self.bot = bot
         super().__init__()
 

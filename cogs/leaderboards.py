@@ -1,13 +1,17 @@
 from enum import Enum
+from typing import TYPE_CHECKING
 
 import discord
 from discord import app_commands
 from discord.ext import commands
 
-from bot import DiscordBot
 from constants import Period
 from middleware import defer_interaction, ensure_server_document
 from utils.leaderboards import generate_leaderboard_embed
+
+if TYPE_CHECKING:
+    # To prevent circular imports
+    from bot import DiscordBot
 
 
 class LeaderboardsCog(commands.Cog):

@@ -1,10 +1,15 @@
+from typing import TYPE_CHECKING
+
 import discord
 from discord import app_commands
 from discord.ext import commands
 
-from bot import DiscordBot
 from middleware import defer_interaction, ensure_server_document
 from ui.views.channels import SelectOperatorView
+
+if TYPE_CHECKING:
+    # To prevent circular imports
+    from bot import DiscordBot
 
 
 class NotificationsCog(commands.Cog):

@@ -1,14 +1,18 @@
 import asyncio
 from datetime import UTC, datetime, timedelta
+from typing import TYPE_CHECKING
 
 import discord
-from discord.ext import commands
 
 from constants import GLOBAL_LEADERBOARD_ID, Period, RankEmoji
 from database.models import Preference, Record, Server, User
 from ui.embeds.leaderboards import empty_leaderboard_embed, leaderboard_embed
-from utils.common import strftime_with_suffix
 from ui.views.leaderboards import LeaderboardPagination
+from utils.common import strftime_with_suffix
+
+if TYPE_CHECKING:
+    # To prevent circular imports
+    from bot import DiscordBot
 
 
 async def get_score(user: User, period: Period, previous: bool) -> int:
@@ -348,7 +352,7 @@ def get_rank_emoji(place: int, score: int) -> str:
 
 
 async def send_leaderboard_winners(
-    bot: commands.Bot, server: Server, period: Period
+    bot: DiscordBot, server: Server, period: Period
 ) -> None:
     """
     Send the leaderboard winners to the specified channels on a Discord server.
