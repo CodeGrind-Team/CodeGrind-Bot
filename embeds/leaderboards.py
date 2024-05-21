@@ -7,33 +7,39 @@ from utils.common import strftime_with_suffix
 
 
 def empty_leaderboard_embed() -> discord.Embed:
-    embed = discord.Embed(
-        title=f"Leaderboard is empty",
+    return discord.Embed(
+        title="Leaderboard is empty",
         description="No one has added their LeetCode username yet",
         colour=discord.Colour.red(),
     )
-
-    return embed
 
 
 def leaderboard_embed(
     server: Server, page_i: int, page_count: int, title: str, leaderboard: str
 ) -> discord.Embed:
-    embed = discord.Embed(title=title, colour=discord.Colour.yellow())
+    embed = discord.Embed(
+        title=title, description="\n".join(leaderboard), colour=discord.Colour.yellow()
+    )
 
-    embed.description = "\n".join(leaderboard)
-
-    last_updated = strftime_with_suffix(
+    last_updated_start = strftime_with_suffix(
         "{S} %b %Y at %H:%M %Z",
         pytz.timezone("UTC")
-        .localize(server.last_updated)
+        .localize(server.last_update_start)
         .astimezone(pytz.timezone(server.timezone)),
     )
 
-    # ! add start and end update to footer
+    last_updated_end = strftime_with_suffix(
+        "{S} %b %Y at %H:%M %Z",
+        pytz.timezone("UTC")
+        .localize(server.last_update_end)
+        .astimezone(pytz.timezone(server.timezone)),
+    )
 
     embed.set_footer(
-        text=f"Easy: {DifficultyScore.EASY.value} point, Medium: {DifficultyScore.MEDIUM.value} points, Hard: {DifficultyScore.HARD.value} points\nUpdated on {last_updated}\nPage {page_i + 1}/{page_count}"
+        text=f"""Easy: {DifficultyScore.EASY.value} point, Medium:
+          {DifficultyScore.MEDIUM.value} points, Hard: {DifficultyScore.HARD.value}
+            points\nUpdated between {last_updated_start} - {last_updated_end}
+            \nPage {page_i + 1}/{page_count}"""
     )
 
     return embed

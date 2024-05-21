@@ -77,7 +77,8 @@ async def question_embed(
         colour=colour,
     )
 
-    # TODO: handle descriptions/examples larger than the limit https://www.pythondiscord.com/pages/guides/python-guides/discord-embed-limits/
+    # TODO: handle descriptions/examples larger than the limit
+    # https://www.pythondiscord.com/pages/guides/python-guides/discord-embed-limits/
     embed.add_field(name="Example 1: ", value=info.example_one, inline=False)
     embed.add_field(name="Difficulty: ", value=info.difficulty, inline=True)
 
@@ -87,7 +88,8 @@ async def question_embed(
         )
 
     embed.set_footer(
-        text=f"Accepted: {info.total_accepted}  |  Submissions: {info.total_submission}  |  Acceptance Rate: {info.ac_rate}"
+        text=f"""Accepted: {info.total_accepted}  |  Submissions:
+          {info.total_submission}  |  Acceptance Rate: {info.ac_rate}"""
     )
 
     return embed

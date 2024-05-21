@@ -2,18 +2,25 @@ import discord
 
 
 def roles_created_embed() -> discord.Embed:
-    embed = discord.Embed(title="Success", colour=discord.Colour.green())
-    embed.description = "The roles have been created"
-    return embed
+    return discord.Embed(
+        title="Success",
+        description="The roles have been created",
+        colour=discord.Colour.green(),
+    )
 
 
 def roles_removed_embed() -> discord.Embed:
-    embed = discord.Embed(title="Success", colour=discord.Colour.green())
-    embed.description = "The roles have been removed"
-    return embed
+    return discord.Embed(
+        title="Success",
+        description="The roles have been removed",
+        colour=discord.Colour.green(),
+    )
 
 
 def missing_manage_roles_permission_embed() -> discord.Embed:
-    embed = discord.Embed(title="Error", colour=discord.Colour.red())
-    embed.description = "CodeGrind Bot does not have `manage roles` permission.\nPlease enable this permission in the bot's role."
-    return embed
+    return discord.Embed(
+        title="Error",
+        description="""CodeGrind Bot does not have `manage roles` permission.\nPlease
+          enable this permission in the bot's role.""",
+        colour=discord.Colour.red(),
+    )

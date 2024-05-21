@@ -30,7 +30,8 @@ def stats_embed(
     elif extension == StatsCardExtensions.HEATMAP:
         height = 350
 
-    url = f"https://leetcard.jacoblin.cool/{leetcode_id}?theme=dark&animation=false&width={width}&height={height}&ext={extension.value}"
+    url = f"""https://leetcard.jacoblin.cool/{leetcode_id}?theme=dark&animation=false&
+    width={width}&height={height}&ext={extension.value}"""
 
     # Making sure the website is reachable before running hti.screenshot()
     # as the method will stall if url isn't reachable.
@@ -61,20 +62,17 @@ def stats_embed(
 
 
 def invalid_username_embed() -> discord.Embed:
-    embed = discord.Embed(
+    return discord.Embed(
         title="Error",
         description="The username you entered is invalid",
         colour=discord.Colour.red(),
     )
 
-    return embed
-
 
 def account_hidden_embed() -> discord.Embed:
-    embed = discord.Embed(
+    return discord.Embed(
         title="Cannot access data",
-        description="The chosen user has their LeetCode details hidden as their `include_url` setting is set to OFF",
+        description="""The chosen user has their LeetCode details hidden as their
+          `include_url` setting is set to OFF""",
         colour=discord.Colour.red(),
     )
-
-    return embed
