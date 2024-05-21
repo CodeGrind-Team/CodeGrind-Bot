@@ -88,8 +88,8 @@ async def question_embed(
         )
 
     embed.set_footer(
-        text=f"""Accepted: {info.total_accepted}  |  Submissions:
-          {info.total_submission}  |  Acceptance Rate: {info.ac_rate}"""
+        text=f"Accepted: {info.total_accepted}  |  Submissions:"
+        f"{info.total_submission}  |  Acceptance Rate: {info.ac_rate}"
     )
 
     return embed

@@ -72,7 +72,7 @@ def invalid_username_embed() -> discord.Embed:
 def account_hidden_embed() -> discord.Embed:
     return discord.Embed(
         title="Cannot access data",
-        description="""The chosen user has their LeetCode details hidden as their
-          `include_url` setting is set to OFF""",
+        description="The chosen user has their LeetCode details hidden as their "
+        "`include_url` setting is set to OFF",
         colour=discord.Colour.red(),
     )

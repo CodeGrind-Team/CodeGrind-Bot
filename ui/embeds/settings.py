@@ -14,7 +14,7 @@ def timezone_invalid_embed() -> discord.Embed:
 def timezone_updated_embed() -> discord.Embed:
     return discord.Embed(
         title="Timezone changed successfully",
-        description="""Leaderboards will now display the last updated time in the
-          selected timezone""",
+        description="Leaderboards will now display the last updated time in the "
+        "selected timezone",
         colour=discord.Colour.green(),
     )

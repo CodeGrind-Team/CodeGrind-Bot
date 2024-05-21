@@ -20,7 +20,7 @@ def roles_removed_embed() -> discord.Embed:
 def missing_manage_roles_permission_embed() -> discord.Embed:
     return discord.Embed(
         title="Error",
-        description="""CodeGrind Bot does not have `manage roles` permission.\nPlease
-          enable this permission in the bot's role.""",
+        description="CodeGrind Bot does not have `manage roles` permission.\nPlease "
+        "enable this permission in the bot's role.",
         colour=discord.Colour.red(),
     )

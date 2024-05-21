@@ -1,29 +1,42 @@
-import aiofiles
+import aiohttp
 
 
 class Ratings:
     @classmethod
-    async def create(cls, filename: str):
+    async def create(cls, filepath: str):
+        # add logger
         self = cls()
-        self.ratings = await self._read_ratings_txt(filename)
+        self.filepath = filepath
+        self.ratings = {}
+        await self.update_txt_file()
         return self
 
     def fetch_rating(self, title: str) -> dict[str, float] | None:
-        if title.lower() in self.ratings:
-            return self.ratings[title.lower()]
+        return self.ratings.get(title.lower())
 
-    async def _read_ratings_txt(self, filename: str) -> dict:
+    async def update_txt_file(self) -> None:
+        # TODO: add to schedule (1 week)
+        url = """https://raw.githubusercontent.com/zerotrac/leetcode_problem_rating
+        /main/ratings.txt"""
+
+        async with aiohttp.ClientSession() as client_session:
+            try:
+                response = await client_session.get(url)
+                response.raise_for_status()
+                data = await response.text()
+                await self._parse_ratings(data)
+            except aiohttp.ClientError as e:
+                print(f"Failed to fetch ratings: {e}")
+
+    async def _parse_ratings(self, data: str) -> dict:
         ratings = {}
 
-        async with aiofiles.open(filename, mode="r", encoding="UTF-8") as file:
-            # Skip header line
-            await file.readline()
+        lines = data.splitlines()
+        # Skip header line
+        for line in lines[1:]:
+            line_data = line.strip().split("\t")
+            rating = float(line_data[0])
+            title = line_data[2].strip().lower()
+            ratings[title] = rating
 
-            async for line in file:
-                line_data = line.strip().split("\t")
-                rating = float(line_data[0])
-                title = line_data[2].strip().lower()
-
-                ratings[title] = rating
-
-        return ratings
+        self.ratings = ratings
