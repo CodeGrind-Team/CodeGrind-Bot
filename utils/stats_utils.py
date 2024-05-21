@@ -1,15 +1,18 @@
 from datetime import datetime
+from typing import TYPE_CHECKING
 
-# ! replace commands.Bot with custom bot
-from database.models import Record, Submissions, User
-
-from utils.questions_utils import UserStats, fetch_problems_solved_and_rank
 import aiohttp
-from bot import DiscordBot
+
+from database.models import Record, Submissions, User
+from utils.questions_utils import UserStats, fetch_problems_solved_and_rank
+
+if TYPE_CHECKING:
+    # To prevent circular imports
+    from bot import DiscordBot
 
 
 async def update_stats(
-    bot: DiscordBot,
+    bot: "DiscordBot",
     client_session: aiohttp.ClientSession,
     user: User,
     daily_reset: bool = False,

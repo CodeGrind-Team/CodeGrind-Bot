@@ -1,6 +1,6 @@
 This repository is licensed under the GNU General Public License v3.0 except for the files mentioned below.
 
-The [./bot.py] and [./main.py] files are licensed under the Apache License 2.0.
+The [./main.py](https://github.com/CodeGrind-Team/CodeGrind-Bot/blob/main/main.py) and [./bot.py](https://github.com/CodeGrind-Team/CodeGrind-Bot/blob/main/bot.py) files are licensed under the Apache License 2.0.
 
                     GNU GENERAL PUBLIC LICENSE
                        Version 3, 29 June 2007

@@ -9,7 +9,7 @@ from discord.ext import commands, tasks
 from constants import Period
 from database.models import Server, User
 from embeds.questions_embeds import daily_question_embed
-from utils.leaderboards_utils import send_leaderboard_winners, update_global_leaderboard
+from utils.leaderboards_utils import send_leaderboard_winners
 from utils.roles_utils import update_roles
 from utils.stats_utils import update_stats
 
@@ -94,8 +94,6 @@ async def send_daily_question_and_update_stats(
                 tasks.append(task)
 
             await asyncio.gather(*tasks)
-
-        await update_global_leaderboard()
 
         await bot.channel_logger.INFO(
             "Completed updating users stats", include_error_counts=True

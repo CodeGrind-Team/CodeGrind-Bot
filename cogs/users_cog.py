@@ -12,7 +12,7 @@ from embeds.users_embeds import (
 from middleware import defer_interaction, ensure_server_document
 from middleware.database_middleware import update_user_preferences_prompt
 from utils.users_utils import delete_user, login, unlink_user_from_server
-from views.user_views import LoginView
+from views.users_views import LoginView
 
 
 class UsersCog(commands.Cog):

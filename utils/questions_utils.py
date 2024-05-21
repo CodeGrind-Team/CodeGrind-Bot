@@ -399,9 +399,9 @@ async def fetch_question_info(
     # Get question rating
     question_rating = None
     if not is_paid_only:
-        rating_data = bot.ratings.fetch_rating_data(title)
-        if rating_data:
-            question_rating = int(rating_data["rating"])
+        rating = bot.ratings.fetch_rating(title)
+        if rating:
+            question_rating = int(rating)
 
     # Parse content for description and example one
     description, example_one = parse_content(content)
