@@ -4,7 +4,7 @@ from discord.ext import commands
 
 from constants import NotificationOptions
 from database.models import Server
-from embeds.channels_embeds import (
+from embeds.channels import (
     channel_receiving_all_notification_options_embed,
     channel_receiving_no_notification_options_embed,
     channel_remove_embed,
@@ -233,7 +233,7 @@ class SelectOperatorView(discord.ui.View):
 
         if all(self.channel.id in channel_id for _, channel_id in server.channels):
             embed = channel_receiving_all_notification_options_embed()
-            await interaction.edit_original_response(embed=embed)
+            await interaction.edit_original_response(embed=embed, view=None)
             return
 
         available_notification_options = {
@@ -276,7 +276,7 @@ class SelectOperatorView(discord.ui.View):
             if self.channel.id in channel_id
         }
 
-        embed = set_channels_instructions_embed(self.channel.name, adding=False)
+        embed = set_channels_instructions_embed(self.channel.id, adding=False)
         await interaction.edit_original_response(
             embed=embed,
             view=ChannelsSelectView(

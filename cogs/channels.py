@@ -4,7 +4,7 @@ from discord.ext import commands
 
 from bot import DiscordBot
 from middleware import defer_interaction, ensure_server_document
-from views.channels_views import SelectOperatorView
+from views.channels import SelectOperatorView
 
 
 class NotificationsCog(commands.Cog):

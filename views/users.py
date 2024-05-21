@@ -1,8 +1,8 @@
 import discord
 from discord.ext import commands
 
-from middleware.database_middleware import update_user_preferences_prompt
-from modals.users_modal import RegisterModal
+from middleware import update_user_preferences_prompt
+from modals.users import RegisterModal
 
 
 class LoginView(discord.ui.View):

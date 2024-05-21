@@ -4,15 +4,18 @@ from discord.ext import commands
 
 from bot import DiscordBot
 from database.models import User
-from embeds.users_embeds import (
+from embeds.users import (
     account_not_found_embed,
     account_permanently_deleted_embed,
     account_removed_embed,
 )
-from middleware import defer_interaction, ensure_server_document
-from middleware.database_middleware import update_user_preferences_prompt
-from utils.users_utils import delete_user, login, unlink_user_from_server
-from views.users_views import LoginView
+from middleware import (
+    defer_interaction,
+    ensure_server_document,
+    update_user_preferences_prompt,
+)
+from utils.users import delete_user, login, unlink_user_from_server
+from views.users import LoginView
 
 
 class UsersCog(commands.Cog):

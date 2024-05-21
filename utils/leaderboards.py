@@ -6,9 +6,9 @@ from discord.ext import commands
 
 from constants import GLOBAL_LEADERBOARD_ID, Period, RankEmoji
 from database.models import Preference, Record, Server, User
-from embeds.leaderboards_embeds import empty_leaderboard_embed, leaderboard_embed
-from utils.common_utils import strftime_with_suffix
-from views.leaderboards_views import LeaderboardPagination
+from embeds.leaderboards import empty_leaderboard_embed, leaderboard_embed
+from utils.common import strftime_with_suffix
+from views.leaderboards import LeaderboardPagination
 
 
 async def get_score(user: User, period: Period, previous: bool) -> int:
@@ -379,14 +379,14 @@ async def send_leaderboard_winners(
 
         except discord.errors.Forbidden as e:
             bot.logger.exception(
-                "file: utils/leaderboards_utils.py ~ send_leaderboard_winners ~ \
+                "file: utils/leaderboards.py ~ send_leaderboard_winners ~ \
                     missing permissions on channel id %s. Error: %s",
                 channel.id,
                 e,
             )
 
     bot.logger.info(
-        "file: utils/leaderboards_utils.py ~ send_leaderboard_winners ~ %s winners \
+        "file: utils/leaderboards.py ~ send_leaderboard_winners ~ %s winners \
             leaderboard sent to channels",
         period,
     )

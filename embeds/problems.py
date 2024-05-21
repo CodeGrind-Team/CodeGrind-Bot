@@ -3,7 +3,7 @@ import discord
 from discord.ext import commands
 
 from constants import Difficulty
-from utils.questions_utils import (
+from utils.problems import (
     fetch_daily_question,
     fetch_question_info,
     fetch_random_question,

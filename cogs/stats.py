@@ -5,8 +5,8 @@ from discord.ext import commands
 from bot import DiscordBot
 from constants import StatsCardExtensions
 from database.models import Preference, User
-from embeds.stats_embeds import account_hidden_embed, stats_embed
-from embeds.users_embeds import account_not_found_embed
+from embeds.stats import account_hidden_embed, stats_embed
+from embeds.users import account_not_found_embed
 from middleware import defer_interaction
 
 

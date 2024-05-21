@@ -11,7 +11,7 @@ import requests
 from discord.ext import commands
 
 from constants import Difficulty
-from utils.common_utils import convert_to_score
+from utils.common import convert_to_score
 
 URL = "https://leetcode.com/graphql"
 HEADERS = {
@@ -146,7 +146,7 @@ async def fetch_random_question(
 
     :return: The title slug of a randomly selected question, or None if an error occurs.
     """
-    bot.logger.info("file: utils/questions_utils.py ~ fetch_random_question ~ run")
+    bot.logger.info("file: utils/questions.py ~ fetch_random_question ~ run")
 
     payload = {
         "operationName": "randomQuestion",
@@ -205,7 +205,7 @@ async def fetch_daily_question(
     :return: The title slug of the daily coding challenge question,
              or None if an error occurs.
     """
-    bot.logger.info("file: utils/questions_utils.py ~ fetch_daily_question ~ run")
+    bot.logger.info("file: utils/questions.py ~ fetch_daily_question ~ run")
 
     data = {
         "operationName": "daily",
@@ -256,7 +256,7 @@ async def search_question(
     :return: The title slug of the matched question, or None if no match is found or an
              error occurs.
     """
-    bot.logger.info("file: utils/questions_utils.py ~ search_question ~ run")
+    bot.logger.info("file: utils/questions.py ~ search_question ~ run")
 
     payload = {
         "operationName": "problemsetQuestionList",
@@ -296,7 +296,7 @@ async def search_question(
 
     except requests.RequestException as e:
         bot.logger.exception(
-            "file: embeds/question_embeds.py ~ Daily problem could not be retrieved: \
+            "file: embeds/question.py ~ Daily problem could not be retrieved: \
                 %s",
             e,
         )
@@ -335,7 +335,7 @@ async def fetch_question_info(
     """
 
     bot.logger.info(
-        "file: utils/questions_utils.py ~ fetch_question_info ~ run ~ \
+        "file: utils/questions.py ~ fetch_question_info ~ run ~ \
             question_title_slug: %s",
         question_title_slug,
     )
@@ -368,14 +368,14 @@ async def fetch_question_info(
 
     except aiohttp.ClientError as e:
         bot.logger.exception(
-            "file: utils/questions_utils.py ~ fetch_problems_solved_and_rank ~ \
+            "file: utils/questions.py ~ fetch_problems_solved_and_rank ~ \
                 exception: %s",
             e,
         )
 
     try:
         response_data = await response.json()
-        question = response_data.get("data", {}).get("question")
+        question = response_data["data"]["question"]
 
         question_id = question["questionFrontendId"]
         difficulty = question["difficulty"]
@@ -385,9 +385,9 @@ async def fetch_question_info(
         link = f"https://leetcode.com/problems/{question_title_slug}"
 
         stats = ast.literal_eval(question["stats"])
-        total_accepted = stats.get("totalAccepted", 0)
-        total_submission = stats.get("totalSubmission", 0)
-        ac_rate = stats.get("acRate", 0.0)
+        total_accepted = stats["totalAccepted"]
+        total_submission = stats["totalSubmission"]
+        ac_rate = stats["acRate"]
 
     except ValueError:
         bot.logger.exception(
@@ -436,7 +436,7 @@ async def fetch_problems_solved_and_rank(
     """
 
     bot.logger.info(
-        "file: utils/questions_utils.py ~ fetch_problems_solved_and_rank ~ run ~ \
+        "file: utils/questions.py ~ fetch_problems_solved_and_rank ~ run ~ \
             leetcode_id: %s",
         leetcode_id,
     )
@@ -461,7 +461,7 @@ async def fetch_problems_solved_and_rank(
     }
 
     bot.logger.info(
-        "file: utils/questions_utils.py ~ fetch_problems_solved_and_rank ~ data \
+        "file: utils/questions.py ~ fetch_problems_solved_and_rank ~ data \
             requesting ~ https://leetcode.com/%s",
         leetcode_id,
     )
@@ -477,7 +477,7 @@ async def fetch_problems_solved_and_rank(
 
         except aiohttp.ClientError as e:
             bot.logger.exception(
-                "file: utils/questions_utils.py ~ fetch_problems_solved_and_rank ~ \
+                "file: utils/questions.py ~ fetch_problems_solved_and_rank ~ \
                     exception: %s",
                 e,
             )
@@ -487,7 +487,7 @@ async def fetch_problems_solved_and_rank(
     if response.status == 429:
         # Rate limit reached
         bot.logger.exception(
-            "file: utils/questions_utils.py ~ fetch_problems_solved_and_rank ~ \
+            "file: utils/questions.py ~ fetch_problems_solved_and_rank ~ \
                 LeetCode username: % s ~ Error code: % s",
             leetcode_id,
             response.status,
@@ -498,7 +498,7 @@ async def fetch_problems_solved_and_rank(
     elif response.status == 403:
         # Forbidden access
         bot.logger.exception(
-            "file: utils/questions_utils.py ~ fetch_problems_solved_and_rank ~ \
+            "file: utils/questions.py ~ fetch_problems_solved_and_rank ~ \
                 LeetCode username: %s ~ Error code: %s",
             leetcode_id,
             response.status,
@@ -507,7 +507,7 @@ async def fetch_problems_solved_and_rank(
         return
     elif response.status != 200:
         bot.logger.exception(
-            "file: utils/questions_utils.py ~ fetch_problems_solved_and_rank ~ \
+            "file: utils/questions.py ~ fetch_problems_solved_and_rank ~ \
                 LeetCode username: %s ~ Error code: %s",
             leetcode_id,
             response.status,

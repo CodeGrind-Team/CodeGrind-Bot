@@ -4,7 +4,7 @@ from typing import List, Optional
 from beanie import Document, Link
 from pydantic import BaseModel, Field
 
-from .user_model import User
+from .user import User
 
 
 # TODO add option to silent/non-silent notifications

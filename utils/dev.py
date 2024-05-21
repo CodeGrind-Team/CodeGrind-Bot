@@ -121,11 +121,11 @@ class ChannelLogger:
 
         except discord.errors.Forbidden as e:
             self.bot.logger.exception(
-                "file: utils/dev_utils.py ~ ChannelLogger.log ~ \
+                "file: utils/dev.py ~ ChannelLogger.log ~ \
                     missing permissions on logging channel. Error: %s",
                 e,
             )
         except Exception as e:
             self.bot.logger.exception(
-                "file: utils/dev_utils.py ~ ChannelLogger.log ~ Error: %s", e
+                "file: utils/dev.py ~ ChannelLogger.log ~ Error: %s", e
             )

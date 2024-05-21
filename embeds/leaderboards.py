@@ -3,7 +3,7 @@ import pytz
 
 from constants import DifficultyScore
 from database.models import Server
-from utils.common_utils import strftime_with_suffix
+from utils.common import strftime_with_suffix
 
 
 def empty_leaderboard_embed() -> discord.Embed:

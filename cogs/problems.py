@@ -5,9 +5,9 @@ from discord.ext import commands
 
 from bot import DiscordBot
 from constants import Difficulty
-from embeds.questions_embeds import daily_question_embed, random_question_embed
+from embeds.problems import daily_question_embed, random_question_embed
 from middleware import defer_interaction
-from modals.problems_modal import ProblemSearchModal
+from modals.problems import ProblemSearchModal
 
 
 class ProblemsCog(commands.GroupCog, name="problem"):

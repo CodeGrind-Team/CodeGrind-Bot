@@ -4,7 +4,7 @@ from discord.ext import commands
 
 from bot import DiscordBot
 from middleware import defer_interaction, ensure_server_document
-from views.roles_views import RolesView
+from views.roles import RolesView
 
 
 class RolesCog(commands.Cog):

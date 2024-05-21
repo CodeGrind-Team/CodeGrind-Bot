@@ -29,12 +29,12 @@ from html2image import Html2Image
 
 from constants import GLOBAL_LEADERBOARD_ID
 from database.setup import initialise_mongodb_conn
-from utils.dev_utils import ChannelLogger
-from utils.notifications_utils import (
+from utils.dev import ChannelLogger
+from utils.notifications import (
     send_daily_question_and_update_stats,
     send_daily_question_and_update_stats_schedule,
 )
-from utils.ratings_utils import Ratings
+from utils.ratings import Ratings
 
 
 @dataclass

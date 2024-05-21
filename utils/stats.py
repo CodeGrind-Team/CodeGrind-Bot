@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 import aiohttp
 
 from database.models import Record, Submissions, User
-from utils.questions_utils import UserStats, fetch_problems_solved_and_rank
+from utils.problems import UserStats, fetch_problems_solved_and_rank
 
 if TYPE_CHECKING:
     # To prevent circular imports

@@ -6,8 +6,8 @@ import requests
 from discord.ext import commands
 
 from constants import StatsCardExtensions
-from embeds.misc_embeds import error_embed
-from utils.common_utils import to_thread
+from embeds.misc import error_embed
+from utils.common import to_thread
 
 
 @to_thread

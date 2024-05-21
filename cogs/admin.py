@@ -6,7 +6,7 @@ from discord.ext import commands
 
 from bot import DiscordBot
 from database.models import Server
-from embeds.admin_embeds import invalid_timezone_embed, timezone_updated_embed
+from embeds.admin import timezone_invalid_embed, timezone_updated_embed
 from middleware import defer_interaction, ensure_server_document
 
 
@@ -49,7 +49,7 @@ class AdminGroupCog(commands.GroupCog, name="settings"):
         :param timezone: Type your timezone.
         """
         if timezone not in pytz.common_timezones_set:
-            await interaction.followup.send(embed=invalid_timezone_embed())
+            await interaction.followup.send(embed=timezone_invalid_embed())
             return
 
         # Update server's timezone field.

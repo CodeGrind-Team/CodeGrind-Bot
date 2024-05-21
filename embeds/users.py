@@ -1,6 +1,6 @@
 import discord
 
-from views.preferences_views import EmbedAndField
+from views.preferences import EmbedAndField
 
 
 def synced_existing_user_embed() -> discord.Embed:
@@ -83,7 +83,7 @@ def account_not_found_embed() -> discord.Embed:
     return embed
 
 
-def preferences_update_prompt_embeds() -> tuple[list[EmbedAndField], discord.Embed]:
+def preferences_update_prompt_embed() -> tuple[list[EmbedAndField], discord.Embed]:
     pages = [
         EmbedAndField(
             discord.Embed(

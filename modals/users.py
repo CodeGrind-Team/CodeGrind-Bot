@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands
-from utils.users_utils import register
+from utils.users import register
 
 
 class RegisterModal(

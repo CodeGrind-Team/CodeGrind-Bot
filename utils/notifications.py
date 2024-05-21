@@ -8,10 +8,10 @@ from discord.ext import commands, tasks
 
 from constants import Period
 from database.models import Server, User
-from embeds.questions_embeds import daily_question_embed
-from utils.leaderboards_utils import send_leaderboard_winners
-from utils.roles_utils import update_roles
-from utils.stats_utils import update_stats
+from embeds.problems import daily_question_embed
+from utils.leaderboards import send_leaderboard_winners
+from utils.roles import update_roles
+from utils.stats import update_stats
 
 
 async def send_daily_question(
@@ -23,7 +23,7 @@ async def send_daily_question(
     :param server: The server to send the daily question to (with links fetched).
     :param embed: The embed containing the daily question.
     """
-    bot.logger.info("file: utils/notifications_utils.py ~ send_daily ~ run")
+    bot.logger.info("file: utils/notifications.py ~ send_daily ~ run")
 
     for channel_id in server.channels.daily_question:
         channel = bot.get_channel(channel_id)
@@ -60,7 +60,7 @@ async def send_daily_question_and_update_stats(
     :param force_monthly_reset: Whether to force the monthly reset.
     """
     bot.logger.info(
-        "file: utils/notifications_utils.py ~ send_daily_question_and_update_stats ~ \
+        "file: utils/notifications.py ~ send_daily_question_and_update_stats ~ \
             started"
     )
 
@@ -126,6 +126,6 @@ async def send_daily_question_and_update_stats(
     await bot.channel_logger.INFO("Completed updating server rankings")
 
     bot.logger.info(
-        "file: utils/notifications_utils.py ~ send_daily_question_and_update_stats ~ \
+        "file: utils/notifications.py ~ send_daily_question_and_update_stats ~ \
             ended"
     )

@@ -7,7 +7,7 @@ from discord.ext import commands
 from bot import DiscordBot
 from constants import Period
 from middleware import defer_interaction, ensure_server_document
-from utils.leaderboards_utils import generate_leaderboard_embed
+from utils.leaderboards import generate_leaderboard_embed
 
 
 class LeaderboardsCog(commands.Cog):

@@ -2,7 +2,7 @@ from datetime import datetime
 
 from beanie import Document, TimeSeriesConfig
 
-from .user_model import Submissions
+from .user import Submissions
 
 
 class Record(Document):
