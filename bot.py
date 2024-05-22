@@ -76,7 +76,9 @@ class DiscordBot(commands.Bot):
         self.topggpy = None
 
     async def on_autopost_success(self):
-        """Runs when stats are posted to topgg"""
+        """
+        Runs when stats are posted to topgg
+        """
         self.logger.info(
             "Posted server count (%s), shard count (%s)",
             self.topggpy.guild_count,
@@ -88,41 +90,13 @@ class DiscordBot(commands.Bot):
         )
 
     async def init_topgg(self) -> None:
+        """
+        Initialises the topgg client.
+        """
         if self.config.PRODUCTION:
             self.topggpy = topgg.DBLClient(
                 self, self.config.TOPGG_TOKEN, autopost=True, post_shard_count=True
             )
-
-    async def on_guild_remove(self, guild: discord.Guild) -> None:
-        await Preference.find_many(Preference.server_id == guild.id).delete()
-        await Server.find_one(Server.id == guild.id).delete()
-
-    async def on_raw_member_remove(self, payload: discord.RawMemberRemoveEvent) -> None:
-        await unlink_user_from_server(payload.guild_id, payload.user.id)
-
-        preferences = await Preference.find_many(
-            Preference.user_id == payload.user.id,
-            Preference.server_id != GLOBAL_LEADERBOARD_ID,
-        ).to_list()
-
-        if len(preferences) == 0:
-            await delete_user(payload.user.id)
-
-    async def on_member_update(
-        self, before: discord.Member, after: discord.Member
-    ) -> None:
-        await Preference.find_one(
-            Preference.user_id == before.id,
-            Preference.server_id == before.guild.id,
-        ).update(Set({Preference.name: after.display_name}))
-
-    async def on_user_update(
-        self, before: discord.Member, after: discord.Member
-    ) -> None:
-        await Preference.find_one(
-            Preference.user_id == before.id,
-            Preference.server_id == GLOBAL_LEADERBOARD_ID,
-        ).update(Set({Preference.name: after.display_name}))
 
     async def load_cogs(self) -> None:
         """
@@ -141,6 +115,9 @@ class DiscordBot(commands.Bot):
                     )
 
     async def on_ready(self) -> None:
+        """
+        Called when the client is done preparing the data received from Discord.
+        """
         self.logger.info("file: main.py ~ on_ready ~ start")
 
         if self.config.MAINTENANCE:
@@ -154,8 +131,14 @@ class DiscordBot(commands.Bot):
         weekly_reset_on_start = self.config.WEEKLY_RESET_ON_START
         monthly_reset_on_start = self.config.MONTHLY_RESET_ON_START
 
-        if update_stats_on_start or daily_reset_on_start or weekly_reset_on_start:
+        if (
+            update_stats_on_start
+            or daily_reset_on_start
+            or weekly_reset_on_start
+            or monthly_reset_on_start
+        ):
             await send_daily_question_and_update_stats(
+                self,
                 update_stats_on_start,
                 daily_reset_on_start,
                 weekly_reset_on_start,
@@ -164,7 +147,7 @@ class DiscordBot(commands.Bot):
 
     async def setup_hook(self) -> None:
         """
-        This will just be executed when the bot starts the first time.
+        Called only once to setup the bot.
         """
         self.logger.info(f"Logged in as {self.user.name}")
         self.logger.info(f"discord.py API version: {discord.__version__}")
@@ -192,8 +175,6 @@ class DiscordBot(commands.Bot):
         """
         The code in this event is executed every time a normal command has been
         *successfully* executed.
-
-        :param context: The context of the command that has been executed.
         """
         if not interaction.command:
             return
@@ -213,6 +194,49 @@ class DiscordBot(commands.Bot):
                 f"(ID: {interaction.user.id}) in DMs"
             )
 
+    async def on_guild_remove(self, guild: discord.Guild) -> None:
+        """
+        Called a guild gets deleted.
+        """
+        await Preference.find_many(Preference.server_id == guild.id).delete()
+        await Server.find_one(Server.id == guild.id).delete()
+
+    async def on_raw_member_remove(self, payload: discord.RawMemberRemoveEvent) -> None:
+        """
+        Called when a member leaves a guild.
+        """
+        await unlink_user_from_server(payload.guild_id, payload.user.id)
+
+        preferences = await Preference.find_many(
+            Preference.user_id == payload.user.id,
+            Preference.server_id != GLOBAL_LEADERBOARD_ID,
+        ).to_list()
+
+        if len(preferences) == 0:
+            await delete_user(payload.user.id)
+
+    async def on_member_update(
+        self, before: discord.Member, after: discord.Member
+    ) -> None:
+        """
+        Called a member updates their guild specific information, such as nickname.
+        """
+        await Preference.find_one(
+            Preference.user_id == before.id,
+            Preference.server_id == before.guild.id,
+        ).update(Set({Preference.name: after.display_name}))
+
+    async def on_user_update(
+        self, before: discord.Member, after: discord.Member
+    ) -> None:
+        """
+        Called a user updated their account information, such as username.
+        """
+        await Preference.find_one(
+            Preference.user_id == before.id,
+            Preference.server_id == GLOBAL_LEADERBOARD_ID,
+        ).update(Set({Preference.name: after.display_name}))
+
 
 async def on_error(
     interaction: discord.Interaction, error: discord.app_commands.AppCommandError
@@ -220,9 +244,6 @@ async def on_error(
     """
     The code in this event is executed every time a normal valid command catches an
     error.
-
-    :param context: The context of the normal command that failed executing.
-    :param error: The error that has been faced.
     """
     if isinstance(error, discord.app_commands.errors.CommandOnCooldown):
         minutes, seconds = divmod(error.retry_after, 60)

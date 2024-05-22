@@ -68,6 +68,7 @@ async def send_daily_question_and_update_stats(
         "file: utils/notifications.py ~ send_daily_question_and_update_stats ~ \
             started"
     )
+    await bot.channel_logger.info("Started updating")
 
     start = datetime.now(UTC)
 
@@ -83,12 +84,13 @@ async def send_daily_question_and_update_stats(
 
     if daily_reset:
         # Send problem of the day.
-        embed = await daily_question_embed()
+        async with aiohttp.ClientSession() as client_session:
+            embed = await daily_question_embed(bot, client_session)
+
         async for server in Server.all(fetch_links=True):
-            await send_daily_question(server, embed)
+            await send_daily_question(bot, server, embed)
 
     if force_update_stats:
-        await bot.channel_logger.info("Started updating users stats")
 
         # Update users' stats.
         async with aiohttp.ClientSession() as client_session:
@@ -99,12 +101,6 @@ async def send_daily_question_and_update_stats(
                 tasks.append(task)
 
             await asyncio.gather(*tasks)
-
-        await bot.channel_logger.info(
-            "Completed updating users stats", include_error_counts=True
-        )
-
-    await bot.channel_logger.info("Started updating server rankings")
 
     async for server in Server.all(fetch_links=True):
         await Server.find_one(Server.id == server.id).update(
@@ -117,20 +113,20 @@ async def send_daily_question_and_update_stats(
         )
 
         if daily_reset:
-            await send_leaderboard_winners(server, Period.DAY)
+            await send_leaderboard_winners(bot, server, Period.DAY)
 
         if weekly_reset:
-            await send_leaderboard_winners(server, Period.WEEK)
+            await send_leaderboard_winners(bot, server, Period.WEEK)
 
         if monthly_reset:
-            await send_leaderboard_winners(server, Period.MONTH)
+            await send_leaderboard_winners(bot, server, Period.MONTH)
 
         if midday:
-            await update_roles(bot, server)
-
-    await bot.channel_logger.info("Completed updating server rankings")
+            guild = bot.get_guild(server.id)
+            await update_roles(guild, server)
 
     bot.logger.info(
         "file: utils/notifications.py ~ send_daily_question_and_update_stats ~ \
             ended"
     )
+    await bot.channel_logger.info("Completed updating")
