@@ -43,8 +43,9 @@ class QuestionInfo:
     total_submission: int
     ac_rate: float
     question_rating: int | None
-    description: str | None
-    example_one: str | None
+    description: str
+    example_one: str
+    follow_up: str | None
 
 
 @dataclass
@@ -66,7 +67,7 @@ class RateLimitReached(Exception):
         super().__init__("ExceptionWithStatusCode. Error: 429. Rate Limited.")
 
 
-def parse_content(content: str) -> tuple[str, str]:
+def parse_content(content: str) -> tuple[str, str, str | None]:
     """
     Parses the content of a LeetCode question to extract description and constraints.
 
@@ -81,6 +82,7 @@ def parse_content(content: str) -> tuple[str, str]:
     position_example_two = content.find(
         '<p><strong class="example">Example 2:</strong></p>'
     )
+    position_follow_up = content.find("<strong>Follow up:</strong> ")
 
     description = html_to_markdown(content[:position_example_one])
     example_one = html_to_markdown(
@@ -92,7 +94,13 @@ def parse_content(content: str) -> tuple[str, str]:
         ]
     )
 
-    return description, example_one
+    follow_up = None
+    if position_follow_up != -1:
+        follow_up = html_to_markdown(
+            content[position_follow_up + len("<strong>Follow up:</strong> ") :]
+        )
+
+    return description, example_one, follow_up
 
 
 def html_to_markdown(html: str) -> str:
@@ -408,8 +416,8 @@ async def fetch_question_info(
         if rating:
             question_rating = int(rating)
 
-    # Parse content for description and example one
-    description, example_one = parse_content(content)
+    # Parse content for description, example one, and follow up
+    description, example_one, follow_up = parse_content(content)
 
     return QuestionInfo(
         premium=is_paid_only,
@@ -423,6 +431,7 @@ async def fetch_question_info(
         question_rating=question_rating,
         description=description,
         example_one=example_one,
+        follow_up=follow_up,
     )
 
 

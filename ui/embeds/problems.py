@@ -85,6 +85,10 @@ async def question_embed(
     # TODO: handle descriptions/examples larger than the limit
     # https://www.pythondiscord.com/pages/guides/python-guides/discord-embed-limits/
     embed.add_field(name="Example 1: ", value=info.example_one, inline=False)
+
+    if info.follow_up:
+        embed.add_field(name="Follow up: ", value=info.follow_up, inline=False)
+
     embed.add_field(name="Difficulty: ", value=info.difficulty, inline=True)
 
     if info.question_rating is not None:
