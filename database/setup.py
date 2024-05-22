@@ -18,10 +18,9 @@ async def initialise_mongodb_conn(mongodb_uri: str, global_leaderboard_id: int) 
         document_models=[Preference, Record, Server, User],
     )
 
-    # Create global leaderboard 'server' with id 0.
     server = await Server.get(global_leaderboard_id)
     if not server:
-        server = Server(id=0)
+        server = Server(id=global_leaderboard_id)
         await server.create()
 
 

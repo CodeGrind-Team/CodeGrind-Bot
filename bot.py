@@ -24,10 +24,12 @@ from dataclasses import dataclass
 
 import discord
 import topgg
+from beanie.odm.operators.update.general import Set
 from discord.ext import commands
 from html2image import Html2Image
 
 from constants import GLOBAL_LEADERBOARD_ID
+from database.models import Preference, Server
 from database.setup import initialise_mongodb_conn
 from utils.dev import ChannelLogger
 from utils.notifications import (
@@ -35,6 +37,7 @@ from utils.notifications import (
     send_daily_question_and_update_stats_schedule,
 )
 from utils.ratings import Ratings, update_ratings_schedule
+from utils.users import delete_user, unlink_user_from_server
 
 
 @dataclass
@@ -90,17 +93,36 @@ class DiscordBot(commands.Bot):
                 self, self.config.TOPGG_TOKEN, autopost=True, post_shard_count=True
             )
 
-    # async def on_guild_remove(self) -> None:
-    #     # TODO: data removal
-    #     pass
+    async def on_guild_remove(self, guild: discord.Guild) -> None:
+        await Preference.find_many(Preference.server_id == guild.id).delete()
+        await Server.find_one(Server.id == guild.id).delete()
 
-    # async def on_member_remove(self) -> None:
-    #     # TODO: data removal
-    #     pass
+    async def on_raw_member_remove(self, payload: discord.RawMemberRemoveEvent) -> None:
+        await unlink_user_from_server(payload.guild_id, payload.user.id)
 
-    # async def on_member_update(self) -> None:
-    #     # TODO: data removal
-    #     pass
+        preferences = await Preference.find_many(
+            Preference.user_id == payload.user.id,
+            Preference.server_id != GLOBAL_LEADERBOARD_ID,
+        ).to_list()
+
+        if len(preferences) == 0:
+            await delete_user(payload.user.id)
+
+    async def on_member_update(
+        self, before: discord.Member, after: discord.Member
+    ) -> None:
+        await Preference.find_one(
+            Preference.user_id == before.id,
+            Preference.server_id == before.guild.id,
+        ).update(Set({Preference.name: after.display_name}))
+
+    async def on_user_update(
+        self, before: discord.Member, after: discord.Member
+    ) -> None:
+        await Preference.find_one(
+            Preference.user_id == before.id,
+            Preference.server_id == GLOBAL_LEADERBOARD_ID,
+        ).update(Set({Preference.name: after.display_name}))
 
     async def load_cogs(self) -> None:
         """

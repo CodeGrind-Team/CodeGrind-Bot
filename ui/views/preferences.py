@@ -58,7 +58,6 @@ class UserPreferencesPromptView(discord.ui.View):
             ).update(Set({Preference.url: value}))
 
         elif self.curr_field == PreferenceField.GLOBAL_ANONYMOUS:
-            print("YES")
             await Preference.find_one(
                 Preference.user_id == user_id,
                 Preference.server_id == guild_id,

@@ -36,7 +36,7 @@ async def send_daily_question(
         if not channel or not isinstance(channel, discord.TextChannel):
             continue
 
-        await channel.send(embed=embed)
+        await channel.send(embed=embed, silent=True)
 
 
 @tasks.loop(

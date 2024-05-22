@@ -120,7 +120,7 @@ async def sort_users_by_score(
     coroutines = [get_user_and_score(user, period, previous) for user in server.users]
     users_with_scores = await asyncio.gather(*coroutines)
     sorted_users_with_score = sorted(
-        users_with_scores, key=lambda _, score: score, reverse=True
+        users_with_scores, key=lambda pair: pair[1], reverse=True
     )
 
     return sorted_users_with_score
@@ -171,7 +171,6 @@ async def generate_leaderboard_embed(
             sorted_users_with_score,
             winners_only,
             global_leaderboard,
-            previous,
             page_index,
             users_per_page,
             num_pages,
@@ -379,7 +378,7 @@ async def send_leaderboard_winners(
                 period, server.id, winners_only=True, previous=True
             )
 
-            await channel.send(embed=embed, view=view)
+            await channel.send(embed=embed, view=view, silent=True)
 
         except discord.errors.Forbidden as e:
             bot.logger.exception(
