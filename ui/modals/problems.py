@@ -17,7 +17,7 @@ class ProblemSearchModal(discord.ui.Modal, title="Search for a LeetCode problem"
         required=True,
     )
 
-    def __init__(self, bot: DiscordBot) -> None:
+    def __init__(self, bot: "DiscordBot") -> None:
         self.bot = bot
         super().__init__()
 

@@ -34,7 +34,7 @@ from utils.notifications import (
     send_daily_question_and_update_stats,
     send_daily_question_and_update_stats_schedule,
 )
-from utils.ratings import Ratings
+from utils.ratings import Ratings, update_ratings_schedule
 
 
 @dataclass
@@ -156,13 +156,15 @@ class DiscordBot(commands.Bot):
         await self.load_cogs()
         await self.init_topgg()
         self.channel_logger = ChannelLogger(self, self.config.LOGGING_CHANNEL_ID)
-        self.ratings = await Ratings.create("ratings.txt")
+        self.ratings = Ratings()
+        await self.ratings.update_ratings()
 
         if self.config.SYNC_COMMANDS:
             # Sync commands globally
             await self.tree.sync()
 
         send_daily_question_and_update_stats_schedule.start(self)
+        update_ratings_schedule.start(self)
 
     async def on_interaction(self, interaction: discord.Interaction) -> None:
         """
@@ -179,11 +181,14 @@ class DiscordBot(commands.Bot):
         executed_command = str(split[0])
         if interaction.guild is not None:
             self.logger.info(
-                f"Executed /{executed_command} command in {interaction.guild.name} (ID: {interaction.guild.id}) by {interaction.user.name} (ID: {interaction.user.id})"
+                f"Executed /{executed_command} command in {interaction.guild.name} "
+                f"(ID: {interaction.guild.id}) by {interaction.user.name} "
+                f"(ID: {interaction.user.id})"
             )
         else:
             self.logger.info(
-                f"Executed /{executed_command} command by {interaction.user.name} (ID: {interaction.user.id}) in DMs"
+                f"Executed /{executed_command} command by {interaction.user.name} "
+                f"(ID: {interaction.user.id}) in DMs"
             )
 
 
@@ -191,7 +196,8 @@ async def on_error(
     interaction: discord.Interaction, error: discord.app_commands.AppCommandError
 ) -> None:
     """
-    The code in this event is executed every time a normal valid command catches an error.
+    The code in this event is executed every time a normal valid command catches an
+    error.
 
     :param context: The context of the normal command that failed executing.
     :param error: The error that has been faced.
@@ -250,7 +256,10 @@ class LoggingFormatter(logging.Formatter):
 
     def format(self, record):
         log_colour = self.COLOURS[record.levelno]
-        format = "(black){asctime}(reset) (levelcolour){levelname:<8}(reset) (green){name}(reset) {message}"
+        format = (
+            "(black){asctime}(reset) (levelcolour){levelname:<8}(reset) "
+            "(green){name}(reset) {message}"
+        )
         format = format.replace("(black)", self.black + self.bold)
         format = format.replace("(reset)", self.reset)
         format = format.replace("(levelcolour)", log_colour)

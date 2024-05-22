@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 
 
 class AdminGroupCog(commands.GroupCog, name="settings"):
-    def __init__(self, bot: DiscordBot) -> None:
+    def __init__(self, bot: "DiscordBot") -> None:
         self.bot = bot
 
     async def _timezone_autocomplete(
@@ -65,5 +65,5 @@ class AdminGroupCog(commands.GroupCog, name="settings"):
         await interaction.followup.send(embed=timezone_updated_embed())
 
 
-async def setup(bot: DiscordBot) -> None:
+async def setup(bot: "DiscordBot") -> None:
     await bot.add_cog(AdminGroupCog(bot))

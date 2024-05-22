@@ -27,7 +27,7 @@ if TYPE_CHECKING:
 
 
 async def register(
-    bot: DiscordBot,
+    bot: "DiscordBot",
     interaction: discord.Interaction,
     send_message: discord.Webhook,
     server_id: int,
@@ -163,7 +163,7 @@ async def login(
 
 
 async def linking_process(
-    bot: DiscordBot, send_message: discord.Webhook, leetcode_id: str
+    bot: "DiscordBot", send_message: discord.Webhook, leetcode_id: str
 ) -> None:
     """
     Initiates the account linking process.
@@ -240,7 +240,7 @@ async def delete_user(user_id: int) -> None:
     await User.find_one(User.id == user_id).delete()
 
 
-# async def remove_inactive_users(bot: DiscordBot) -> None:
+# async def remove_inactive_users(bot: "DiscordBot") -> None:
 #     """
 #     Remove users and servers that are inactive.
 

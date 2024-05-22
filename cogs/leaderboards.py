@@ -21,7 +21,7 @@ class LeaderboardsCog(commands.Cog):
         Monthly = Period.MONTH
         AllTime = Period.ALLTIME
 
-    def __init__(self, bot: DiscordBot) -> None:
+    def __init__(self, bot: "DiscordBot") -> None:
         self.bot = bot
 
     @app_commands.command(name="leaderboard")
@@ -52,5 +52,5 @@ class LeaderboardsCog(commands.Cog):
         await interaction.followup.send(embed=embed, view=view)
 
 
-async def setup(bot: DiscordBot) -> None:
+async def setup(bot: "DiscordBot") -> None:
     await bot.add_cog(LeaderboardsCog(bot))

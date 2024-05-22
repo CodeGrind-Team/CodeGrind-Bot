@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 
 
 class GeneralCog(commands.Cog):
-    def __init__(self, bot: DiscordBot) -> None:
+    def __init__(self, bot: "DiscordBot") -> None:
         self.bot = bot
 
     @app_commands.command(name="help")
@@ -46,5 +46,5 @@ class GeneralCog(commands.Cog):
         await interaction.followup.send(embed=embed)
 
 
-async def setup(bot: DiscordBot) -> None:
+async def setup(bot: "DiscordBot") -> None:
     await bot.add_cog(GeneralCog(bot))

@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 
 
 class RolesCog(commands.Cog):
-    def __init__(self, bot: DiscordBot) -> None:
+    def __init__(self, bot: "DiscordBot") -> None:
         self.bot = bot
 
     @app_commands.command(name="roles")
@@ -31,5 +31,5 @@ class RolesCog(commands.Cog):
         )
 
 
-async def setup(bot: DiscordBot) -> None:
+async def setup(bot: "DiscordBot") -> None:
     await bot.add_cog(RolesCog(bot))

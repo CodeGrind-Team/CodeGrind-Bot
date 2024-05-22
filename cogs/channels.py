@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 
 
 class NotificationsCog(commands.Cog):
-    def __init__(self, bot: DiscordBot) -> None:
+    def __init__(self, bot: "DiscordBot") -> None:
         self.bot = bot
 
     @app_commands.command(name="notifications")
@@ -43,5 +43,5 @@ class NotificationsCog(commands.Cog):
         )
 
 
-async def setup(bot: DiscordBot) -> None:
+async def setup(bot: "DiscordBot") -> None:
     await bot.add_cog(NotificationsCog(bot))

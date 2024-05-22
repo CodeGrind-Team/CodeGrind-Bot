@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 
 
 async def daily_question_embed(
-    bot: DiscordBot, client_session: aiohttp.ClientSession
+    bot: "DiscordBot", client_session: aiohttp.ClientSession
 ) -> discord.Embed:
     question_title = await fetch_daily_question(bot, client_session)
 
@@ -29,7 +29,7 @@ async def daily_question_embed(
 
 
 async def search_question_embed(
-    bot: DiscordBot, client_session: aiohttp.ClientSession, search_text: str
+    bot: "DiscordBot", client_session: aiohttp.ClientSession, search_text: str
 ) -> discord.Embed:
     question_title = await search_question(bot, client_session, search_text)
 
@@ -41,7 +41,7 @@ async def search_question_embed(
 
 
 async def random_question_embed(
-    bot: DiscordBot, client_session: aiohttp.ClientSession, difficulty: Difficulty
+    bot: "DiscordBot", client_session: aiohttp.ClientSession, difficulty: Difficulty
 ) -> discord.Embed:
     question_title = await fetch_random_question(bot, client_session, difficulty)
 
@@ -54,7 +54,7 @@ async def random_question_embed(
 
 # TODO: split into logic and embed
 async def question_embed(
-    bot: DiscordBot, client_session: aiohttp.ClientSession, question_title: str
+    bot: "DiscordBot", client_session: aiohttp.ClientSession, question_title: str
 ) -> discord.Embed:
     info = await fetch_question_info(bot, client_session, question_title)
 

@@ -20,7 +20,7 @@ if TYPE_CHECKING:
 
 
 async def send_daily_question(
-    bot: DiscordBot, server: Server, embed: discord.Embed
+    bot: "DiscordBot", server: Server, embed: discord.Embed
 ) -> None:
     """
     Send the daily question to the server's daily question channels.
@@ -42,7 +42,7 @@ async def send_daily_question(
 @tasks.loop(
     time=[time(hour=hour, minute=minute) for hour in range(24) for minute in [0, 30]]
 )
-async def send_daily_question_and_update_stats_schedule(bot: DiscordBot) -> None:
+async def send_daily_question_and_update_stats_schedule(bot: "DiscordBot") -> None:
     """
     Schedule to send the daily question and update the stats.
     """
@@ -50,7 +50,7 @@ async def send_daily_question_and_update_stats_schedule(bot: DiscordBot) -> None
 
 
 async def send_daily_question_and_update_stats(
-    bot: DiscordBot,
+    bot: "DiscordBot",
     force_update_stats: bool = True,
     force_daily_reset: bool = False,
     force_weekly_reset: bool = False,

@@ -16,6 +16,8 @@ from utils.common import convert_to_score
 if TYPE_CHECKING:
     # To prevent circular imports
     from bot import DiscordBot
+
+
 URL = "https://leetcode.com/graphql"
 HEADERS = {
     "Content-Type": "application/json",
@@ -139,7 +141,7 @@ def html_to_markdown(html: str) -> str:
 
 
 async def fetch_random_question(
-    bot: DiscordBot, client_session: aiohttp.ClientSession, difficulty: Difficulty
+    bot: "DiscordBot", client_session: aiohttp.ClientSession, difficulty: Difficulty
 ) -> str | None:
     """
     Fetches a random LeetCode question title slug based on the given difficulty.
@@ -200,7 +202,7 @@ async def fetch_random_question(
 
 
 async def fetch_daily_question(
-    bot: DiscordBot, client_session: aiohttp.ClientSession
+    bot: "DiscordBot", client_session: aiohttp.ClientSession
 ) -> str | None:
     """
     Fetches the title slug of the active daily coding challenge question.
@@ -249,7 +251,7 @@ async def fetch_daily_question(
 
 
 async def search_question(
-    bot: DiscordBot, client_session: aiohttp.ClientSession, text: str
+    bot: "DiscordBot", client_session: aiohttp.ClientSession, text: str
 ) -> str | None:
     """
     Searches for a LeetCode question title slug based on the provided text.
@@ -326,7 +328,7 @@ async def search_question(
 
 
 async def fetch_question_info(
-    bot: DiscordBot, client_session: aiohttp.ClientSession, question_title_slug: str
+    bot: "DiscordBot", client_session: aiohttp.ClientSession, question_title_slug: str
 ) -> QuestionInfo | None:
     """
     Retrieves information about a LeetCode question based on its title slug.
@@ -426,7 +428,7 @@ async def fetch_question_info(
 
 @backoff.on_exception(backoff.expo, RateLimitReached)
 async def fetch_problems_solved_and_rank(
-    bot: DiscordBot, client_session: aiohttp.ClientSession, leetcode_id: str
+    bot: "DiscordBot", client_session: aiohttp.ClientSession, leetcode_id: str
 ) -> UserStats | None:
     """
     Retrieves the statistics of problems solved and rank of a LeetCode user.

@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 
 
 class ProblemsCog(commands.GroupCog, name="problem"):
-    def __init__(self, bot: DiscordBot) -> None:
+    def __init__(self, bot: "DiscordBot") -> None:
         self.bot = bot
 
     @app_commands.command(name="search")
@@ -55,5 +55,5 @@ class ProblemsCog(commands.GroupCog, name="problem"):
         await interaction.followup.send(embed=embed)
 
 
-async def setup(bot: DiscordBot) -> None:
+async def setup(bot: "DiscordBot") -> None:
     await bot.add_cog(ProblemsCog(bot))

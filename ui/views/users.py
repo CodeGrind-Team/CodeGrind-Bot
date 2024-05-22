@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 
 
 class LoginView(discord.ui.View):
-    def __init__(self, bot: DiscordBot, *, timeout=180) -> None:
+    def __init__(self, bot: "DiscordBot", *, timeout=180) -> None:
         self.bot = bot
         super().__init__(timeout=timeout)
 

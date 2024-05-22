@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 
 @to_thread
 def stats_embed(
-    bot: DiscordBot,
+    bot: "DiscordBot",
     leetcode_id: str,
     display_name: str,
     extension: StatsCardExtensions,

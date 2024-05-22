@@ -215,7 +215,7 @@ class ChannelsSelectView(discord.ui.View):
 
 class SelectOperatorView(discord.ui.View):
     def __init__(
-        self, bot: DiscordBot, channel: discord.TextChannel, *, timeout=180
+        self, bot: "DiscordBot", channel: discord.TextChannel, *, timeout=180
     ) -> None:
         self.bot = bot
         self.channel = channel

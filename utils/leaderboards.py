@@ -352,7 +352,7 @@ def get_rank_emoji(place: int, score: int) -> str:
 
 
 async def send_leaderboard_winners(
-    bot: DiscordBot, server: Server, period: Period
+    bot: "DiscordBot", server: Server, period: Period
 ) -> None:
     """
     Send the leaderboard winners to the specified channels on a Discord server.

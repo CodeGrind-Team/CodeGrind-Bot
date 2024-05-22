@@ -16,7 +16,7 @@ class RegisterModal(
         label="Enter your LeetCode ID:", style=discord.TextStyle.short, required=True
     )
 
-    def __init__(self, bot: DiscordBot) -> None:
+    def __init__(self, bot: "DiscordBot") -> None:
         self.bot = bot
         super().__init__()
 

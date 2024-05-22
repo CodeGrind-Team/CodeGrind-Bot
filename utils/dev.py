@@ -22,7 +22,7 @@ class ChannelLogger:
     :param channel_id: The ID of the Discord channel to log messages to.
     """
 
-    def __init__(self, bot: DiscordBot, channel_id: int) -> None:
+    def __init__(self, bot: "DiscordBot", channel_id: int) -> None:
         self.bot = bot
         self.rate_limits = 0
         self.forbidden_count = 0

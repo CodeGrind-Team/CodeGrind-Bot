@@ -24,7 +24,7 @@ if TYPE_CHECKING:
 
 
 class UsersCog(commands.Cog):
-    def __init__(self, bot: DiscordBot) -> None:
+    def __init__(self, bot: "DiscordBot") -> None:
         self.bot = bot
 
     @app_commands.command(name="add")
@@ -108,5 +108,5 @@ class UsersCog(commands.Cog):
         await interaction.followup.send(embed=embed)
 
 
-async def setup(bot: DiscordBot) -> None:
+async def setup(bot: "DiscordBot") -> None:
     await bot.add_cog(UsersCog(bot))
