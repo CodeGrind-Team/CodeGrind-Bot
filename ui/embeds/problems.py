@@ -4,6 +4,7 @@ import aiohttp
 import discord
 
 from constants import Difficulty
+from ui.embeds.common import failure_embed
 from utils.problems import (
     fetch_daily_question,
     fetch_question_info,
@@ -97,7 +98,7 @@ async def question_embed(
         )
 
     embed.set_footer(
-        text=f"Accepted: {info.total_accepted}  |  Submissions:"
+        text=f"Accepted: {info.total_accepted}  |  Submissions: "
         f"{info.total_submission}  |  Acceptance Rate: {info.ac_rate}"
     )
 
@@ -107,15 +108,13 @@ async def question_embed(
 def premium_question_embed(
     question_id, title, link, colour: discord.Colour
 ) -> discord.Embed:
-    embed = discord.Embed(title=f"{question_id}. {title}", url=link, colour=colour)
-
-    embed.description = "Cannot display premium questions"
-
-    return embed
+    return discord.Embed(
+        title=f"{question_id}. {title}",
+        description="Cannot display premium questions",
+        url=link,
+        colour=colour,
+    )
 
 
 def question_error_embed() -> discord.Embed:
-    embed = discord.Embed(
-        title="Question could not be found", colour=discord.Colour.red()
-    )
-    return embed
+    return failure_embed(title="Question could not be found")

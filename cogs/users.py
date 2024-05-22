@@ -85,7 +85,7 @@ class UsersCog(commands.Cog):
         """
         Remove your profile from this server's leaderboard
 
-        :param permanently: Permanently delete all of CodeGrind's stored data on you.
+        :param permanently: Permanently delete all CodeGrind's stored data on you
         """
         server_id = interaction.guild.id
         user_id = interaction.user.id

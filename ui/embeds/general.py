@@ -1,18 +1,20 @@
 import discord
 
+from ui.embeds.common import failure_embed
+from ui.constants import CATEGORY_DESCRIPTIONS, CommandCategory
 
-def help_embed(description: str) -> discord.Embed:
+
+def help_embed(category: CommandCategory = CommandCategory.HOME) -> discord.Embed:
     return discord.Embed(
         title="CodeGrind Bot Info & Commands",
-        description=description,
+        description=CATEGORY_DESCRIPTIONS[category],
         colour=discord.Colour.blurple(),
     )
 
 
 def not_creator_embed() -> discord.Embed:
-    return discord.Embed(
+    return failure_embed(
         title="Action denied",
-        description="Only the person who used the command can use the buttons on this "
+        description="Only the user who ran the command can navigate and delete this "
         "leaderboard",
-        colour=discord.Colour.red(),
     )

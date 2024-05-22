@@ -37,8 +37,8 @@ class LeaderboardsCog(commands.Cog):
         """
         View the leaderboard
 
-        :param period: Select the leaderboard's timeframe.
-        :param global_leaderboard: Whether to display the global leaderboard.
+        :param timeframe: Timeframe for the leaderboard
+        :param global_leaderboard: Whether to display the global leaderboard
         """
 
         embed, view = await generate_leaderboard_embed(

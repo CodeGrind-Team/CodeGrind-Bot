@@ -5,7 +5,7 @@ from discord import app_commands
 from discord.ext import commands
 
 from middleware import defer_interaction, ensure_server_document
-from ui.views.channels import SelectOperatorView
+from ui.views.notifications import SelectOperatorView
 
 if TYPE_CHECKING:
     # To prevent circular imports
@@ -26,10 +26,10 @@ class NotificationsCog(commands.Cog):
         channel: discord.TextChannel | None = None,
     ) -> None:
         """
-        Admins only: enable/disable daily channel notifications
+        Admins only: Enable or disable daily channel notifications
 
-        :param channel: The text channel to enable notifications for.
-        If none provided, defaults to the channel where the command was ran.
+        :param channel: The text channel for notifications. Defaults to the current
+        channel if not provided.
         """
         if not channel:
             channel = interaction.channel

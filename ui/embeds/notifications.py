@@ -1,21 +1,20 @@
 import discord
 
 from constants import NotificationOptions
+from ui.embeds.common import failure_embed, success_embed
 
 
 def channel_receiving_all_notification_options_embed() -> discord.Embed:
-    return discord.Embed(
+    return failure_embed(
         title="Denied",
         description="This channel is already receiving every type of notification",
-        colour=discord.Colour.red(),
     )
 
 
 def channel_receiving_no_notification_options_embed() -> discord.Embed:
-    return discord.Embed(
+    return failure_embed(
         title="Denied",
         description="This channel is not receiving any type of notification yet",
-        colour=discord.Colour.red(),
     )
 
 
@@ -62,23 +61,18 @@ def set_channels_instructions_embed(channel_id: int, adding: bool) -> discord.Em
 def channel_set_embed(
     channel_name: str, selected_options: list[NotificationOptions]
 ) -> discord.Embed:
-    embed = discord.Embed(title="Success", colour=discord.Colour.green())
-    embed.description = (
-        f"**#{channel_name}** will now receive "
+    return success_embed(
+        description=f"**#{channel_name}** will now receive "
         f"**{'**,** '.join(map(lambda option: option.value, selected_options))}** "
         "notifications"
     )
-
-    return embed
 
 
 def channel_remove_embed(
     channel_name: str, selected_options: list[NotificationOptions]
 ) -> discord.Embed:
-    return discord.Embed(
-        title="Success",
+    return success_embed(
         description=f"**#{channel_name}** will now stop receiving "
         f"**{'**,** '.join(map(lambda option: option.value, selected_options))}** "
-        "notifications",
-        colour=discord.Colour.green(),
+        "notifications"
     )

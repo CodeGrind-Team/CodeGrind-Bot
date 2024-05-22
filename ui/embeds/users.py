@@ -1,22 +1,21 @@
 import discord
 
+from ui.embeds.common import failure_embed, success_embed
 from ui.views.preferences import EmbedAndField
 
 
 def synced_existing_user_embed() -> discord.Embed:
-    return discord.Embed(
+    return success_embed(
         title="Account synced",
         description="Your account has been synced and your preferences for this "
         "server have been saved successefully",
-        colour=discord.Colour.green(),
     )
 
 
 def user_already_added_in_server_embed() -> discord.Embed:
-    return discord.Embed(
+    return failure_embed(
         title="Account already added to this server",
         description="You have already added your account to this server",
-        colour=discord.Colour.blurple(),
     )
 
 
@@ -70,17 +69,14 @@ def account_removed_embed() -> discord.Embed:
 
 
 def account_permanently_deleted_embed() -> discord.Embed:
-    return discord.Embed(
-        title="Your account has been permanently deleted", colour=discord.Colour.green()
-    )
+    return success_embed(title="Your account has been permanently deleted")
 
 
 def account_not_found_embed() -> discord.Embed:
-    return discord.Embed(
+    return failure_embed(
         title="Account not found",
         description="The user hasn't linked their LeetCode account to this server yet! "
         "To connect to the bot use </add:1115756888185917542>",
-        colour=discord.Colour.red(),
     )
 
 
@@ -118,9 +114,6 @@ def preferences_update_prompt_embed() -> tuple[list[EmbedAndField], discord.Embe
         ),
     ]
 
-    end_embed = discord.Embed(
-        title="Successfully updated your profile preferences",
-        colour=discord.Colour.green(),
-    )
+    end_embed = success_embed(description="Your profile preferences have been updated")
 
     return pages, end_embed

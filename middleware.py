@@ -5,7 +5,7 @@ from typing import Callable
 import discord
 
 from database.models import Preference, Server
-from ui.embeds.misc import error_embed
+from ui.embeds.common import error_embed
 from ui.embeds.users import preferences_update_prompt_embed
 from ui.views.preferences import UserPreferencesPrompt
 

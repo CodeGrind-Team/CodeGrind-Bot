@@ -3,14 +3,15 @@ import pytz
 
 from constants import DifficultyScore
 from database.models import Server
+from ui.embeds.common import failure_embed
 from utils.common import strftime_with_suffix
 
 
 def empty_leaderboard_embed() -> discord.Embed:
-    return discord.Embed(
+    return failure_embed(
         title="Leaderboard is empty",
-        description="No one has added their LeetCode username yet",
-        colour=discord.Colour.red(),
+        description="Nobody has connected their account to this server's leaderboards "
+        "yet",
     )
 
 
@@ -18,7 +19,7 @@ def leaderboard_embed(
     server: Server, page_i: int, page_count: int, title: str, leaderboard: str
 ) -> discord.Embed:
     embed = discord.Embed(
-        title=title, description="\n".join(leaderboard), colour=discord.Colour.yellow()
+        title=title, description=leaderboard, colour=discord.Colour.yellow()
     )
 
     last_updated_start = strftime_with_suffix(

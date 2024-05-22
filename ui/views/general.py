@@ -1,41 +1,50 @@
-from typing import Dict
-
 import discord
 
+from ui.constants import CommandCategory
+from ui.embeds.common import error_embed
 from ui.embeds.general import help_embed
-from ui.embeds.misc import error_embed
 
 
 class CommandCategorySelect(discord.ui.Select):
-    def __init__(self, command_categories: Dict[str, str]):
-        self.command_categories = command_categories
-
+    def __init__(self):
         options = [
             discord.SelectOption(
-                label="Home", emoji="🏠", description="Return to main page"
+                label=CommandCategory.HOME.value,
+                emoji="🏠",
+                description="Return to main page",
             ),
             discord.SelectOption(
-                label="Account", emoji="👤", description="Account commands"
+                label=CommandCategory.ACCOUNT.value,
+                emoji="👤",
+                description="Account commands",
             ),
             discord.SelectOption(
-                label="Leaderboard", emoji="📈", description="Leaderboard commands"
+                label=CommandCategory.LEADERBOARD.value,
+                emoji="📈",
+                description="Leaderboard commands",
             ),
             discord.SelectOption(
-                label="Statistics", emoji="📊", description="Statistics commands"
+                label=CommandCategory.STATISTICS.value,
+                emoji="📊",
+                description="Statistics commands",
             ),
             discord.SelectOption(
-                label="LeetCode Questions",
+                label=CommandCategory.LEETCODE_QUESTIONS.value,
                 emoji="📝",
                 description="LeetCode Questions commands",
             ),
             discord.SelectOption(
-                label="Roles", emoji="🎭", description="CodeGrind roles"
+                label=CommandCategory.ROLES.value,
+                emoji="🎭",
+                description="CodeGrind roles",
             ),
             discord.SelectOption(
-                label="Admin", emoji="🔒", description="Admin commands"
+                label=CommandCategory.ADMIN.value,
+                emoji="🔒",
+                description="Admin commands",
             ),
             discord.SelectOption(
-                label="CodeGrind Team",
+                label=CommandCategory.CODEGRIND_TEAM.value,
                 emoji="👨‍💻",
                 description="CodeGrind Team commands",
             ),
@@ -49,28 +58,18 @@ class CommandCategorySelect(discord.ui.Select):
         )
 
     async def callback(self, interaction: discord.Interaction) -> None:
-        if self.values[0] in [
-            "Home",
-            "Account",
-            "Leaderboard",
-            "Statistics",
-            "LeetCode Questions",
-            "Roles",
-            "Admin",
-            "CodeGrind Team",
-        ]:
-            embed = help_embed(self.command_categories[self.values[0]])
-
-        else:
-            embed = error_embed()
-            await interaction.response.send_message(embed=embed, ephemeral=True)
+        try:
+            category = CommandCategory(self.values[0])
+            embed = help_embed(category)
+        except ValueError:
+            await interaction.response.send_message(embed=error_embed(), ephemeral=True)
             return
 
         await interaction.response.edit_message(embed=embed)
 
 
 class CommandCategorySelectView(discord.ui.View):
-    def __init__(self, command_categories, *, timeout=180):
+    def __init__(self, *, timeout=180):
         super().__init__(timeout=timeout)
 
-        self.add_item(CommandCategorySelect(command_categories))
+        self.add_item(CommandCategorySelect())

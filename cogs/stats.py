@@ -28,11 +28,10 @@ class StatsCog(commands.Cog):
         user: discord.Member | None = None,
     ) -> None:
         """
-        Displays a user's stats
+        Display a user's stats.
 
         :param extension: The stats extension to add to the card.
-        :param member: The user whose stats to display.
-        If none provided, defaults to the user who ran the command.
+        :param member: The user whose stats to display. Defaults to you.
         """
         member = user
         user_id = member.id if member else interaction.user.id

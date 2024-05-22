@@ -258,7 +258,7 @@ async def build_leaderboard_page(
     title = get_title(period, winners_only, global_leaderboard)
 
     return (
-        leaderboard_embed(server, page_index, num_pages, title, leaderboard),
+        leaderboard_embed(server, page_index, num_pages, title, "\n".join(leaderboard)),
         place,
         prev_score,
     )

@@ -1,13 +1,14 @@
 import discord
 
+from ui.embeds.common import failure_embed
 
-def topgg_not_voted() -> discord.Embed:
+
+def topgg_not_voted_embed() -> discord.Embed:
     url = "https://top.gg/bot/1059122559066570885/vote"
 
-    embed = discord.Embed(
+    embed = failure_embed(
         title="You must vote on top.gg before using this feature!",
         description=f"You can vote [here]({url})",
-        colour=discord.Colour.red(),
     )
 
     embed.set_footer(

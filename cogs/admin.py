@@ -49,9 +49,9 @@ class AdminGroupCog(commands.GroupCog, name="settings"):
         self, interaction: discord.Interaction, timezone: str
     ) -> None:
         """
-        Admins only: change the leaderboards' timezone.
+        Admins only: Change the leaderboards' timezone
 
-        :param timezone: Type your timezone.
+        :param timezone: Your desired timezone
         """
         if timezone not in pytz.common_timezones_set:
             await interaction.followup.send(embed=timezone_invalid_embed())

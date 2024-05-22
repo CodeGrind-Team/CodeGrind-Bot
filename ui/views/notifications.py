@@ -5,7 +5,7 @@ from beanie.odm.operators.update.array import AddToSet, Pull
 
 from constants import NotificationOptions
 from database.models import Server
-from ui.embeds.channels import (
+from ui.embeds.notifications import (
     channel_receiving_all_notification_options_embed,
     channel_receiving_no_notification_options_embed,
     channel_remove_embed,

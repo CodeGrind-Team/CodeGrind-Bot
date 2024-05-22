@@ -5,6 +5,7 @@ from discord import app_commands
 from discord.ext import commands
 
 from middleware import defer_interaction, ensure_server_document
+from ui.embeds.roles import roles_menu_embed
 from ui.views.roles import RolesView
 
 if TYPE_CHECKING:
@@ -23,12 +24,9 @@ class RolesCog(commands.Cog):
     @ensure_server_document
     async def roles(self, interaction: discord.Interaction) -> None:
         """
-        Admins only: enable/disable CodeGrind roles
+        Admins only: Enable or disable CodeGrind roles
         """
-        # TODO: complete
-        await interaction.followup.send(
-            embed=discord.Embed(title="test"), view=RolesView()
-        )
+        await interaction.followup.send(embed=roles_menu_embed(), view=RolesView())
 
 
 async def setup(bot: "DiscordBot") -> None:

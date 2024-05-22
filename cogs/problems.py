@@ -47,7 +47,7 @@ class ProblemsCog(commands.GroupCog, name="problem"):
         """
         Get a random LeetCode problem of your chosen difficulty
 
-        :param difficulty: The desired difficulty level for the problem
+        :param difficulty: The desired difficulty level
         """
         async with aiohttp.ClientSession() as client_session:
             embed = await random_question_embed(self.bot, client_session, difficulty)
