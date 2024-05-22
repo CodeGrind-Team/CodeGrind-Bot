@@ -2,8 +2,8 @@ from typing import TYPE_CHECKING
 
 import discord
 
-from middleware import update_user_preferences_prompt
 from ui.modals.users import RegisterModal
+from utils.preferences import update_user_preferences_prompt
 
 if TYPE_CHECKING:
     # To prevent circular imports

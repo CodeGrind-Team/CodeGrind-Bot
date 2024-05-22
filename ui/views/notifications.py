@@ -259,7 +259,7 @@ class SelectOperatorView(discord.ui.View):
             ),
         )
 
-    @discord.ui.button(label="Disable", style=discord.ButtonStyle.blurple)
+    @discord.ui.button(label="Disable", style=discord.ButtonStyle.gray)
     async def disable(
         self, interaction: discord.Interaction, _: discord.ui.Button
     ) -> None:

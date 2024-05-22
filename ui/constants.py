@@ -3,6 +3,12 @@ from enum import Enum
 from constants import DifficultyScore
 
 
+class PreferenceField(Enum):
+    GLOBAL_ANONYMOUS = 1
+    GLOBAL_URL = 2
+    LOCAL_URL = 3
+
+
 class CommandCategory(Enum):
     HOME = "Home"
     ACCOUNT = "Account"

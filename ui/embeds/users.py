@@ -1,7 +1,6 @@
 import discord
 
 from ui.embeds.common import failure_embed, success_embed
-from ui.views.preferences import EmbedAndField
 
 
 def synced_existing_user_embed() -> discord.Embed:
@@ -78,42 +77,3 @@ def account_not_found_embed() -> discord.Embed:
         description="The user hasn't linked their LeetCode account to this server yet! "
         "To connect to the bot use </add:1115756888185917542>",
     )
-
-
-def preferences_update_prompt_embed() -> tuple[list[EmbedAndField], discord.Embed]:
-    pages = [
-        EmbedAndField(
-            discord.Embed(
-                title="Update your profile preferences",
-                description="Do you want your LeetCode profile url be visible on the "
-                "leaderboards in this server?",
-                colour=discord.Colour.teal(),
-            ),
-            "url",
-            False,
-        ),
-        EmbedAndField(
-            discord.Embed(
-                title="Update your profile preferences",
-                description="Do you want your LeetCode profile url be visible on the "
-                "Global leaderboards?",
-                colour=discord.Colour.teal(),
-            ),
-            "url",
-            True,
-        ),
-        EmbedAndField(
-            discord.Embed(
-                title="Update your profile preferences",
-                description="Do you want your Discord username be visible on the "
-                "Global leaderboards?",
-                colour=discord.Colour.teal(),
-            ),
-            "visible",
-            True,
-        ),
-    ]
-
-    end_embed = success_embed(description="Your profile preferences have been updated")
-
-    return pages, end_embed

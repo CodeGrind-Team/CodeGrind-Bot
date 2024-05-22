@@ -5,17 +5,14 @@ from discord import app_commands
 from discord.ext import commands
 
 from database.models import User
-from middleware import (
-    defer_interaction,
-    ensure_server_document,
-    update_user_preferences_prompt,
-)
+from middleware import defer_interaction, ensure_server_document
 from ui.embeds.users import (
     account_not_found_embed,
     account_permanently_deleted_embed,
     account_removed_embed,
 )
 from ui.views.users import LoginView
+from utils.preferences import update_user_preferences_prompt
 from utils.users import delete_user, login, unlink_user_from_server
 
 if TYPE_CHECKING:
