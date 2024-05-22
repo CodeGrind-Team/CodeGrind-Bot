@@ -19,6 +19,90 @@ if TYPE_CHECKING:
     from bot import DiscordBot
 
 
+@tasks.loop(
+    time=[time(hour=hour, minute=minute) for hour in range(24) for minute in [0, 30]]
+)
+async def schedule_question_and_stats_update(bot: "DiscordBot") -> None:
+    """
+    Schedule to send the daily question and update the stats.
+    """
+    await process_daily_question_and_stats_update(bot)
+
+
+async def process_daily_question_and_stats_update(
+    bot: "DiscordBot",
+    update_stats: bool = True,
+    force_reset_day: bool = False,
+    force_reset_week: bool = False,
+    force_reset_month: bool = False,
+) -> None:
+    """
+    Send the daily question and update the stats.
+
+    :param force_update_stats: Whether to force update the stats.
+    :param force_reset_day: Whether to force the daily reset.
+    :param force_reset_week: Whether to force the weekly reset.
+    :param force_reset_month: Whether to force the monthly reset.
+    """
+    bot.logger.info(
+        "file: utils/notifications.py ~ send_daily_question_and_update_stats ~ \
+            started"
+    )
+    await bot.channel_logger.info("Started updating")
+
+    start = datetime.now(UTC)
+
+    reset_day = (start.hour == 0 and start.minute == 0) or force_reset_day
+    reset_week = (
+        start.weekday() == 0 and start.hour == 0 and start.minute == 0
+    ) or force_reset_week
+    reset_month = (
+        start.day == 1 and start.hour == 0 and start.minute == 0
+    ) or force_reset_month
+
+    midday = start.hour == 12 and start.minute == 0
+
+    if reset_day:
+        # Send problem of the day.
+        async with aiohttp.ClientSession() as client_session:
+            embed = await daily_question_embed(bot, client_session)
+
+        async for server in Server.all(fetch_links=True):
+            await send_daily_question(bot, server, embed)
+
+    if update_stats:
+        await update_all_user_stats(bot)
+
+    async for server in Server.all(fetch_links=True):
+        await Server.find_one(Server.id == server.id).update(
+            Set(
+                {
+                    Server.last_update_start: start,
+                    Server.last_update_end: datetime.now(UTC),
+                }
+            )
+        )
+
+        if reset_day:
+            await send_leaderboard_winners(bot, server, Period.DAY)
+
+        if reset_week:
+            await send_leaderboard_winners(bot, server, Period.WEEK)
+
+        if reset_month:
+            await send_leaderboard_winners(bot, server, Period.MONTH)
+
+        if midday:
+            guild = bot.get_guild(server.id)
+            await update_roles(guild, server)
+
+    bot.logger.info(
+        "file: utils/notifications.py ~ send_daily_question_and_update_stats ~ \
+            ended"
+    )
+    await bot.channel_logger.info("Completed updating")
+
+
 async def send_daily_question(
     bot: "DiscordBot", server: Server, embed: discord.Embed
 ) -> None:
@@ -39,94 +123,13 @@ async def send_daily_question(
         await channel.send(embed=embed, silent=True)
 
 
-@tasks.loop(
-    time=[time(hour=hour, minute=minute) for hour in range(24) for minute in [0, 30]]
-)
-async def send_daily_question_and_update_stats_schedule(bot: "DiscordBot") -> None:
+async def update_all_user_stats(bot: "DiscordBot") -> None:
     """
-    Schedule to send the daily question and update the stats.
+    Update stats for all users.
     """
-    await send_daily_question_and_update_stats(bot)
-
-
-async def send_daily_question_and_update_stats(
-    bot: "DiscordBot",
-    force_update_stats: bool = True,
-    force_daily_reset: bool = False,
-    force_weekly_reset: bool = False,
-    force_monthly_reset: bool = False,
-) -> None:
-    """
-    Send the daily question and update the stats.
-
-    :param force_update_stats: Whether to force update the stats.
-    :param force_daily_reset: Whether to force the daily reset.
-    :param force_weekly_reset: Whether to force the weekly reset.
-    :param force_monthly_reset: Whether to force the monthly reset.
-    """
-    bot.logger.info(
-        "file: utils/notifications.py ~ send_daily_question_and_update_stats ~ \
-            started"
-    )
-    await bot.channel_logger.info("Started updating")
-
-    start = datetime.now(UTC)
-
-    daily_reset = (start.hour == 0 and start.minute == 0) or force_daily_reset
-    weekly_reset = (
-        start.weekday() == 0 and start.hour == 0 and start.minute == 0
-    ) or force_weekly_reset
-    monthly_reset = (
-        start.day == 1 and start.hour == 0 and start.minute == 0
-    ) or force_monthly_reset
-
-    midday = start.hour == 12 and start.minute == 0
-
-    if daily_reset:
-        # Send problem of the day.
-        async with aiohttp.ClientSession() as client_session:
-            embed = await daily_question_embed(bot, client_session)
-
-        async for server in Server.all(fetch_links=True):
-            await send_daily_question(bot, server, embed)
-
-    if force_update_stats:
-
-        # Update users' stats.
-        async with aiohttp.ClientSession() as client_session:
-            tasks = []
-            async for user in User.all():
-                task = asyncio.create_task(coro=update_stats(bot, client_session, user))
-
-                tasks.append(task)
-
-            await asyncio.gather(*tasks)
-
-    async for server in Server.all(fetch_links=True):
-        await Server.find_one(Server.id == server.id).update(
-            Set(
-                {
-                    Server.last_update_start: start,
-                    Server.last_update_end: datetime.now(UTC),
-                }
-            )
-        )
-
-        if daily_reset:
-            await send_leaderboard_winners(bot, server, Period.DAY)
-
-        if weekly_reset:
-            await send_leaderboard_winners(bot, server, Period.WEEK)
-
-        if monthly_reset:
-            await send_leaderboard_winners(bot, server, Period.MONTH)
-
-        if midday:
-            guild = bot.get_guild(server.id)
-            await update_roles(guild, server)
-
-    bot.logger.info(
-        "file: utils/notifications.py ~ send_daily_question_and_update_stats ~ \
-            ended"
-    )
-    await bot.channel_logger.info("Completed updating")
+    async with aiohttp.ClientSession() as client_session:
+        tasks = []
+        async for user in User.all():
+            task = asyncio.create_task(update_stats(bot, client_session, user))
+            tasks.append(task)
+        await asyncio.gather(*tasks)

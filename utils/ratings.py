@@ -9,7 +9,7 @@ if TYPE_CHECKING:
 
 
 @tasks.loop(hours=168)
-async def update_ratings_schedule(bot: "DiscordBot") -> None:
+async def schedule_update_ratings(bot: "DiscordBot") -> None:
     # 168 hours = 1 week.
     # Ratings get updated weekly.
     await bot.ratings.update_ratings()

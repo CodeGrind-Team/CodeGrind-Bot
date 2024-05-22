@@ -21,7 +21,7 @@ async def update_stats(
     bot: "DiscordBot",
     client_session: aiohttp.ClientSession,
     user: User,
-    daily_reset: bool = False,
+    reset_day: bool = False,
 ) -> None:
     """
     Update a user's problem-solving statistics and optionally store them as a record.
@@ -31,7 +31,7 @@ async def update_stats(
     stats.
 
     :param user: The user whose stats are being updated.
-    :param daily_reset: If `True`, a new record is created and stored with the updated
+    :param reset_day: If `True`, a new record is created and stored with the updated
     stats.
     """
 
@@ -56,7 +56,7 @@ async def update_stats(
         stats.submissions.score,
     )
 
-    if daily_reset:
+    if reset_day:
         record = Record(
             timestamp=datetime.now().replace(hour=0, minute=0, second=0, microsecond=0),
             user_id=user.id,

@@ -24,7 +24,7 @@ pydantic_core==2.18.2
 pymongo==4.7.2
 python-dotenv==1.0.1
 pytz==2024.1
-requests==2.31.0
+requests==2.32.2
 six==1.16.0
 soupsieve==2.5
 toml==0.10.2

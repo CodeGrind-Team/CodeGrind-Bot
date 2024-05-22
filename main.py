@@ -45,12 +45,12 @@ if __name__ == "__main__":
 
     # File handler
     file_handler = logging.FileHandler(
-        filename=f"logs/{datetime.now(UTC).strftime('%Y%m%d-%H%M%S')}.log",
+        filename=f"logs/{datetime.now(UTC).strftime('%d%m%Y-%H%M%S')}.log",
         encoding="utf-8",
         mode="w",
     )
     file_handler_formatter = logging.Formatter(
-        "[{asctime}] [{levelname:<8}] {name}: {message}", "%Y-%m-%d %H:%M:%S", style="{"
+        "[{asctime}] [{levelname:<8}] {name}: {message}", "%d-%m-%Y %H:%M:%S", style="{"
     )
     file_handler.setFormatter(file_handler_formatter)
 
@@ -63,13 +63,7 @@ if __name__ == "__main__":
         os.getenv("TOPGG_TOKEN"),
         os.getenv("BROWSER_EXECUTABLE_PATH"),
         int(os.getenv("LOGGING_CHANNEL_ID")),
-        os.getenv("SYNC_COMMANDS", "False") == "True",
         os.getenv("PRODUCTION", "False") == "True",
-        os.getenv("MAINTENANCE", "False") == "True",
-        os.getenv("UPDATE_STATS_ON_START", "False") == "True",
-        os.getenv("DAILY_RESET_ON_START", "False") == "True",
-        os.getenv("WEEKLY_RESET_ON_START", "False") == "True",
-        os.getenv("MONTHLY_RESET_ON_START", "False") == "True",
     )
 
     bot = DiscordBot(intents, config, logger)

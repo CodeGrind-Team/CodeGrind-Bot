@@ -33,10 +33,11 @@ from database.models import Preference, Server
 from database.setup import initialise_mongodb_conn
 from utils.dev import ChannelLogger
 from utils.notifications import (
-    send_daily_question_and_update_stats,
-    send_daily_question_and_update_stats_schedule,
+    schedule_question_and_stats_update,
+    process_daily_question_and_stats_update,
 )
-from utils.ratings import Ratings, update_ratings_schedule
+
+from utils.ratings import Ratings, schedule_update_ratings
 from utils.users import delete_user, unlink_user_from_server
 
 
@@ -47,13 +48,7 @@ class Config:
     TOPGG_TOKEN: str
     BROWSER_EXECUTABLE_PATH: str
     LOGGING_CHANNEL_ID: int
-    SYNC_COMMANDS: bool
     PRODUCTION: bool
-    MAINTENANCE: bool
-    UPDATE_STATS_ON_START: bool
-    DAILY_RESET_ON_START: bool
-    WEEKLY_RESET_ON_START: bool
-    MONTHLY_RESET_ON_START: bool
 
 
 class DiscordBot(commands.Bot):
@@ -114,37 +109,6 @@ class DiscordBot(commands.Bot):
                         f"Failed to load extension {extension}\n{exception}"
                     )
 
-    async def on_ready(self) -> None:
-        """
-        Called when the client is done preparing the data received from Discord.
-        """
-        self.logger.info("file: main.py ~ on_ready ~ start")
-
-        if self.config.MAINTENANCE:
-            await self.change_presence(
-                status=discord.Status.do_not_disturb,
-                activity=discord.Game(name="Under Maintenance"),
-            )
-
-        update_stats_on_start = self.config.UPDATE_STATS_ON_START
-        daily_reset_on_start = self.config.DAILY_RESET_ON_START
-        weekly_reset_on_start = self.config.WEEKLY_RESET_ON_START
-        monthly_reset_on_start = self.config.MONTHLY_RESET_ON_START
-
-        if (
-            update_stats_on_start
-            or daily_reset_on_start
-            or weekly_reset_on_start
-            or monthly_reset_on_start
-        ):
-            await send_daily_question_and_update_stats(
-                self,
-                update_stats_on_start,
-                daily_reset_on_start,
-                weekly_reset_on_start,
-                monthly_reset_on_start,
-            )
-
     async def setup_hook(self) -> None:
         """
         Called only once to setup the bot.
@@ -164,12 +128,8 @@ class DiscordBot(commands.Bot):
         self.ratings = Ratings()
         await self.ratings.update_ratings()
 
-        if self.config.SYNC_COMMANDS:
-            # Sync commands globally
-            await self.tree.sync()
-
-        send_daily_question_and_update_stats_schedule.start(self)
-        update_ratings_schedule.start(self)
+        schedule_question_and_stats_update.start(self)
+        schedule_update_ratings.start(self)
 
     async def on_interaction(self, interaction: discord.Interaction) -> None:
         """
@@ -236,6 +196,51 @@ class DiscordBot(commands.Bot):
             Preference.user_id == before.id,
             Preference.server_id == GLOBAL_LEADERBOARD_ID,
         ).update(Set({Preference.name: after.display_name}))
+
+    async def on_message(self, message: discord.Message) -> None:
+        """
+        Called whenever a message is sent. However, due to not having messages intent,
+        only messages that mention the bot will give us access to the message's
+        contents.
+        """
+        if not (
+            (await self.is_owner(message.author)) and self.user.mentioned_in(message)
+        ):
+            return
+
+        message_content = message.content.lower()
+
+        if "restart" in message_content:
+            os.system("sudo reboot")
+
+        elif "maintenance" in message_content:
+            if "on" in message_content:
+                await self.change_presence(
+                    status=discord.Status.do_not_disturb,
+                    activity=discord.Game(name="Under Maintenance"),
+                )
+
+            elif "off" in message_content:
+                await self.change_presence(
+                    status=discord.Status.online,
+                    activity=None,
+                )
+
+        elif "sync" in message_content:
+            await self.tree.sync()
+
+        elif "update stats" in message_content:
+            # Improve naming scheme of this
+            await process_daily_question_and_stats_update(self)
+
+        elif "reset stats" in message_content:
+            await process_daily_question_and_stats_update(
+                self,
+                not ("no-update" in message_content),
+                "day" in message_content,
+                "week" in message_content,
+                "month" in message_content,
+            )
 
 
 async def on_error(
