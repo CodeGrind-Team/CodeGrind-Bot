@@ -123,13 +123,9 @@ class ChannelLogger:
             await asyncio.sleep(random())
             await channel.send(embed=embed, silent=silent)
 
-        except discord.errors.Forbidden as e:
+        except discord.errors.Forbidden:
             self.bot.logger.exception(
-                "file: utils/dev.py ~ ChannelLogger.log ~ \
-                    missing permissions on logging channel. Error: %s",
-                e,
+                "ChannelLogger.log: missing permissions on logging channel.",
             )
         except Exception as e:
-            self.bot.logger.exception(
-                "file: utils/dev.py ~ ChannelLogger.log ~ Error: %s", e
-            )
+            self.bot.logger.exception("ChannelLogger.log : Error: %s", e)

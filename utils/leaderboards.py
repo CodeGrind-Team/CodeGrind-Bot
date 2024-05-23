@@ -408,16 +408,9 @@ async def send_leaderboard_winners(
 
             await channel.send(embed=embed, view=view, silent=True)
 
-        except discord.errors.Forbidden as e:
+        except discord.errors.Forbidden:
             bot.logger.exception(
-                "file: utils/leaderboards.py ~ send_leaderboard_winners ~ \
-                    missing permissions on channel id %s. Error: %s",
+                "Missing permissions on channel (%s) to send leaderboard winners. "
+                "Error: %s",
                 channel.id,
-                e,
             )
-
-    bot.logger.info(
-        "file: utils/leaderboards.py ~ send_leaderboard_winners ~ %s winners \
-            leaderboard sent to channels",
-        period,
-    )

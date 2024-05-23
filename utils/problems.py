@@ -159,8 +159,6 @@ async def fetch_random_question(
 
     :return: The title slug of a randomly selected question, or None if an error occurs.
     """
-    bot.logger.info("file: utils/questions.py ~ fetch_random_question ~ run")
-
     payload = {
         "operationName": "randomQuestion",
         "query": """
@@ -185,8 +183,8 @@ async def fetch_random_question(
     ) as response:
         if response.status != 200:
             bot.logger.exception(
-                "file: cogs/questions.py ~ An error occurred while trying to get the \
-                    question from LeetCode: %s",
+                "fetch_random_question: An error occurred while trying to get the "
+                "question from LeetCode: %s",
                 response.status,
             )
             return
@@ -198,7 +196,7 @@ async def fetch_random_question(
 
     except ValueError:
         bot.logger.exception(
-            "file: cogs/questions.py ~ failed to decode json ~ %s",
+            "fetch_random_question: failed to decode json. Error code (%s)",
             response_data,
         )
         return
@@ -215,8 +213,6 @@ async def fetch_daily_question(
     :return: The title slug of the daily coding challenge question,
              or None if an error occurs.
     """
-    bot.logger.info("file: utils/questions.py ~ fetch_daily_question ~ run")
-
     data = {
         "operationName": "daily",
         "query": """
@@ -235,8 +231,8 @@ async def fetch_daily_question(
     ) as response:
         if response.status != 200:
             bot.logger.exception(
-                "file: cogs/questions.py ~ An error occurred while trying to get the \
-                    question from LeetCode: %s",
+                "fetch_daily_question: An error occurred while trying to get the "
+                "question from LeetCode. Error code (%s)",
                 response.status,
             )
             return
@@ -248,7 +244,7 @@ async def fetch_daily_question(
 
     except ValueError:
         bot.logger.exception(
-            "file: cogs/questions.py ~ failed to decode json ~ %s",
+            "fetch_daily_question: failed to decode json. Error code (%s)",
             response_data,
         )
         return
@@ -267,8 +263,6 @@ async def search_question(
     :return: The title slug of the matched question, or None if no match is found or an
              error occurs.
     """
-    bot.logger.info("file: utils/questions.py ~ search_question ~ run")
-
     payload = {
         "operationName": "problemsetQuestionList",
         "query": """
@@ -304,8 +298,8 @@ async def search_question(
     ) as response:
         if response.status != 200:
             bot.logger.exception(
-                "file: cogs/questions.py ~ An error occurred while trying to get the \
-                    question from LeetCode: %s",
+                "search_question: An error occurred while trying to get the "
+                "question from LeetCode: %s",
                 response.status,
             )
             return
@@ -322,7 +316,7 @@ async def search_question(
 
     except ValueError:
         bot.logger.exception(
-            "file: cogs/questions.py ~ failed to decode json ~ %s",
+            "search_question: failed to decode json. Error code (%s)",
             response_data,
         )
         return
@@ -341,13 +335,6 @@ async def fetch_question_info(
     :return: Information about the LeetCode question, or None if an error occurs or no
              question is found.
     """
-
-    bot.logger.info(
-        "file: utils/questions.py ~ fetch_question_info ~ run ~ \
-            question_title_slug: %s",
-        question_title_slug,
-    )
-
     # Get question info
     payload = {
         "operationName": "questionInfo",
@@ -373,8 +360,8 @@ async def fetch_question_info(
     ) as response:
         if response.status != 200:
             bot.logger.exception(
-                "file: cogs/questions.py ~ An error occurred while trying to get the \
-                    question from LeetCode: %s",
+                "fetch_question_info: An error occurred while trying to get the "
+                "question from LeetCode. Error code (%s)",
                 response.status,
             )
             return
@@ -398,7 +385,7 @@ async def fetch_question_info(
 
     except ValueError:
         bot.logger.exception(
-            "file: cogs/questions.py ~ failed to decode json ~ %s",
+            "fetch_question_info: failed to decode json. Error code (%s)",
             response_data,
         )
         return
@@ -442,13 +429,6 @@ async def fetch_problems_solved_and_rank(
     :return: Statistics of problems solved and rank of the user, or None if an error
     occurs.
     """
-
-    bot.logger.info(
-        "file: utils/questions.py ~ fetch_problems_solved_and_rank ~ run ~ \
-            leetcode_id: %s",
-        leetcode_id,
-    )
-
     payload = {
         "operationName": "getProblemsSolvedAndRank",
         "query": """query getProblemsSolvedAndRank($username: String!) {
@@ -468,12 +448,6 @@ async def fetch_problems_solved_and_rank(
         "variables": {"username": leetcode_id},
     }
 
-    bot.logger.info(
-        "file: utils/questions.py ~ fetch_problems_solved_and_rank ~ data \
-            requesting ~ https://leetcode.com/%s",
-        leetcode_id,
-    )
-
     async with semaphore:
         async with client_session.post(
             URL, json=payload, headers=HEADERS, timeout=10
@@ -484,10 +458,10 @@ async def fetch_problems_solved_and_rank(
                 case 429:
                     # Rate limit reached
                     bot.logger.exception(
-                        "file: utils/questions.py ~ fetch_problems_solved_and_rank ~ \
-                            LeetCode username: % s ~ Error code: % s",
-                        leetcode_id,
+                        "fetch_problems_solved_and_rank: Error code: % s, LeetCode "
+                        "username: % s",
                         response.status,
+                        leetcode_id,
                     )
 
                     bot.channel_logger.rate_limited()
@@ -495,19 +469,19 @@ async def fetch_problems_solved_and_rank(
                 case 403:
                     # Forbidden access
                     bot.logger.exception(
-                        "file: utils/questions.py ~ fetch_problems_solved_and_rank ~ \
-                            LeetCode username: %s ~ Error code: %s",
-                        leetcode_id,
+                        "fetch_problems_solved_and_rank: Error code: % s, LeetCode "
+                        "username: % s",
                         response.status,
+                        leetcode_id,
                     )
                     bot.channel_logger.forbidden()
                     return
                 case _:
                     bot.logger.exception(
-                        "file: utils/questions.py ~ fetch_problems_solved_and_rank ~ \
-                            LeetCode username: %s ~ Error code: %s",
-                        leetcode_id,
+                        "fetch_problems_solved_and_rank: Error code: % s, LeetCode "
+                        "username: % s",
                         response.status,
+                        leetcode_id,
                     )
                     return
 
@@ -551,7 +525,8 @@ async def fetch_problems_solved_and_rank(
 
     except ValueError:
         bot.logger.exception(
-            "file: cogs/questions.py ~ failed to decode json ~ %s",
+            "fetch_problems_solved_and_rank: Failed to decode json for user (%s): %s",
+            leetcode_id,
             response_data,
         )
         return

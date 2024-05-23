@@ -44,10 +44,7 @@ async def process_daily_question_and_stats_update(
     :param force_reset_week: Whether to force the weekly reset.
     :param force_reset_month: Whether to force the monthly reset.
     """
-    bot.logger.info(
-        "file: utils/notifications.py ~ send_daily_question_and_update_stats ~ \
-            started"
-    )
+    bot.logger.info("Sending daily notifications and updating stats started")
     await bot.channel_logger.info("Started updating")
 
     start = datetime.now(UTC)
@@ -69,9 +66,11 @@ async def process_daily_question_and_stats_update(
 
         async for server in Server.all(fetch_links=True):
             await send_daily_question(bot, server, embed)
+            bot.logger.info("Daily question sent to all")
 
     if update_stats:
         await update_all_user_stats(bot, reset_day)
+        bot.logger.info("All users stats updated")
 
     async for server in Server.all(fetch_links=True):
         await Server.find_one(Server.id == server.id).update(
@@ -85,21 +84,27 @@ async def process_daily_question_and_stats_update(
 
         if reset_day:
             await send_leaderboard_winners(bot, server, Period.DAY)
+            bot.logger.info(
+                "Daily winners leaderboard sent to all channels",
+            )
 
         if reset_week:
             await send_leaderboard_winners(bot, server, Period.WEEK)
+            bot.logger.info(
+                "Weekly winners leaderboard sent to all channels",
+            )
 
         if reset_month:
             await send_leaderboard_winners(bot, server, Period.MONTH)
+            bot.logger.info(
+                "Monthly winners leaderboard sent to all channels",
+            )
 
         if midday:
             guild = bot.get_guild(server.id)
             await update_roles(guild, server.id)
 
-    bot.logger.info(
-        "file: utils/notifications.py ~ send_daily_question_and_update_stats ~ \
-            ended"
-    )
+    bot.logger.info("Sending daily notifications and updating stats completed")
     await bot.channel_logger.info("Completed updating")
 
 
@@ -112,8 +117,6 @@ async def send_daily_question(
     :param server: The server to send the daily question to (with links fetched).
     :param embed: The embed containing the daily question.
     """
-    bot.logger.info("file: utils/notifications.py ~ send_daily ~ run")
-
     for channel_id in server.channels.daily_question:
         channel = bot.get_channel(channel_id)
 
