@@ -1,3 +1,4 @@
+from enum import Enum
 from typing import TYPE_CHECKING
 
 import discord
@@ -16,6 +17,12 @@ if TYPE_CHECKING:
 
 
 class StatsCog(commands.Cog):
+    class StatsCardExtensionsField(Enum):
+        Activity = StatsCardExtensions.ACTIVITY
+        Heatmap = StatsCardExtensions.HEATMAP
+        Contest = StatsCardExtensions.CONTEST
+        Default = StatsCardExtensions.NONE
+
     def __init__(self, bot: "DiscordBot") -> None:
         self.bot = bot
 
@@ -24,7 +31,7 @@ class StatsCog(commands.Cog):
     async def stats(
         self,
         interaction: discord.Interaction,
-        extension: StatsCardExtensions,
+        extension: StatsCardExtensionsField,
         user: discord.Member | None = None,
     ) -> None:
         """
@@ -56,7 +63,7 @@ class StatsCog(commands.Cog):
             self.bot,
             user.leetcode_id,
             (preference.name if preference else user.leetcode_id),
-            extension,
+            extension.value,
         )
 
         if not file:

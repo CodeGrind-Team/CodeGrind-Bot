@@ -7,6 +7,7 @@ from discord.ext import commands
 
 from constants import Period
 from middleware import defer_interaction, ensure_server_document
+from ui.constants import BooleanField
 from utils.leaderboards import generate_leaderboard_embed
 
 if TYPE_CHECKING:
@@ -32,7 +33,7 @@ class LeaderboardsCog(commands.Cog):
         self,
         interaction: discord.Interaction,
         timeframe: TimeFrameField,
-        global_leaderboard: bool = False,
+        global_leaderboard: BooleanField = BooleanField.No,
     ) -> None:
         """
         View the leaderboard
@@ -45,7 +46,7 @@ class LeaderboardsCog(commands.Cog):
             timeframe.value,
             interaction.guild.id,
             interaction.user.id,
-            global_leaderboard=global_leaderboard,
+            global_leaderboard=global_leaderboard.to_bool,
             page=1,
         )
 

@@ -1,3 +1,4 @@
+from enum import Enum
 from typing import TYPE_CHECKING
 
 import aiohttp
@@ -16,6 +17,12 @@ if TYPE_CHECKING:
 
 
 class ProblemsCog(commands.GroupCog, name="problem"):
+    class DifficultyField(Enum):
+        Easy = Difficulty.EASY
+        Medium = Difficulty.MEDIUM
+        Hard = Difficulty.HARD
+        Random = Difficulty.RANDOM
+
     def __init__(self, bot: "DiscordBot") -> None:
         self.bot = bot
 
@@ -42,7 +49,7 @@ class ProblemsCog(commands.GroupCog, name="problem"):
     async def random_problem(
         self,
         interaction: discord.Interaction,
-        difficulty: Difficulty = Difficulty.RANDOM,
+        difficulty: DifficultyField = DifficultyField.Random,
     ) -> None:
         """
         Get a random LeetCode problem of your chosen difficulty
@@ -50,7 +57,9 @@ class ProblemsCog(commands.GroupCog, name="problem"):
         :param difficulty: The desired difficulty level
         """
         async with aiohttp.ClientSession() as client_session:
-            embed = await random_question_embed(self.bot, client_session, difficulty)
+            embed = await random_question_embed(
+                self.bot, client_session, difficulty.value
+            )
 
         await interaction.followup.send(embed=embed)
 

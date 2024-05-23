@@ -3,6 +3,15 @@ from enum import Enum
 from constants import DifficultyScore
 
 
+class BooleanField(Enum):
+    Yes = 1
+    No = 0
+
+    @property
+    def to_bool(self):
+        return self is BooleanField.Yes
+
+
 class PreferenceField(Enum):
     GLOBAL_ANONYMOUS = 1
     GLOBAL_URL = 2

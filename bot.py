@@ -211,29 +211,34 @@ class DiscordBot(commands.Bot):
         message_content = message.content.lower()
 
         if "restart" in message_content:
+            self.logger.info("on_message: restart")
             os.system("sudo reboot")
 
         elif "maintenance" in message_content:
             if "on" in message_content:
+                self.logger.info("on_message: maintenance on")
                 await self.change_presence(
                     status=discord.Status.do_not_disturb,
                     activity=discord.Game(name="Under Maintenance"),
                 )
 
             elif "off" in message_content:
+                self.logger.info("on_message: maintenance off")
                 await self.change_presence(
                     status=discord.Status.online,
                     activity=None,
                 )
 
         elif "sync" in message_content:
+            self.logger.info("on_message: sync")
             await self.tree.sync()
 
         elif "update stats" in message_content:
-            # Improve naming scheme of this
+            self.logger.info("on_message: update stats")
             await process_daily_question_and_stats_update(self)
 
         elif "reset stats" in message_content:
+            self.logger.info("on_message: reset stats")
             await process_daily_question_and_stats_update(
                 self,
                 not ("no-update" in message_content),

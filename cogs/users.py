@@ -6,11 +6,12 @@ from discord.ext import commands
 
 from database.models import User
 from middleware import defer_interaction, ensure_server_document
+from ui.constants import BooleanField
 from ui.embeds.users import (
     account_not_found_embed,
     account_permanently_deleted_embed,
-    account_removed_embed,
     account_process_start_embed,
+    account_removed_embed,
 )
 from ui.views.users import LoginView
 from utils.preferences import update_user_preferences_prompt
@@ -73,7 +74,9 @@ class UsersCog(commands.Cog):
     @defer_interaction(ephemeral_default=True)
     @ensure_server_document
     async def remove(
-        self, interaction: discord.Interaction, permanently: bool = False
+        self,
+        interaction: discord.Interaction,
+        permanently: BooleanField = BooleanField.No,
     ) -> None:
         """
         Remove your profile from this server's leaderboard
@@ -90,7 +93,7 @@ class UsersCog(commands.Cog):
             return
 
         embed = None
-        if permanently:
+        if permanently.to_bool:
             await delete_user(user_id)
             embed = account_permanently_deleted_embed()
 
