@@ -39,7 +39,7 @@ async def process_daily_question_and_stats_update(
     """
     Send the daily question and update the stats.
 
-    :param force_update_stats: Whether to force update the stats.
+    :param update_stats: Whether to update the users stats.
     :param force_reset_day: Whether to force the daily reset.
     :param force_reset_week: Whether to force the weekly reset.
     :param force_reset_month: Whether to force the monthly reset.
@@ -71,7 +71,7 @@ async def process_daily_question_and_stats_update(
             await send_daily_question(bot, server, embed)
 
     if update_stats:
-        await update_all_user_stats(bot)
+        await update_all_user_stats(bot, reset_day)
 
     async for server in Server.all(fetch_links=True):
         await Server.find_one(Server.id == server.id).update(
@@ -123,13 +123,15 @@ async def send_daily_question(
         await channel.send(embed=embed, silent=True)
 
 
-async def update_all_user_stats(bot: "DiscordBot") -> None:
+async def update_all_user_stats(bot: "DiscordBot", reset_day: int = False) -> None:
     """
     Update stats for all users.
     """
     async with aiohttp.ClientSession() as client_session:
         tasks = []
         async for user in User.all():
-            task = asyncio.create_task(update_stats(bot, client_session, user))
+            task = asyncio.create_task(
+                update_stats(bot, client_session, user, reset_day)
+            )
             tasks.append(task)
         await asyncio.gather(*tasks)

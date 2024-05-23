@@ -29,14 +29,14 @@ class CommandCategorySelect(discord.ui.Select):
                 description="Statistics commands",
             ),
             discord.SelectOption(
-                label=CommandCategory.LEETCODE_QUESTIONS.value,
+                label=CommandCategory.LEETCODE_PROBLEMS.value,
                 emoji="📝",
-                description="LeetCode Questions commands",
+                description="LeetCode Problems commands",
             ),
             discord.SelectOption(
                 label=CommandCategory.ROLES.value,
                 emoji="🎭",
-                description="CodeGrind roles",
+                description="CodeGrind roles commands",
             ),
             discord.SelectOption(
                 label=CommandCategory.ADMIN.value,
@@ -46,7 +46,7 @@ class CommandCategorySelect(discord.ui.Select):
             discord.SelectOption(
                 label=CommandCategory.CODEGRIND_TEAM.value,
                 emoji="👨‍💻",
-                description="CodeGrind Team commands",
+                description="The CodeGrind Team",
             ),
         ]
 
