@@ -456,14 +456,6 @@ async def fetch_problems_solved_and_rank(
                 case 200:
                     response_data = await response.json()
                 case 429:
-                    # Rate limit reached
-                    bot.logger.exception(
-                        "fetch_problems_solved_and_rank: Error code: % s, LeetCode "
-                        "username: % s",
-                        response.status,
-                        leetcode_id,
-                    )
-
                     bot.channel_logger.rate_limited()
                     raise RateLimitReached()
                 case 403:

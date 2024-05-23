@@ -125,7 +125,7 @@ class DiscordBot(commands.Bot):
         await self.load_cogs()
         await self.init_topgg()
         self.channel_logger = ChannelLogger(self, self.config.LOGGING_CHANNEL_ID)
-        self.ratings = Ratings()
+        self.ratings = Ratings(self)
         await self.ratings.update_ratings()
 
         schedule_question_and_stats_update.start(self)

@@ -16,7 +16,8 @@ async def schedule_update_ratings(bot: "DiscordBot") -> None:
 
 
 class Ratings:
-    def __init__(self) -> None:
+    def __init__(self, bot: "DiscordBot") -> None:
+        self.bot = bot
         self.ratings: dict[str, float] = {}
 
     def fetch_rating(self, title: str) -> dict[str, float] | None:
@@ -34,7 +35,7 @@ class Ratings:
 
                 self.ratings = self._parse_ratings(data)
             except aiohttp.ClientError as e:
-                print(f"Failed to fetch ratings: {e}")
+                self.bot.logger.info("Failed to fetch ratings: %s", e)
 
     def _parse_ratings(self, data: str) -> dict[str, float]:
         ratings = {}
