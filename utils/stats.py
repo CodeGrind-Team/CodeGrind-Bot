@@ -77,7 +77,6 @@ async def update_stats(
 def stats_card(
     bot: "DiscordBot",
     leetcode_id: str,
-    display_name: str,
     extension: StatsCardExtensions,
 ) -> tuple[discord.File | None]:
     width = 500

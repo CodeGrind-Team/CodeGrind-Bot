@@ -1,14 +1,14 @@
 import ast
 import asyncio
-import random
 import re
 from dataclasses import dataclass
+from random import random
 from typing import TYPE_CHECKING
 
 import aiohttp
+import aiohttp.client_exceptions
 import backoff
 import markdownify
-import requests
 
 from constants import Difficulty
 from utils.common import convert_to_score
@@ -180,23 +180,20 @@ async def fetch_random_question(
         },
     }
 
-    try:
-        response = await client_session.post(
-            URL, json=payload, headers=HEADERS, timeout=10
-        )
-        response.raise_for_status()
+    async with client_session.post(
+        URL, json=payload, headers=HEADERS, timeout=10
+    ) as response:
+        if response.status != 200:
+            bot.logger.exception(
+                "file: cogs/questions.py ~ An error occurred while trying to get the \
+                    question from LeetCode: %s",
+                response.status,
+            )
+            return
 
-    except aiohttp.ClientError as e:
-        bot.logger.exception(
-            "file: cogs/questions.py ~ An error occurred while trying to get the \
-                question from LeetCode: %s",
-            e,
-        )
-
-        return
-
-    try:
         response_data = await response.json()
+
+    try:
         title_slug = response_data["data"]["randomQuestion"]["titleSlug"]
 
     except ValueError:
@@ -233,19 +230,20 @@ async def fetch_daily_question(
     """,
     }
 
-    try:
-        response = await client_session.post(
-            URL, json=data, headers=HEADERS, timeout=10
-        )
-        response.raise_for_status()
+    async with client_session.post(
+        URL, json=data, headers=HEADERS, timeout=10
+    ) as response:
+        if response.status != 200:
+            bot.logger.exception(
+                "file: cogs/questions.py ~ An error occurred while trying to get the \
+                    question from LeetCode: %s",
+                response.status,
+            )
+            return
 
-    except aiohttp.ClientError as e:
-        bot.logger.exception(
-            "file: cogs/questions.py ~ Daily problem could not be retrieved: %s", e
-        )
-
-    try:
         response_data = await response.json()
+
+    try:
         title_slug = response_data["data"]["challenge"]["question"]["titleSlug"]
 
     except ValueError:
@@ -301,23 +299,20 @@ async def search_question(
         },
     }
 
-    try:
-        response = await client_session.post(
-            URL, json=payload, headers=HEADERS, timeout=10
-        )
-        response.raise_for_status()
+    async with client_session.post(
+        URL, json=payload, headers=HEADERS, timeout=10
+    ) as response:
+        if response.status != 200:
+            bot.logger.exception(
+                "file: cogs/questions.py ~ An error occurred while trying to get the \
+                    question from LeetCode: %s",
+                response.status,
+            )
+            return
 
-    except requests.RequestException as e:
-        bot.logger.exception(
-            "file: embeds/question.py ~ Daily problem could not be retrieved: \
-                %s",
-            e,
-        )
-        return
-
-    try:
         response_data = await response.json()
 
+    try:
         questions_matched_list = response_data["data"]["problemsetQuestionList"]
 
         if not questions_matched_list:
@@ -373,21 +368,20 @@ async def fetch_question_info(
         "variables": {"titleSlug": question_title_slug},
     }
 
-    try:
-        response = await client_session.post(
-            URL, json=payload, headers=HEADERS, timeout=10
-        )
-        response.raise_for_status()
+    async with client_session.post(
+        URL, json=payload, headers=HEADERS, timeout=10
+    ) as response:
+        if response.status != 200:
+            bot.logger.exception(
+                "file: cogs/questions.py ~ An error occurred while trying to get the \
+                    question from LeetCode: %s",
+                response.status,
+            )
+            return
 
-    except aiohttp.ClientError as e:
-        bot.logger.exception(
-            "file: utils/questions.py ~ fetch_problems_solved_and_rank ~ \
-                exception: %s",
-            e,
-        )
-
-    try:
         response_data = await response.json()
+
+    try:
         question = response_data["data"]["question"]
 
         question_id = question["questionFrontendId"]
@@ -481,56 +475,46 @@ async def fetch_problems_solved_and_rank(
     )
 
     async with semaphore:
-        try:
-            response = await client_session.post(
-                URL, json=payload, headers=HEADERS, timeout=10
-            )
+        async with client_session.post(
+            URL, json=payload, headers=HEADERS, timeout=10
+        ) as response:
+            match response.status:
+                case 200:
+                    response_data = await response.json()
+                case 429:
+                    # Rate limit reached
+                    bot.logger.exception(
+                        "file: utils/questions.py ~ fetch_problems_solved_and_rank ~ \
+                            LeetCode username: % s ~ Error code: % s",
+                        leetcode_id,
+                        response.status,
+                    )
 
-            # TODO: write why
-            await asyncio.sleep(random.random())
+                    bot.channel_logger.rate_limited()
+                    raise RateLimitReached()
+                case 403:
+                    # Forbidden access
+                    bot.logger.exception(
+                        "file: utils/questions.py ~ fetch_problems_solved_and_rank ~ \
+                            LeetCode username: %s ~ Error code: %s",
+                        leetcode_id,
+                        response.status,
+                    )
+                    bot.channel_logger.forbidden()
+                    return
+                case _:
+                    bot.logger.exception(
+                        "file: utils/questions.py ~ fetch_problems_solved_and_rank ~ \
+                            LeetCode username: %s ~ Error code: %s",
+                        leetcode_id,
+                        response.status,
+                    )
+                    return
 
-        except aiohttp.ClientError as e:
-            bot.logger.exception(
-                "file: utils/questions.py ~ fetch_problems_solved_and_rank ~ \
-                    exception: %s",
-                e,
-            )
-
-            return
-
-    if response.status == 429:
-        # Rate limit reached
-        bot.logger.exception(
-            "file: utils/questions.py ~ fetch_problems_solved_and_rank ~ \
-                LeetCode username: % s ~ Error code: % s",
-            leetcode_id,
-            response.status,
-        )
-
-        bot.channel_logger.rate_limited()
-        raise RateLimitReached()
-    elif response.status == 403:
-        # Forbidden access
-        bot.logger.exception(
-            "file: utils/questions.py ~ fetch_problems_solved_and_rank ~ \
-                LeetCode username: %s ~ Error code: %s",
-            leetcode_id,
-            response.status,
-        )
-        bot.channel_logger.forbidden()
-        return
-    elif response.status != 200:
-        bot.logger.exception(
-            "file: utils/questions.py ~ fetch_problems_solved_and_rank ~ \
-                LeetCode username: %s ~ Error code: %s",
-            leetcode_id,
-            response.status,
-        )
-        return
+        # Add a small delay to avoid rate limits, using random to avoid patterns
+        await asyncio.sleep(random())
 
     try:
-        response_data = await response.json()
-
         matched_user = response_data["data"]["matchedUser"]
 
         if not matched_user:

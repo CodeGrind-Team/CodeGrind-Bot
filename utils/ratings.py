@@ -28,9 +28,10 @@ class Ratings:
 
         async with aiohttp.ClientSession() as client_session:
             try:
-                response = await client_session.get(url)
-                response.raise_for_status()
-                data = await response.text()
+                async with client_session.get(url) as response:
+                    response.raise_for_status()
+                    data = await response.text()
+
                 self.ratings = self._parse_ratings(data)
             except aiohttp.ClientError as e:
                 print(f"Failed to fetch ratings: {e}")

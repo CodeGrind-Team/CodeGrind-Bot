@@ -17,7 +17,7 @@ async def stats_embed(
     display_name: str,
     extension: StatsCardExtensions,
 ) -> tuple[discord.Embed, discord.File | None]:
-    file = await stats_card(bot, leetcode_id, display_name, extension)
+    file = await stats_card(bot, leetcode_id, extension)
 
     if not file:
         return error_embed(), None
