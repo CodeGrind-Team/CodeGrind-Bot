@@ -52,14 +52,14 @@ class ChannelLogger:
         :param include_error_counts: If `True`, includes rate limit and forbidden
         counts in the log.
         """
-        if include_error_counts and self.rate_limits > 0:
+        if include_error_counts:
             message += f". Rate limited {self.rate_limits} times"
             self.rate_limits = 0
 
         await self.log(message, discord.Colour.blue())
 
         if include_error_counts and self.forbidden_count > 0:
-            await self.WARNING(f"Forbidden {self.forbidden_count} times.")
+            await self.warning(f"Forbidden {self.forbidden_count} times.")
             self.forbidden_count = 0
 
     async def warning(self, message: str) -> None:

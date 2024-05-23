@@ -5,7 +5,9 @@ from .models import Preference, Record, Server, User
 from motor.motor_asyncio import AsyncIOMotorClient
 
 
-async def initialise_mongodb_conn(mongodb_uri: str, global_leaderboard_id: int) -> None:
+async def initialise_mongodb_conn(
+    mongodb_uri: str, global_leaderboard_id: int = 0
+) -> None:
     """
     Initialise the MongoDB connection and create the necessary collections
 

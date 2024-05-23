@@ -1,6 +1,6 @@
 import discord
 from constants import MILESTONE_ROLES, STREAK_ROLES, VERIFIED_ROLE
-from database.models import Server
+from database.models import Preference, User
 
 
 async def create_roles_from_string(guild: discord.Guild, role: str) -> None:
@@ -94,7 +94,7 @@ async def remove_roles(guild: discord.Guild) -> None:
     await remove_roles_from_dict(guild, STREAK_ROLES)
 
 
-async def update_roles(guild: discord.Guild, server: Server) -> None:
+async def update_roles(guild: discord.Guild, server_id: int) -> None:
     """
     Update roles for users in the server based on their stats.
 
@@ -104,7 +104,13 @@ async def update_roles(guild: discord.Guild, server: Server) -> None:
     if not guild.me.guild_permissions.manage_roles:
         return
 
-    for user in server.users:
+    async for preference in Preference.find_many(Preference.server_id == server_id):
+        user = await User.find_one(preference.user_id)
+
+        if not user:
+            # TODO assert
+            continue
+
         member = guild.get_member(user.id)
 
         if not member:

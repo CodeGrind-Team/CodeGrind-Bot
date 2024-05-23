@@ -1,8 +1,11 @@
 import asyncio
+import math
+import time
 from datetime import UTC, datetime, timedelta
 from typing import TYPE_CHECKING
 
 import discord
+from beanie.operators import In
 
 from constants import GLOBAL_LEADERBOARD_ID, Period, RankEmoji
 from database.models import Preference, Record, Server, User
@@ -106,24 +109,45 @@ async def get_user_and_score(
 
 
 async def sort_users_by_score(
-    server: Server, period: Period, previous: bool
+    users: list[User], period: Period, previous: bool
 ) -> list[User]:
     """
     Sort the users on a server by their score for a given period.
 
-    :param server: The server containing the users to sort.
+    :param users: The users in the server.
     :param period: The period for which to retrieve and sort the scores.
     :param previous: Whether to display the leaderboard of one period before.
 
     :return: A list of users sorted by their score in descending order.
     """
-    coroutines = [get_user_and_score(user, period, previous) for user in server.users]
+    coroutines = [get_user_and_score(user, period, previous) for user in users]
     users_with_scores = await asyncio.gather(*coroutines)
     sorted_users_with_score = sorted(
         users_with_scores, key=lambda pair: pair[1], reverse=True
     )
 
     return sorted_users_with_score
+
+
+async def get_users_from_preferences(
+    server_id: int,
+) -> tuple[dict[int, Preference], list[User]]:
+    """
+    TODO
+    """
+    preferences = await Preference.find_many(
+        Preference.server_id == server_id
+    ).to_list()
+
+    user_id_to_preference = {
+        preference.user_id: preference for preference in preferences
+    }
+
+    users = await User.find_many(
+        In(User.id, set(user_id_to_preference.keys()))
+    ).to_list()
+
+    return user_id_to_preference, users
 
 
 async def generate_leaderboard_embed(
@@ -156,10 +180,11 @@ async def generate_leaderboard_embed(
     if not server:
         return empty_leaderboard_embed(), None
 
-    sorted_users_with_score = await sort_users_by_score(server, period, previous)
+    user_id_to_preference, users = await get_users_from_preferences(server_id)
+    sorted_users_with_score = await sort_users_by_score(users, period, previous)
 
     pages: list[discord.Embed] = []
-    num_pages = -(-len(server.users) // users_per_page)
+    num_pages = math.ceil(len(users) / users_per_page)
 
     place = 0
     prev_score = float("-inf")
@@ -168,6 +193,7 @@ async def generate_leaderboard_embed(
         page_embed, place, prev_score = await build_leaderboard_page(
             period,
             server,
+            user_id_to_preference,
             sorted_users_with_score,
             winners_only,
             global_leaderboard,
@@ -192,6 +218,7 @@ async def generate_leaderboard_embed(
 async def build_leaderboard_page(
     period: Period,
     server: Server,
+    user_id_to_preference: list[dict[int, Preference]],
     sorted_users: list[tuple[User, int]],
     winners_only: bool,
     global_leaderboard: bool,
@@ -226,11 +253,10 @@ async def build_leaderboard_page(
 
         profile_link = f"https://leetcode.com/{user.leetcode_id}"
 
-        preference = await Preference.find_one(
-            Preference.user_id == user.id, Preference.server_id == server.id
-        )
+        preference = user_id_to_preference[user.id]
 
         if not preference:
+            # ! would actually lead to error. Assert
             continue
 
         name = preference.name

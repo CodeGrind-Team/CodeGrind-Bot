@@ -94,7 +94,7 @@ async def process_daily_question_and_stats_update(
 
         if midday:
             guild = bot.get_guild(server.id)
-            await update_roles(guild, server)
+            await update_roles(guild, server.id)
 
     bot.logger.info(
         "file: utils/notifications.py ~ send_daily_question_and_update_stats ~ \

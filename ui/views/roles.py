@@ -1,6 +1,5 @@
 import discord
 
-from database.models import Server
 from ui.embeds.roles import roles_created_embed, roles_removed_embed
 from utils.roles import create_roles, remove_roles, update_roles
 
@@ -13,11 +12,7 @@ class RolesView(discord.ui.View):
         await interaction.response.defer()
 
         await create_roles(interaction.guild)
-
-        server = await Server.find_one(
-            Server.id == interaction.guild.id, fetch_links=True
-        )
-        await update_roles(interaction.guild, server)
+        await update_roles(interaction.guild, interaction.guild.id)
 
         await interaction.followup.send(embed=roles_created_embed())
 

@@ -533,6 +533,9 @@ async def fetch_problems_solved_and_rank(
 
         matched_user = response_data["data"]["matchedUser"]
 
+        if not matched_user:
+            return None
+
         real_name = matched_user["profile"]["realName"]
         submit_stats_global = matched_user["submitStatsGlobal"]
         ac_submission_num = submit_stats_global["acSubmissionNum"]

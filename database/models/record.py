@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from beanie import Document, TimeSeriesConfig
+from beanie import Document, Granularity, TimeSeriesConfig
 
 from .user import Submissions
 
@@ -11,12 +11,9 @@ class Record(Document):
     submissions: Submissions
 
     class Settings:
-        # ! add caching
         name = "records"
-        use_state_management = True
         timeseries = TimeSeriesConfig(
             time_field="timestamp",
             meta_field="user_id",
-            bucket_max_span_seconds=86400,
-            bucket_rounding_seconds=86400,
+            granularity=Granularity.hours,
         )

@@ -1,14 +1,12 @@
 from datetime import UTC, datetime
 from typing import List, Optional
 
-from beanie import Document, Link
+from beanie import Document
 from pydantic import BaseModel, Field
-
-from .user import User
 
 
 # TODO add option to silent/non-silent notifications
-class Channel(BaseModel):
+class Channels(BaseModel):
     maintenance: Optional[List[int]] = []
     daily_question: Optional[List[int]] = []
     winners: Optional[List[int]] = []
@@ -16,9 +14,8 @@ class Channel(BaseModel):
 
 class Server(Document):
     id: int
-    users: Optional[List[Link[User]]] = []
     timezone: Optional[str] = "UTC"
-    channels: Optional[Channel] = Field(default_factory=Channel)
+    channels: Optional[Channels] = Field(default_factory=Channels)
 
     last_update_start: Optional[datetime] = Field(
         default_factory=lambda: datetime.now(UTC)

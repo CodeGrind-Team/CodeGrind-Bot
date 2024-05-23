@@ -98,6 +98,7 @@ async def register(
         server_id=GLOBAL_LEADERBOARD_ID,
         # User account username.
         name=interaction.user.name,
+        url=False,
     )
 
     await user.save()
