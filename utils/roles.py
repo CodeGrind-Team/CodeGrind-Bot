@@ -108,7 +108,7 @@ async def update_roles(guild: discord.Guild, server_id: int) -> None:
         user = await User.find_one(preference.user_id)
 
         if not user:
-            # TODO assert
+            # This shouldn't happen
             continue
 
         member = guild.get_member(user.id)

@@ -5,7 +5,6 @@ from beanie import Document
 from pydantic import BaseModel, Field
 
 
-# TODO add option to silent/non-silent notifications
 class Channels(BaseModel):
     maintenance: Optional[List[int]] = []
     daily_question: Optional[List[int]] = []

@@ -53,7 +53,6 @@ async def random_question_embed(
     return embed
 
 
-# TODO: split into logic and embed
 async def question_embed(
     bot: "DiscordBot", client_session: aiohttp.ClientSession, question_title: str
 ) -> discord.Embed:
@@ -84,7 +83,7 @@ async def question_embed(
     )
 
     # TODO: handle descriptions/examples larger than the limit
-    # https://www.pythondiscord.com/pages/guides/python-guides/discord-embed-limits/
+    # TODO: https://www.pythondiscord.com/pages/guides/python-guides/discord-embed-limits/
     embed.add_field(name="Example 1: ", value=info.example_one, inline=False)
 
     if info.follow_up:

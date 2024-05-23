@@ -3,11 +3,19 @@ import discord
 from ui.embeds.common import failure_embed, success_embed
 
 
+def account_process_start_embed() -> discord.Embed:
+    return discord.Embed(
+        title="Connect LeetCode Account",
+        description="Press the following button to start the process:",
+        colour=discord.Colour.blurple(),
+    )
+
+
 def synced_existing_user_embed() -> discord.Embed:
     return success_embed(
         title="Account synced",
         description="Your account has been synced and your preferences for this "
-        "server have been saved successefully",
+        "server have been saved successfully",
     )
 
 
@@ -23,7 +31,7 @@ def connect_account_instructions_embed(
 ) -> discord.Embed:
     embed = discord.Embed(
         title="Instructions",
-        description="Please temorarily change your LeetCode Account **Name** to the "
+        description="Please temporarily change your LeetCode Account **Name** to the "
         "following generated sequence:",
         colour=discord.Colour.orange(),
     )
@@ -60,10 +68,8 @@ def profile_added_embed(leetcode_id: str, added: bool = True) -> discord.Embed:
 
 
 def account_removed_embed() -> discord.Embed:
-    # TODO: convert single use embeds to general function (aka success/failure)
-    return discord.Embed(
+    return success_embed(
         title="Your account has been removed from this server",
-        colour=discord.Colour.green(),
     )
 
 

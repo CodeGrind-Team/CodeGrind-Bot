@@ -133,7 +133,9 @@ async def get_users_from_preferences(
     server_id: int,
 ) -> tuple[dict[int, Preference], list[User]]:
     """
-    TODO
+    Retrieves the users that are part of a server, and their respective preferences.
+
+    :param server_id: the server to retrieve the users that are in it.
     """
     preferences = await Preference.find_many(
         Preference.server_id == server_id

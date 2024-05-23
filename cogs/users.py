@@ -10,6 +10,7 @@ from ui.embeds.users import (
     account_not_found_embed,
     account_permanently_deleted_embed,
     account_removed_embed,
+    account_process_start_embed,
 )
 from ui.views.users import LoginView
 from utils.preferences import update_user_preferences_prompt
@@ -31,7 +32,6 @@ class UsersCog(commands.Cog):
         """
         Connect your LeetCode account to this server's CodeGrind leaderboards
         """
-        # TODO explain the whole thing and why it has been written the way it is.
         server_id = interaction.guild.id
         user_id = interaction.user.id
 
@@ -47,11 +47,7 @@ class UsersCog(commands.Cog):
             )
         else:
             await interaction.followup.send(
-                embed=discord.Embed(
-                    title="Connect LeetCode Account",
-                    description="Press the following button to start the process:",
-                    colour=discord.Colour.blurple(),
-                ),
+                embed=account_process_start_embed(),
                 view=LoginView(self.bot),
             )
 

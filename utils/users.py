@@ -183,7 +183,6 @@ async def linking_process(
 
     profile_name = None
 
-    # TODO: Use self.config
     duration = 60  # seconds
     check_interval = 5  # seconds
 
