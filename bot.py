@@ -33,10 +33,9 @@ from database.models import Preference, Server
 from database.setup import initialise_mongodb_conn
 from utils.dev import ChannelLogger
 from utils.notifications import (
-    schedule_question_and_stats_update,
     process_daily_question_and_stats_update,
+    schedule_question_and_stats_update,
 )
-
 from utils.ratings import Ratings, schedule_update_ratings
 from utils.users import delete_user, unlink_user_from_server
 

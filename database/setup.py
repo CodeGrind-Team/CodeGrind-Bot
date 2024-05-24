@@ -1,8 +1,9 @@
 import os
 
 from beanie import init_beanie
-from .models import Preference, Record, Server, User
 from motor.motor_asyncio import AsyncIOMotorClient
+
+from .models import Preference, Record, Server, User
 
 
 async def initialise_mongodb_conn(

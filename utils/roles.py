@@ -1,4 +1,5 @@
 import discord
+
 from constants import MILESTONE_ROLES, STREAK_ROLES, VERIFIED_ROLE
 from database.models import Preference, User
 
