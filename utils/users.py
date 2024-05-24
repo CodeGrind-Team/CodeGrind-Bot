@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 
 import aiohttp
 import discord
-from beanie.odm.operators.update.array import AddToSet, Pull
+from beanie.odm.operators.update.array import AddToSet
 from bson import DBRef
 
 from constants import GLOBAL_LEADERBOARD_ID
@@ -211,10 +211,6 @@ async def unlink_user_from_server(user_id: int, server_id: int) -> None:
         Preference.user_id == user_id, Preference.server_id == server_id
     ).delete()
 
-    await Server.find_one(Server.id == server_id).update(
-        Pull({Server.users: {"$id": user_id}})
-    )
-
 
 async def delete_user(user_id: int) -> None:
     """
@@ -222,11 +218,6 @@ async def delete_user(user_id: int) -> None:
 
     :param user_id: The user's id.
     """
-    async for preference in Preference.find_many(Preference.user_id == user_id):
-        await Server.find_one(Server.id == preference.server_id).update(
-            Pull({Server.users: {"$id": user_id}})
-        )
-
     await Preference.find_many(Preference.user_id == user_id).delete()
     await Record.find_many(Record.user_id == user_id).delete()
     await User.find_one(User.id == user_id).delete()

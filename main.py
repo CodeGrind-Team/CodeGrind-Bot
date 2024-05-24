@@ -64,6 +64,7 @@ if __name__ == "__main__":
         os.getenv("BROWSER_EXECUTABLE_PATH"),
         int(os.getenv("LOGGING_CHANNEL_ID")),
         os.getenv("PRODUCTION", "False") == "True",
+        int(os.getenv("DEVELOPER_ID")),
     )
 
     bot = DiscordBot(intents, config, logger)

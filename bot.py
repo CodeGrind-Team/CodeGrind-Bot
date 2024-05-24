@@ -48,6 +48,7 @@ class Config:
     BROWSER_EXECUTABLE_PATH: str
     LOGGING_CHANNEL_ID: int
     PRODUCTION: bool
+    DEVELOPER_ID: int
 
 
 class DiscordBot(commands.Bot):
@@ -107,6 +108,12 @@ class DiscordBot(commands.Bot):
                     self.logger.error(
                         f"Failed to load extension {extension}\n{exception}"
                     )
+
+    async def on_ready(self) -> None:
+        """
+        Called when the client is done preparing the data received from Discord.
+        """
+        self.logger.info("Ready")
 
     async def setup_hook(self) -> None:
         """
@@ -223,7 +230,8 @@ class DiscordBot(commands.Bot):
         contents.
         """
         if not (
-            (await self.is_owner(message.author)) and self.user.mentioned_in(message)
+            (message.author.id == self.config.DEVELOPER_ID)
+            and self.user.mentioned_in(message)
         ):
             return
 

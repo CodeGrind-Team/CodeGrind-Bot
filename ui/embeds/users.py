@@ -81,5 +81,5 @@ def account_not_found_embed() -> discord.Embed:
     return failure_embed(
         title="Account not found",
         description="The user hasn't linked their LeetCode account to this server yet! "
-        "To connect to the bot use </add:1115756888185917542>",
+        "To connect to the bot use </add:1204499698933563422>",
     )

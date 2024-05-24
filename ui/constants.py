@@ -52,17 +52,17 @@ You can view our Privacy Policy [here](https://github.com/CodeGrind-Team/CodeGri
     CommandCategory.ACCOUNT: """
 ## Account
 
-</add:TODO>: Add/connect your LeetCode account to this server's CodeGrind leaderboards.
+</add:1204499698933563422>: Add/connect your LeetCode account to this server's CodeGrind leaderboards.
 
-</update:TODO>: Update your local and global CodeGrind profile preferences.
+</update:1204499698933563423>: Update your local and global CodeGrind profile preferences.
 
-</remove:TODO>: Remove your profile from this server's CodeGrind leaderboards.
+</remove:1204499698933563424>: Remove your profile from this server's CodeGrind leaderboards.
 >    - `permanently` _(optional)_: Permanently delete all information CodeGrind stores on you.""",
     CommandCategory.LEADERBOARD: """
 ## Leaderboard
 
 ### Server leaderboard
-</leaderboard:TODO> Display the CodeGrind leaderboard.
+</leaderboard:1243301101634060409> Display the CodeGrind leaderboard.
 >    - `timeframe`: The desired timeframe (daily, weekly, monthly, or all-time).
 >    - `global` _(optional)_: Whether display the Global CodeGrind leaderboards or the default local (server-only) leaderboards.
 
@@ -70,7 +70,7 @@ Note: scores for `daily`, `weekly`, and `monthly` leaderboards will only start b
     CommandCategory.STATISTICS: """
 ## Statistics
 
-</stats:TODO>: Returns the statistics of your or someone else's LeetCode account.
+</stats:1204499698317262966>: Returns the statistics of your or someone else's LeetCode account.
 >    - `extension`: The extra information to add to the stats card (activity, heatmap, contest, or none). 
 >    - `user` _(optional)_: The user to display the stats of. By default, it will be your account.
 
@@ -78,16 +78,16 @@ Credit to [LeetCode Stats Card](https://github.com/JacobLinCool/LeetCode-Stats-C
     CommandCategory.LEETCODE_PROBLEMS: """
 ## LeetCode Problems
 
-</problem daily:TODO>: Returns LeetCode's problem of the day
+</problem daily:1243563243147100301>: Returns LeetCode's problem of the day
 
-</problem random:TODO>: Returns a random LeetCode question.
+</problem random:1243563243147100301>: Returns a random LeetCode question.
 >    - `difficulty` _(optional)_: A difficulty level (easy, medium or hard). By default this will be set to a random difficulty level.
 
-</problem search:TODO>: Display your searched LeetCode question.""",
+</problem search:1243563243147100301>: Display your searched LeetCode question.""",
     CommandCategory.ROLES: """
 ## Roles
 
-If an admin has enabled this feature using </roles:TODO>, you will receive the following roles. If you're an admin, check out the admin commands section to learn how to enable this feature.
+If an admin has enabled this feature using </roles:1204499698317262965>, you will receive the following roles. If you're an admin, check out the admin commands section to learn how to enable this feature.
 
 `CodeGrind Verified`: Given to you if you've connected your account to the bot in this server using </add:1115756888185917542>.
 
@@ -113,18 +113,18 @@ These commands are only available to administrators of this server.
 
 ## Roles
 
-</roles:TODO>: Creates and gives verified CodeGrind user, score milestones, and streak roles that will be automatically updated each day at midday (UTC).
+</roles:1204499698317262965>: Creates and gives verified CodeGrind user, score milestones, and streak roles that will be automatically updated each day at midday (UTC).
 
 ## Notifications
 
-</notifications:TODO>: Sends daily notifications at midnight (UTC) to the specified channel.
+</notifications:1243563243147100300>: Sends daily notifications at midnight (UTC) to the specified channel.
 >    - `channel` _(optional)_: The channel (e.g. "#home-channel") to send notifications to. By default this will be the channel where you ran this command.
 
 Note: please press the 'save' button twice!
 
 ## Settings
 
-</settings timezone:TODO>: Change the timezone of this server's leaderboards.
+</settings timezone:1204499698317262958>: Change the timezone of this server's leaderboards.
 >    - `timezone`: A timezone from the following list of timezones: https://gist.github.com/heyalexej/8bf688fd67d7199be4a1682b3eec7568 .""",
     CommandCategory.CODEGRIND_TEAM: """
 ## CodeGrind Team
@@ -134,8 +134,8 @@ Nano (<@814656377188384810>)
 Kevin (<@335154148976885770>)
 
 ### Contributors
-[Shaan](<https://github.com/ShaanCoding>) (<@199662959964848128>): Created the </roles:TODO> command.
-[Aalaap](<https://www.linkedin.com/in/aalaap-d-969703239/>) (<@635232267458969631>): Created the </problem:TODO> commands. 
+[Shaan](<https://github.com/ShaanCoding>) (<@199662959964848128>): Created the /roles command.
+[Aalaap](<https://www.linkedin.com/in/aalaap-d-969703239/>) (<@635232267458969631>): Created the /problem commands. 
 
 Thank you to all the contributors for helping improve CodeGrind Bot!
 
