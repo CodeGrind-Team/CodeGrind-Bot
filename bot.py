@@ -308,10 +308,10 @@ class DiscordBot(commands.Bot):
             hours, minutes = divmod(minutes, 60)
             hours = hours % 24
             embed = discord.Embed(
-                description=f"**Please slow down** - You can use this command again in \
-                    {f'{round(hours)} hours' if round(hours) > 0 else ''} \
-                        {f'{round(minutes)} minutes' if round(minutes) > 0 else ''} \
-                            {f'{round(seconds)} seconds' if round(seconds) > 0 else ''}.",
+                description=f"**Please slow down** - You can use this command again in "
+                f"{f'{round(hours)} hours' if round(hours) > 0 else ''}"
+                f"{f'{round(minutes)} minutes' if round(minutes) > 0 else ''}"
+                f"{f'{round(seconds)} seconds' if round(seconds) > 0 else ''}.",
                 colour=0xE02B2B,
             )
             await interaction.response.send_message(embed=embed)
