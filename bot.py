@@ -186,10 +186,14 @@ class DiscordBot(commands.Bot):
         """
         Called a member updates their guild specific information, such as nickname.
         """
+        if before.display_name == after.display_name:
+            return
+
         self.logger.info(
             f"Member {before.name} (ID: {before.id}) in Guild (ID: {before.guild.id}) "
             "discord account updated",
         )
+
         await Preference.find_one(
             Preference.user_id == before.id,
             Preference.server_id == before.guild.id,
@@ -199,9 +203,13 @@ class DiscordBot(commands.Bot):
         """
         Called a user updated their account information, such as username.
         """
+        if before.display_name == after.display_name:
+            return
+
         self.logger.info(
             f"User {before.name} (ID: {before.id}) discord account updated",
         )
+
         await Preference.find_one(
             Preference.user_id == before.id,
             Preference.server_id == GLOBAL_LEADERBOARD_ID,
@@ -220,7 +228,36 @@ class DiscordBot(commands.Bot):
 
         message_content = message.content.lower()
 
-        if "restart" in message_content:
+        if "share announcement\n" in message_content:
+            announcement = message.content[
+                message_content.find("share announcement\n")
+                + len("share announcement\n") :
+            ]
+            self.logger.info(f"on_message: share announcement: {announcement}")
+
+            image_url: str | None = None
+            if len(message.attachments) == 1:
+                image_url = message.attachments[0].url
+
+            async for server in Server.all():
+                for channel_id in server.channels.maintenance:
+                    channel = self.get_channel(channel_id)
+                    if channel and isinstance(channel, discord.TextChannel):
+                        try:
+                            if image_url:
+                                await channel.send(
+                                    content=announcement + f"\n{image_url}",
+                                )
+                            else:
+                                await channel.send(content=announcement)
+
+                        except discord.errors.Forbidden:
+                            self.logger.info(
+                                f"Forbidden to share announcement to channel with ID: "
+                                f"{channel_id}"
+                            )
+
+        elif "restart" in message_content:
             self.logger.info("on_message: restart")
             os.system("sudo reboot")
 

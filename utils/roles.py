@@ -106,7 +106,7 @@ async def update_roles(guild: discord.Guild, server_id: int) -> None:
         return
 
     async for preference in Preference.find_many(Preference.server_id == server_id):
-        user = await User.find_one(preference.user_id)
+        user = await User.find_one(User.id == preference.user_id)
 
         if not user:
             # This shouldn't happen

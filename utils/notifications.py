@@ -7,7 +7,7 @@ import discord
 from beanie.odm.operators.update.general import Set
 from discord.ext import tasks
 
-from constants import Period
+from constants import GLOBAL_LEADERBOARD_ID, Period
 from database.models import Server, User
 from ui.embeds.problems import daily_question_embed
 from utils.leaderboards import send_leaderboard_winners
@@ -72,7 +72,10 @@ async def process_daily_question_and_stats_update(
         await update_all_user_stats(bot, reset_day)
         bot.logger.info("All users stats updated")
 
-    async for server in Server.all(fetch_links=True):
+    async for server in Server.all():
+        if server.id == GLOBAL_LEADERBOARD_ID:
+            continue
+
         await Server.find_one(Server.id == server.id).update(
             Set(
                 {
@@ -101,8 +104,11 @@ async def process_daily_question_and_stats_update(
             )
 
         if midday:
-            guild = bot.get_guild(server.id)
-            await update_roles(guild, server.id)
+            if guild := bot.get_guild(server.id):
+                bot.logger.info(
+                    "Updating roles",
+                )
+                await update_roles(guild, server.id)
 
     bot.logger.info("Sending daily notifications and updating stats completed")
     await bot.channel_logger.info("Completed updating")
