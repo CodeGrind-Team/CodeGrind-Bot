@@ -109,7 +109,7 @@ def premium_question_embed(
 ) -> discord.Embed:
     return discord.Embed(
         title=f"{question_id}. {title}",
-        description="Cannot display premium questions",
+        description="Premium Question",
         url=link,
         colour=colour,
     )

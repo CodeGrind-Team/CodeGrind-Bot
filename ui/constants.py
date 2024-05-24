@@ -78,12 +78,12 @@ Credit to [LeetCode Stats Card](https://github.com/JacobLinCool/LeetCode-Stats-C
     CommandCategory.LEETCODE_PROBLEMS: """
 ## LeetCode Problems
 
-</problem daily:1243563243147100301>: Returns LeetCode's problem of the day
+</problem daily:1243573686666137673>: Returns LeetCode's problem of the day
 
-</problem random:1243563243147100301>: Returns a random LeetCode question.
+</problem random:1243573686666137673>: Returns a random LeetCode question.
 >    - `difficulty` _(optional)_: A difficulty level (easy, medium or hard). By default this will be set to a random difficulty level.
 
-</problem search:1243563243147100301>: Display your searched LeetCode question.""",
+</problem search:1243573686666137673>: Display your searched LeetCode question.""",
     CommandCategory.ROLES: """
 ## Roles
 
@@ -117,7 +117,7 @@ These commands are only available to administrators of this server.
 
 ## Notifications
 
-</notifications:1243563243147100300>: Sends daily notifications at midnight (UTC) to the specified channel.
+</notifications:1243573686666137672>: Sends daily notifications at midnight (UTC) to the specified channel.
 >    - `channel` _(optional)_: The channel (e.g. "#home-channel") to send notifications to. By default this will be the channel where you ran this command.
 
 Note: please press the 'save' button twice!
