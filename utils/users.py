@@ -6,11 +6,9 @@ from typing import TYPE_CHECKING
 
 import aiohttp
 import discord
-from beanie.odm.operators.update.array import AddToSet
-from bson import DBRef
 
 from constants import GLOBAL_LEADERBOARD_ID
-from database.models import Preference, Record, Server, Stats, Submissions, User
+from database.models import Preference, Record, Stats, Submissions, User
 from ui.embeds.users import (
     connect_account_instructions_embed,
     profile_added_embed,
@@ -146,10 +144,6 @@ async def login(
         )
 
         await preference.create()
-
-        await Server.find_one(Server.id == server_id).update(
-            AddToSet({Server.users: DBRef("users", user_id)})
-        )
 
         embed = synced_existing_user_embed()
         await send_message(embed=embed)
