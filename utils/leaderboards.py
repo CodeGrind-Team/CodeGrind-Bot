@@ -410,7 +410,6 @@ async def send_leaderboard_winners(
 
         except discord.errors.Forbidden:
             bot.logger.exception(
-                "Missing permissions on channel (%s) to send leaderboard winners. "
-                "Error: %s",
-                channel.id,
+                f"Missing permissions on channel ({channel_id}) to send leaderboard "
+                "winners."
             )

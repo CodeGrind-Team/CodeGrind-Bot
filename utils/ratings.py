@@ -35,7 +35,7 @@ class Ratings:
 
                 self.ratings = self._parse_ratings(data)
             except aiohttp.ClientError as e:
-                self.bot.logger.info("Failed to fetch ratings: %s", e)
+                self.bot.logger.info(f"Failed to fetch ratings: {e}")
 
     def _parse_ratings(self, data: str) -> dict[str, float]:
         ratings = {}

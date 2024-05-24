@@ -128,4 +128,4 @@ class ChannelLogger:
                 "ChannelLogger.log: missing permissions on logging channel.",
             )
         except Exception as e:
-            self.bot.logger.exception("ChannelLogger.log : Error: %s", e)
+            self.bot.logger.exception(f"ChannelLogger.log : Error: {e}")

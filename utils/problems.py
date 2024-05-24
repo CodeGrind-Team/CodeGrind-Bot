@@ -183,9 +183,8 @@ async def fetch_random_question(
     ) as response:
         if response.status != 200:
             bot.logger.exception(
-                "fetch_random_question: An error occurred while trying to get the "
-                "question from LeetCode: %s",
-                response.status,
+                f"fetch_random_question: An error occurred while trying to get the "
+                f"question from LeetCode: {response.status}",
             )
             return
 
@@ -196,8 +195,8 @@ async def fetch_random_question(
 
     except ValueError:
         bot.logger.exception(
-            "fetch_random_question: failed to decode json. Error code (%s)",
-            response_data,
+            f"fetch_random_question: failed to decode json. Error code "
+            f"({response_data})"
         )
         return
 
@@ -231,9 +230,8 @@ async def fetch_daily_question(
     ) as response:
         if response.status != 200:
             bot.logger.exception(
-                "fetch_daily_question: An error occurred while trying to get the "
-                "question from LeetCode. Error code (%s)",
-                response.status,
+                f"fetch_daily_question: An error occurred while trying to get the "
+                f"question from LeetCode. Error code ({response.status})"
             )
             return
 
@@ -244,8 +242,7 @@ async def fetch_daily_question(
 
     except ValueError:
         bot.logger.exception(
-            "fetch_daily_question: failed to decode json. Error code (%s)",
-            response_data,
+            f"fetch_daily_question: failed to decode json. Error code ({response_data})"
         )
         return
 
@@ -298,9 +295,8 @@ async def search_question(
     ) as response:
         if response.status != 200:
             bot.logger.exception(
-                "search_question: An error occurred while trying to get the "
-                "question from LeetCode: %s",
-                response.status,
+                f"search_question: An error occurred while trying to get the "
+                f"question from LeetCode: {response.status}"
             )
             return
 
@@ -316,8 +312,7 @@ async def search_question(
 
     except ValueError:
         bot.logger.exception(
-            "search_question: failed to decode json. Error code (%s)",
-            response_data,
+            f"search_question: failed to decode json. Error code ({response_data})"
         )
         return
 
@@ -360,9 +355,8 @@ async def fetch_question_info(
     ) as response:
         if response.status != 200:
             bot.logger.exception(
-                "fetch_question_info: An error occurred while trying to get the "
-                "question from LeetCode. Error code (%s)",
-                response.status,
+                f"fetch_question_info: An error occurred while trying to get the "
+                f"question from LeetCode. Error code ({response.status})"
             )
             return
 
@@ -385,8 +379,7 @@ async def fetch_question_info(
 
     except ValueError:
         bot.logger.exception(
-            "fetch_question_info: failed to decode json. Error code (%s)",
-            response_data,
+            f"fetch_question_info: failed to decode json. Error code ({response_data})",
         )
         return
 
@@ -517,9 +510,8 @@ async def fetch_problems_solved_and_rank(
 
     except ValueError:
         bot.logger.exception(
-            "fetch_problems_solved_and_rank: Failed to decode json for user (%s): %s",
-            leetcode_id,
-            response_data,
+            f"fetch_problems_solved_and_rank: Failed to decode json for user "
+            f"({leetcode_id}): {response_data}",
         )
         return
 

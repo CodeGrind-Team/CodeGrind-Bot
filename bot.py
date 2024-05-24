@@ -75,13 +75,12 @@ class DiscordBot(commands.Bot):
         Runs when stats are posted to topgg
         """
         self.logger.info(
-            "Posted server count (%s), shard count (%s)",
-            self.topggpy.guild_count,
-            self.shard_count,
+            f"Posted server count ({self.topggpy.guild_count}), shard count "
+            "({self.shard_count})",
         )
 
         self.logger.info(
-            "Total bot member count (%s)", len(set(self.get_all_members()))
+            f"Total bot member count ({ len(set(self.get_all_members()))})"
         )
 
     async def init_topgg(self) -> None:
@@ -158,6 +157,9 @@ class DiscordBot(commands.Bot):
         """
         Called a guild gets deleted.
         """
+        self.logger.info(
+            f"Guild {guild.name} (ID: {guild.id}) discord account removed",
+        )
         await Preference.find_many(Preference.server_id == guild.id).delete()
         await Server.find_one(Server.id == guild.id).delete()
 
@@ -165,6 +167,10 @@ class DiscordBot(commands.Bot):
         """
         Called when a member leaves a guild.
         """
+        self.logger.info(
+            f"Member {payload.user.name} (ID: {payload.user.id}) in Guild "
+            f"(ID: {payload.guild_id}) discord account removed",
+        )
         await unlink_user_from_server(payload.guild_id, payload.user.id)
 
         preferences = await Preference.find_many(
@@ -181,17 +187,22 @@ class DiscordBot(commands.Bot):
         """
         Called a member updates their guild specific information, such as nickname.
         """
+        self.logger.info(
+            f"Member {before.name} (ID: {before.id}) in Guild (ID: {before.guild.id}) "
+            "discord account updated",
+        )
         await Preference.find_one(
             Preference.user_id == before.id,
             Preference.server_id == before.guild.id,
         ).update(Set({Preference.name: after.display_name}))
 
-    async def on_user_update(
-        self, before: discord.Member, after: discord.Member
-    ) -> None:
+    async def on_user_update(self, before: discord.User, after: discord.User) -> None:
         """
         Called a user updated their account information, such as username.
         """
+        self.logger.info(
+            f"User {before.name} (ID: {before.id}) discord account updated",
+        )
         await Preference.find_one(
             Preference.user_id == before.id,
             Preference.server_id == GLOBAL_LEADERBOARD_ID,

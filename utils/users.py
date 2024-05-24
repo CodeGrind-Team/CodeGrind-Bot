@@ -106,14 +106,6 @@ async def register(
     await preference_server.create()
     await preference_global.create()
 
-    await Server.find_one(Server.id == server_id).update(
-        AddToSet({Server.users: DBRef("users", user_id)})
-    )
-
-    await Server.find_one(Server.id == GLOBAL_LEADERBOARD_ID).update(
-        AddToSet({Server.users: DBRef("users", user_id)})
-    )
-
     await give_verified_role(interaction.guild, interaction.user)
 
     await interaction.edit_original_response(embed=profile_added_embed(leetcode_id))
