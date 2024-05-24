@@ -330,7 +330,8 @@ async def fetch_question_info(
     :return: Information about the LeetCode question, or None if an error occurs or no
              question is found.
     """
-    # Get question info
+    bot.logger.info(f"Fetched question with title: {question_title_slug}")
+
     payload = {
         "operationName": "questionInfo",
         "query": """
@@ -368,8 +369,8 @@ async def fetch_question_info(
         question_id = question["questionFrontendId"]
         difficulty = question["difficulty"]
         title = question["title"]
-        content = question["content"]
         is_paid_only = question["isPaidOnly"]
+        content = question["content"] if not is_paid_only else ""
         link = f"https://leetcode.com/problems/{question_title_slug}"
 
         stats = ast.literal_eval(question["stats"])
