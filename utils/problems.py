@@ -370,9 +370,7 @@ async def fetch_question_info(
         difficulty = question["difficulty"]
         title = question["title"]
         is_paid_only = question["isPaidOnly"]
-        content = (
-            question["content"] if not is_paid_only else "LeetCode Premium question"
-        )
+        content = question["content"] if not is_paid_only else ""
         link = f"https://leetcode.com/problems/{question_title_slug}"
 
         stats = ast.literal_eval(question["stats"])
