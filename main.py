@@ -24,7 +24,7 @@ from datetime import UTC, datetime
 import discord
 from dotenv import find_dotenv, load_dotenv
 
-from bot import Config, DiscordBot, LoggingFormatter, on_error
+from bot import Config, DiscordBot, LoggingFormatter
 
 if __name__ == "__main__":
     load_dotenv(find_dotenv())
@@ -67,5 +67,4 @@ if __name__ == "__main__":
     )
 
     bot = DiscordBot(intents, config, logger)
-    bot.tree.on_error = on_error
     bot.run(config.DISCORD_TOKEN)

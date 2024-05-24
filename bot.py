@@ -63,6 +63,7 @@ class DiscordBot(commands.Bot):
         This creates custom bot variables so that we can access these variables in cogs
         more easily.
         """
+        self.tree.on_error = self.on_error
         self.config = config
         self.logger = logger
         self.html2image = Html2Image(browser_executable=config.BROWSER_EXECUTABLE_PATH)
@@ -294,44 +295,44 @@ class DiscordBot(commands.Bot):
                 "month" in message_content,
             )
 
-
-async def on_error(
-    interaction: discord.Interaction, error: discord.app_commands.AppCommandError
-) -> None:
-    """
-    The code in this event is executed every time a normal valid command catches an
-    error.
-    """
-    if isinstance(error, discord.app_commands.errors.CommandOnCooldown):
-        minutes, seconds = divmod(error.retry_after, 60)
-        hours, minutes = divmod(minutes, 60)
-        hours = hours % 24
-        embed = discord.Embed(
-            description=f"**Please slow down** - You can use this command again in \
-                {f'{round(hours)} hours' if round(hours) > 0 else ''} \
-                    {f'{round(minutes)} minutes' if round(minutes) > 0 else ''} \
-                        {f'{round(seconds)} seconds' if round(seconds) > 0 else ''}.",
-            colour=0xE02B2B,
-        )
-        await interaction.response.send_message(embed=embed)
-    elif isinstance(error, discord.app_commands.errors.MissingPermissions):
-        embed = discord.Embed(
-            description="You are missing the permission(s) `"
-            + ", ".join(error.missing_permissions)
-            + "` to execute this command!",
-            colour=0xE02B2B,
-        )
-        await interaction.response.send_message(embed=embed)
-    elif isinstance(error, discord.app_commands.errors.BotMissingPermissions):
-        embed = discord.Embed(
-            description="I am missing the permission(s) `"
-            + ", ".join(error.missing_permissions)
-            + "` to fully perform this command!",
-            colour=0xE02B2B,
-        )
-        await interaction.response.send_message(embed=embed)
-    else:
-        raise error
+    @staticmethod
+    async def on_error(
+        interaction: discord.Interaction, error: discord.app_commands.AppCommandError
+    ) -> None:
+        """
+        The code in this event is executed every time a normal valid command catches an
+        error.
+        """
+        if isinstance(error, discord.app_commands.errors.CommandOnCooldown):
+            minutes, seconds = divmod(error.retry_after, 60)
+            hours, minutes = divmod(minutes, 60)
+            hours = hours % 24
+            embed = discord.Embed(
+                description=f"**Please slow down** - You can use this command again in \
+                    {f'{round(hours)} hours' if round(hours) > 0 else ''} \
+                        {f'{round(minutes)} minutes' if round(minutes) > 0 else ''} \
+                            {f'{round(seconds)} seconds' if round(seconds) > 0 else ''}.",
+                colour=0xE02B2B,
+            )
+            await interaction.response.send_message(embed=embed)
+        elif isinstance(error, discord.app_commands.errors.MissingPermissions):
+            embed = discord.Embed(
+                description="You are missing the permission(s) `"
+                + ", ".join(error.missing_permissions)
+                + "` to execute this command!",
+                colour=0xE02B2B,
+            )
+            await interaction.response.send_message(embed=embed)
+        elif isinstance(error, discord.app_commands.errors.BotMissingPermissions):
+            embed = discord.Embed(
+                description="I am missing the permission(s) `"
+                + ", ".join(error.missing_permissions)
+                + "` to fully perform this command!",
+                colour=0xE02B2B,
+            )
+            await interaction.response.send_message(embed=embed)
+        else:
+            raise error
 
 
 class LoggingFormatter(logging.Formatter):
