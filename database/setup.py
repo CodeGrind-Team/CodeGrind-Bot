@@ -3,23 +3,34 @@ import os
 from beanie import init_beanie
 from motor.motor_asyncio import AsyncIOMotorClient
 
-from .models.analytics_model import Analytics
-from .models.server_model import Server
-from .models.user_model import User
+from .models import Preference, Record, Server, User
 
 
-async def init_mongodb_conn() -> None:
-    mongodb_client = AsyncIOMotorClient(os.environ["MONGODB_URI"])
+async def initialise_mongodb_conn(
+    mongodb_uri: str, global_leaderboard_id: int = 0
+) -> None:
+    """
+    Initialise the MongoDB connection and create the necessary collections
 
-    await init_beanie(database=mongodb_client.bot,
-                      document_models=[Server, User, Analytics])
+    :param mongodb_uri: The MongoDB URI
+    """
+    mongodb_client = AsyncIOMotorClient(mongodb_uri)
 
-    # Create global leaderboard 'server' with id 0.
-    server = await Server.get(0)
+    await init_beanie(
+        database=mongodb_client.bot,
+        document_models=[Preference, Record, Server, User],
+    )
+
+    server = await Server.get(global_leaderboard_id)
     if not server:
-        server = Server(id=0)
+        server = Server(id=global_leaderboard_id)
         await server.create()
+
 
 if __name__ == "__main__":
     import asyncio
-    asyncio.run(init_mongodb_conn())
+
+    from dotenv import find_dotenv, load_dotenv
+
+    load_dotenv(find_dotenv())
+    asyncio.run(initialise_mongodb_conn(os.getenv("MONGODB_URI")))

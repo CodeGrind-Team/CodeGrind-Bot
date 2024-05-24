@@ -1,90 +1,71 @@
-import asyncio
+"""
+Copyright © Krypton 2019-2023 - https://github.com/kkrypt0nn (https://krypton.ninja)
+Description:
+🐍 A simple template to start to code your own and personalized discord bot in Python
+programming language.
+
+Version: 6.1.0
+
+Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
+file except in compliance with the License. You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software distributed under
+the License is distributed on an " AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
+ANY KIND, either express or implied. See the License for the specific language
+governing permissions and limitations under the License.
+"""
+
 import logging
 import os
+from datetime import UTC, datetime
 
 import discord
-import topgg
-from dotenv import load_dotenv, find_dotenv
+from dotenv import find_dotenv, load_dotenv
 
-from bot_globals import client, logger
-from database.setup import init_mongodb_conn
-from utils.notifications_utils import (
-    send_daily_question_and_update_stats,
-    send_daily_question_and_update_stats_schedule)
-from utils.ratings_utils import read_ratings_txt
-from utils.dev_utils import ChannelLogger
-
-load_dotenv(find_dotenv())
-
-
-@client.event
-async def on_autopost_success():
-    logger.info("Posted server count (%s), shard count (%s)",
-                client.topggpy.guild_count, client.shard_count)
-
-    logger.info("Total bot member count (%s)",
-                len(set(client.get_all_members())))
-
-
-@client.event
-async def on_ready() -> None:
-    logger.info("file: main.py ~ on_ready ~ start")
-
-    if os.environ["MAINTENANCE"] == "True":
-        await client.change_presence(status=discord.Status.do_not_disturb, activity=discord.Game(name="Under Maintenance"))
-
-    update_stats_on_start = os.environ["UPDATE_STATS_ON_START"] == "True"
-    daily_reset_on_start = os.environ["DAILY_RESET_ON_START"] == "True"
-    weekly_reset_on_start = os.environ["WEEKLY_RESET_ON_START"] == "True"
-
-    if update_stats_on_start or daily_reset_on_start or weekly_reset_on_start:
-        await send_daily_question_and_update_stats(update_stats_on_start, daily_reset_on_start, weekly_reset_on_start)
-
-
-@client.event
-async def setup_hook() -> None:
-    logger.info("file: main.py ~ setup_hook ~ start")
-    logger.info(
-        "file: main.py ~ setup_hook ~ logged in as a bot %s", client.user)
-
-    if os.environ["PRODUCTION"] == "True":
-        dbl_token = os.environ["TOPGG_TOKEN"]
-        client.topggpy = topgg.DBLClient(
-            client, dbl_token, autopost=True, post_shard_count=True)
-
-    try:
-        LOGGING_CHANNEL_ID = int(os.environ['LOGGING_CHANNEL_ID'])
-        client.channel_logger = ChannelLogger(LOGGING_CHANNEL_ID)
-
-        synced = await client.tree.sync()
-        logger.info(
-            "file: main.py ~ setup_hook ~ synced %s commands", len(synced))
-
-        send_daily_question_and_update_stats_schedule.start()
-
-    except Exception as e:
-        logger.exception("file: main.py ~ setup_hook ~ exception: %s", e)
-
-
-async def load_extensions() -> None:
-    for filename in os.listdir("./cogs"):
-        if filename.endswith("cog.py"):
-            # cut off the .py from the file name
-            await client.load_extension(f"cogs.{filename[:-3]}")
-
-
-async def main(token: str) -> None:
-    async with client:
-        await read_ratings_txt()
-        await init_mongodb_conn()
-        await load_extensions()
-        await client.start(token)
-
+from bot import Config, DiscordBot, LoggingFormatter
 
 if __name__ == "__main__":
+    load_dotenv(find_dotenv())
+
+    logs_path = os.path.join(os.path.dirname(__file__), "logs")
+    if not os.path.isdir(logs_path):
+        os.makedirs(logs_path)
+
+    intents = discord.Intents.default()
+    intents.members = True
+
+    logger = logging.getLogger("discord_bot")
     logger.setLevel(logging.INFO)
-    logger.info("Logger is in INFO mode")
 
-    token = os.environ['TOKEN']
+    # Console handler
+    console_handler = logging.StreamHandler()
+    console_handler.setFormatter(LoggingFormatter())
 
-    asyncio.run(main(token))
+    # File handler
+    file_handler = logging.FileHandler(
+        filename=f"logs/{datetime.now(UTC).strftime('%d%m%Y-%H%M%S')}.log",
+        encoding="utf-8",
+        mode="w",
+    )
+    file_handler_formatter = logging.Formatter(
+        "[{asctime}] [{levelname:<8}] {name}: {message}", "%d-%m-%Y %H:%M:%S", style="{"
+    )
+    file_handler.setFormatter(file_handler_formatter)
+
+    logger.addHandler(console_handler)
+    logging.getLogger().addHandler(file_handler)
+
+    config = Config(
+        os.getenv("DISCORD_TOKEN"),
+        os.getenv("MONGODB_URI"),
+        os.getenv("TOPGG_TOKEN"),
+        os.getenv("BROWSER_EXECUTABLE_PATH"),
+        int(os.getenv("LOGGING_CHANNEL_ID")),
+        os.getenv("PRODUCTION", "False") == "True",
+        int(os.getenv("DEVELOPER_ID")),
+    )
+
+    bot = DiscordBot(intents, config, logger)
+    bot.run(config.DISCORD_TOKEN)
