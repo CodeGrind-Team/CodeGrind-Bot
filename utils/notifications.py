@@ -73,9 +73,6 @@ async def process_daily_question_and_stats_update(
         bot.logger.info("All users stats updated")
 
     async for server in Server.all():
-        if server.id == GLOBAL_LEADERBOARD_ID:
-            continue
-
         await Server.find_one(Server.id == server.id).update(
             Set(
                 {
@@ -84,6 +81,9 @@ async def process_daily_question_and_stats_update(
                 }
             )
         )
+
+        if server.id == GLOBAL_LEADERBOARD_ID:
+            continue
 
         if reset_day:
             await send_leaderboard_winners(bot, server, Period.DAY)
