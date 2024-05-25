@@ -129,7 +129,13 @@ async def send_daily_question(
         if not channel or not isinstance(channel, discord.TextChannel):
             continue
 
-        await channel.send(embed=embed, silent=True)
+        try:
+            await channel.send(embed=embed, silent=True)
+        except discord.errors.Forbidden:
+            bot.logger.info(
+                f"Forbidden to share daily question to channel with ID: "
+                f"{channel_id}"
+            )
 
 
 async def update_all_user_stats(bot: "DiscordBot", reset_day: int = False) -> None:
