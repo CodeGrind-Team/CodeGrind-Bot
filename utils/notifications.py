@@ -66,7 +66,8 @@ async def process_daily_question_and_stats_update(
 
         async for server in Server.all(fetch_links=True):
             await send_daily_question(bot, server, embed)
-            bot.logger.info("Daily question sent to all")
+
+        bot.logger.info("Daily question sent to all servers")
 
     if update_stats:
         await update_all_user_stats(bot, reset_day)
@@ -87,28 +88,24 @@ async def process_daily_question_and_stats_update(
 
         if reset_day:
             await send_leaderboard_winners(bot, server, Period.DAY)
-            bot.logger.info(
-                "Daily winners leaderboard sent to all channels",
-            )
 
         if reset_week:
             await send_leaderboard_winners(bot, server, Period.WEEK)
-            bot.logger.info(
-                "Weekly winners leaderboard sent to all channels",
-            )
 
         if reset_month:
             await send_leaderboard_winners(bot, server, Period.MONTH)
-            bot.logger.info(
-                "Monthly winners leaderboard sent to all channels",
-            )
 
         if midday:
             if guild := bot.get_guild(server.id):
-                bot.logger.info(
-                    "Updating roles",
-                )
-                await update_roles(guild, server.id)
+                try:
+                    await update_roles(guild, server.id)
+                except discord.errors.Forbidden:
+                    # Missing permissions are handled inside update_roles, so it
+                    # shouldn't raise an error.
+                    bot.logger.info(
+                        f"Forbidden to add roles to members of server with ID: "
+                        f"{server.id}"
+                    )
 
     bot.logger.info("Sending daily notifications and updating stats completed")
     await bot.channel_logger.info("Completed updating")
