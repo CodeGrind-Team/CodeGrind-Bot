@@ -410,7 +410,7 @@ async def fetch_question_info(
     )
 
 
-@backoff.on_exception(backoff.expo, RateLimitReached)
+@backoff.on_exception(backoff.expo, RateLimitReached, logger=None)
 async def fetch_problems_solved_and_rank(
     bot: "DiscordBot", client_session: aiohttp.ClientSession, leetcode_id: str
 ) -> UserStats | None:
