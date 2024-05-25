@@ -100,7 +100,7 @@ async def update_roles(guild: discord.Guild, server_id: int) -> None:
     Update roles for users in the server based on their stats.
 
     :param guild: The guild in which to update the roles.
-    :param server: The server model containing user stats.
+    :param server_id: The id of the server to update its roles.
     """
     if not guild.me.guild_permissions.manage_roles:
         return
@@ -124,10 +124,10 @@ async def update_roles(guild: discord.Guild, server_id: int) -> None:
 
 async def give_verified_role(guild: discord.Guild, member: discord.Member) -> None:
     """
-    Give the verified role to a user.
+    Give the verified role to a member.
 
     :param guild: The guild in which to give the role.
-    :param user: The user to whom to give the role.
+    :param member: The member to whom to give the role.
     """
     role = discord.utils.get(guild.roles, name=VERIFIED_ROLE)
 
@@ -145,7 +145,7 @@ async def give_streak_role(
     Give a streak role to a user based on their streak.
 
     :param guild: The guild in which to give the role.
-    :param user: The user to whom to give the role.
+    :param member: The member to whom to give the role.
     :param streak: The streak of the user.
     """
     role_to_assign = None
@@ -175,7 +175,7 @@ async def give_milestone_role(
     Give a milestone role to a user based on their total solved milestones.
 
     :param guild: The guild in which to give the role.
-    :param user: The user to whom to give the role.
+    :param member: The member to whom to give the role.
     :param total_solved: The total solved milestones of the user.
     """
     role_to_assign = None
