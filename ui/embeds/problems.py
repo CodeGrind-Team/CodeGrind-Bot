@@ -116,4 +116,6 @@ def premium_question_embed(
 
 
 def question_error_embed() -> discord.Embed:
-    return failure_embed(title="Question could not be found")
+    return failure_embed(
+        title="There was a problem retrieving the question. Please try again later."
+    )

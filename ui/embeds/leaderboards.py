@@ -16,7 +16,12 @@ def empty_leaderboard_embed() -> discord.Embed:
 
 
 def leaderboard_embed(
-    server: Server, page_i: int, page_count: int, title: str, leaderboard: str
+    server: Server,
+    page_i: int,
+    page_count: int,
+    title: str,
+    leaderboard: str,
+    include_page_count: bool = True,
 ) -> discord.Embed:
     embed = discord.Embed(
         title=title, description=leaderboard, colour=discord.Colour.yellow()
@@ -36,11 +41,13 @@ def leaderboard_embed(
         .astimezone(pytz.timezone(server.timezone)),
     )
 
+    page_count_text = f"\nPage {page_i + 1}/{page_count}" if include_page_count else ""
+
     embed.set_footer(
         text=f"Easy: {DifficultyScore.EASY.value} point, Medium: "
         f"{DifficultyScore.MEDIUM.value} points, Hard: {DifficultyScore.HARD.value} "
-        f"points\nUpdated on {last_updated_start} - {last_updated_end}\nPage "
-        f"{page_i + 1}/{page_count}"
+        f"points\nUpdated on {last_updated_start} - {last_updated_end}"
+        f"{page_count_text}"
     )
 
     return embed
