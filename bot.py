@@ -77,7 +77,7 @@ class DiscordBot(commands.Bot):
         """
         self.logger.info(
             f"Posted server count ({self.topggpy.guild_count}), shard count "
-            "({self.shard_count})",
+            f"({self.shard_count})",
         )
 
         self.logger.info(

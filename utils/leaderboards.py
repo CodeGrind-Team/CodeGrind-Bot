@@ -69,7 +69,8 @@ async def get_score(user: User, period: Period, previous: bool) -> int:
 
         record_start = await Record.find_one(
             Record.user_id == user.id,
-            record_timestamp_start <= Record.timestamp < record_end.timestamp,
+            Record.timestamp >= record_timestamp_start,
+            Record.timestamp < record_timestamp_end,
         )
         if not record_start:
             return 0
@@ -284,7 +285,14 @@ async def build_leaderboard_page(
     title = get_title(period, winners_only, global_leaderboard)
 
     return (
-        leaderboard_embed(server, page_index, num_pages, title, "\n".join(leaderboard)),
+        leaderboard_embed(
+            server,
+            page_index,
+            num_pages,
+            title,
+            "\n".join(leaderboard),
+            include_page_count=not winners_only,
+        ),
         place,
         prev_score,
     )
