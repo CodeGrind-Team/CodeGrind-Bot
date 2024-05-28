@@ -108,7 +108,7 @@ async def process_daily_question_and_stats_update(
                     )
 
     bot.logger.info("Sending daily notifications and updating stats completed")
-    await bot.channel_logger.info("Completed updating")
+    await bot.channel_logger.info("Completed updating", include_error_counts=True)
 
 
 async def send_daily_question(
