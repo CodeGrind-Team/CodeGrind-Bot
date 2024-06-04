@@ -46,9 +46,10 @@ class Config:
     MONGODB_URI: str
     TOPGG_TOKEN: str
     BROWSER_EXECUTABLE_PATH: str
+    GOOGLE_APPLICATION_CREDENTIALS: str
     LOGGING_CHANNEL_ID: int
+    DEVELOPER_DISCORD_ID: int
     PRODUCTION: bool
-    DEVELOPER_ID: int
 
 
 class DiscordBot(commands.Bot):
@@ -230,7 +231,7 @@ class DiscordBot(commands.Bot):
         contents.
         """
         if not (
-            (message.author.id == self.config.DEVELOPER_ID)
+            (message.author.id == self.config.DEVELOPER_DISCORD_ID)
             and self.user.mentioned_in(message)
         ):
             return

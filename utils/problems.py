@@ -29,7 +29,7 @@ HEADERS = {
 }
 
 
-semaphore = asyncio.Semaphore(8)
+semaphore = asyncio.Semaphore(4)
 
 
 @dataclass

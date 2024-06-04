@@ -22,12 +22,24 @@ import os
 from datetime import UTC, datetime
 
 import discord
+import google.cloud.logging
 from dotenv import find_dotenv, load_dotenv
 
 from bot import Config, DiscordBot, LoggingFormatter
 
 if __name__ == "__main__":
     load_dotenv(find_dotenv())
+
+    config = Config(
+        os.getenv("DISCORD_TOKEN"),
+        os.getenv("MONGODB_URI"),
+        os.getenv("TOPGG_TOKEN"),
+        os.getenv("BROWSER_EXECUTABLE_PATH"),
+        os.getenv("GOOGLE_APPLICATION_CREDENTIALS"),
+        int(os.getenv("LOGGING_CHANNEL_ID")),
+        int(os.getenv("DEVELOPER_DISCORD_ID")),
+        os.getenv("PRODUCTION", "False") == "True",
+    )
 
     logs_path = os.path.join(os.path.dirname(__file__), "logs")
     if not os.path.isdir(logs_path):
@@ -57,15 +69,9 @@ if __name__ == "__main__":
     logger.addHandler(console_handler)
     logging.getLogger().addHandler(file_handler)
 
-    config = Config(
-        os.getenv("DISCORD_TOKEN"),
-        os.getenv("MONGODB_URI"),
-        os.getenv("TOPGG_TOKEN"),
-        os.getenv("BROWSER_EXECUTABLE_PATH"),
-        int(os.getenv("LOGGING_CHANNEL_ID")),
-        os.getenv("PRODUCTION", "False") == "True",
-        int(os.getenv("DEVELOPER_ID")),
-    )
+    if config.GOOGLE_APPLICATION_CREDENTIALS:
+        google_cloud_client = google.cloud.logging.Client()
+        google_cloud_client.setup_logging()
 
     bot = DiscordBot(intents, config, logger)
     bot.run(config.DISCORD_TOKEN)

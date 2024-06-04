@@ -350,16 +350,14 @@ def get_winners_title(period: Period) -> str:
             end_timestamp = strftime_with_suffix(
                 "{S} %b %Y", datetime.now(UTC) - timedelta(days=1)
             )
-            title = f"Last Week's Winners ({start_timestamp} - {end_timestamp})"
+            title = f"This Week's Winners ({start_timestamp} - {end_timestamp})"
 
         case Period.MONTH:
-            start_timestamp = strftime_with_suffix(
-                "{S} %b %Y", (datetime.now(UTC) - timedelta(days=1)).replace(day=1)
+            timestamp = strftime_with_suffix(
+                "%b", (datetime.now(UTC) - timedelta(days=1)).replace(day=1)
             )
-            end_timestamp = strftime_with_suffix(
-                "{S} %b %Y", datetime.now(UTC) - timedelta(days=1)
-            )
-            title = f"Last Month's Winners ({start_timestamp} - {end_timestamp})"
+
+            title = f"This Month's Winners ({timestamp})"
 
     return title
 
