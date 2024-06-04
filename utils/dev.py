@@ -52,14 +52,14 @@ class ChannelLogger:
         :param include_error_counts: If `True`, includes rate limit and forbidden
         counts in the log.
         """
-        if include_error_counts:
-            message += f". Rate limited {self.rate_limits} times"
+        if include_error_counts and self.rate_limits > 0:
+            message += f"\nRate limited **{self.rate_limits}** times"
             self.rate_limits = 0
 
         await self.log(message, discord.Colour.blue())
 
         if include_error_counts and self.forbidden_count > 0:
-            await self.warning(f"Forbidden {self.forbidden_count} times.")
+            await self.warning(f"Forbidden **{self.forbidden_count}** times")
             self.forbidden_count = 0
 
     async def warning(self, message: str) -> None:
@@ -111,7 +111,7 @@ class ChannelLogger:
         notifications).
         """
         embed = discord.Embed(colour=colour, description=message)
-        embed.set_footer(text=datetime.now(UTC).strftime("%H:%M:%S.%f"))
+        embed.description += f"\n<t:{int(datetime.now(UTC).timestamp())}:T>"
 
         try:
             # Get the designated logging channel
