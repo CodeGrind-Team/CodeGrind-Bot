@@ -354,7 +354,7 @@ def get_winners_title(period: Period) -> str:
 
         case Period.MONTH:
             timestamp = strftime_with_suffix(
-                "%b", (datetime.now(UTC) - timedelta(days=1)).replace(day=1)
+                "%b %Y", (datetime.now(UTC) - timedelta(days=1)).replace(day=1)
             )
 
             title = f"This Month's Winners ({timestamp})"
