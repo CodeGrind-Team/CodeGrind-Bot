@@ -134,7 +134,7 @@ async def send_daily_question(
             )
 
 
-async def update_all_user_stats(bot: "DiscordBot", reset_day: int = False) -> None:
+async def update_all_user_stats(bot: "DiscordBot", reset_day: bool = False) -> None:
     """
     Update stats for all users.
     """
