@@ -10,7 +10,7 @@ import requests
 from constants import StatsCardExtensions
 from database.models import Record, Submissions, User
 from utils.common import to_thread
-from utils.problems import UserStats, fetch_problems_solved_and_rank
+from utils.problems import fetch_problems_solved_and_rank
 
 if TYPE_CHECKING:
     # To prevent circular imports
@@ -35,9 +35,7 @@ async def update_stats(
     stats.
     """
 
-    stats: UserStats = await fetch_problems_solved_and_rank(
-        bot, client_session, user.leetcode_id
-    )
+    stats = await fetch_problems_solved_and_rank(bot, client_session, user.leetcode_id)
 
     if not stats:
         return
