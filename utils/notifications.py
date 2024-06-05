@@ -20,7 +20,11 @@ if TYPE_CHECKING:
 
 
 @tasks.loop(
-    time=[time(hour=hour, minute=minute) for hour in range(24) for minute in [0, 30]]
+    time=[
+        time(hour=hour, minute=minute, second=0, microsecond=0)
+        for hour in range(24)
+        for minute in [0, 30]
+    ]
 )
 async def schedule_question_and_stats_update(bot: "DiscordBot") -> None:
     """

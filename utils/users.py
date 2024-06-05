@@ -1,7 +1,7 @@
 import asyncio
 import random
 import string
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
 import aiohttp
@@ -74,7 +74,7 @@ async def register(
     )
 
     record = Record(
-        timestamp=datetime.now().replace(hour=0, minute=0, second=0, microsecond=0),
+        timestamp=datetime.now(UTC).replace(hour=0, minute=0, second=0, microsecond=0),
         user_id=user_id,
         submissions=Submissions(
             easy=stats.submissions.easy,

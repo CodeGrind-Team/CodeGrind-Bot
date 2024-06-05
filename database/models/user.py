@@ -28,6 +28,8 @@ class User(Document):
     stats: Optional[Stats] = Field(default_factory=Stats)
     votes: Optional[Votes] = Field(default_factory=Votes)
 
+    last_updated: Optional[datetime] = Field(default_factory=lambda: datetime.now(UTC))
+
     class Settings:
         name = "users"
         use_state_management = True
