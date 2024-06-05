@@ -1,6 +1,6 @@
 import io
 import os
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
 import aiohttp
@@ -36,11 +36,12 @@ async def update_stats(
     """
 
     stats = await fetch_problems_solved_and_rank(bot, client_session, user.leetcode_id)
-
     if not stats:
         return
 
     user = await User.find_one(User.id == user.id)
+    if not user:
+        return
 
     (
         user.stats.submissions.easy,
@@ -56,7 +57,9 @@ async def update_stats(
 
     if reset_day:
         record = Record(
-            timestamp=datetime.now().replace(hour=0, minute=0, second=0, microsecond=0),
+            timestamp=datetime.now(UTC).replace(
+                hour=0, minute=0, second=0, microsecond=0
+            ),
             user_id=user.id,
             submissions=Submissions(
                 easy=stats.submissions.easy,
@@ -68,7 +71,8 @@ async def update_stats(
 
         await record.create()
 
-    await user.save_changes()
+    user.last_updated = datetime.now(UTC)
+    await user.save()
 
 
 @to_thread

@@ -33,6 +33,8 @@ class ChannelLogger:
         Increment the rate limit counter.
         """
         self.rate_limits += 1
+        if self.rate_limits % 100 == 0:
+            self.bot.logger.info(f"{self.rate_limits} rate limited requests")
 
     def forbidden(self) -> None:
         """
