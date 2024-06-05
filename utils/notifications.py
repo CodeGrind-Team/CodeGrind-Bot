@@ -71,7 +71,6 @@ async def process_daily_question_and_stats_update(
 
     if update_stats:
         await update_all_user_stats(bot, reset_day)
-        bot.logger.info("All users stats updated")
 
     async for server in Server.all():
         await Server.find_one(Server.id == server.id).update(
@@ -135,10 +134,11 @@ async def send_daily_question(
             )
 
 
-async def update_all_user_stats(bot: "DiscordBot", reset_day: int = False) -> None:
+async def update_all_user_stats(bot: "DiscordBot", reset_day: bool = False) -> None:
     """
     Update stats for all users.
     """
+    counter = 0
     async with aiohttp.ClientSession() as client_session:
         tasks = []
         async for user in User.all():
@@ -146,4 +146,12 @@ async def update_all_user_stats(bot: "DiscordBot", reset_day: int = False) -> No
                 update_stats(bot, client_session, user, reset_day)
             )
             tasks.append(task)
-        await asyncio.gather(*tasks)
+
+        total_users = len(tasks)
+        for completed_task in asyncio.as_completed(tasks):
+            await completed_task
+            counter += 1
+            if counter % 100 == 0 or counter == total_users:
+                bot.logger.info(f"{counter} / {total_users} users stats updated")
+
+    bot.logger.info("All users stats updated")

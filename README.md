@@ -16,7 +16,7 @@ Contributions are welcomed and appreciated. Feel free to open a pull request!
 
 ### Setting up a Testing Version of the Bot
 
-The steps for setting up a testing version of the bot can be found in our [Setup for Local Testing](https://github.com/CodeGrind-Team/CodeGrind-Bot/wiki/Setup-for-Local-Testing) wiki page.
+The steps for setting up a testing version of the bot can be found in our [Setup CodeGrind Bot Locally](https://github.com/CodeGrind-Team/CodeGrind-Bot/wiki/Setup-CodeGrind-Bot-Locally) wiki page.
 
 ## License
 
