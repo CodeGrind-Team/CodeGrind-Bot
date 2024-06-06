@@ -22,6 +22,7 @@ import os
 import platform
 from dataclasses import dataclass
 
+import aiohttp
 import discord
 import topgg
 from beanie.odm.operators.update.general import Set
@@ -36,6 +37,7 @@ from utils.notifications import (
     process_daily_question_and_stats_update,
     schedule_question_and_stats_update,
 )
+from utils.problems import RateLimitReached
 from utils.ratings import Ratings, schedule_update_ratings
 from utils.users import delete_user, unlink_user_from_server
 
@@ -62,17 +64,56 @@ class DiscordBot(commands.Bot):
             help_command=None,
         )
         """
-        This creates custom bot variables so that we can access these variables in cogs
+        Creates custom bot variables so that we can access these variables in cogs
         more easily.
         """
         self.tree.on_error = self.on_error
         self.config = config
         self.logger = logger
         self.html2image = Html2Image(browser_executable=config.BROWSER_EXECUTABLE_PATH)
-        self.channel_logger = None
-        self.topggpy = None
+        self.channel_logger = ChannelLogger(self, self.config.LOGGING_CHANNEL_ID)
+        self.ratings = Ratings(self)
+        self.session: aiohttp.ClientSession | None = None
+        self.topggpy: topgg.DBLClient | None = None
 
-    async def on_autopost_success(self):
+    async def fetch_data(self, *args, **kwargs) -> str | None:
+        """
+        Executes GET request with error handling.
+
+        :return: The response text or None.
+        """
+        try:
+            async with self.session.get(*args, **kwargs) as response:
+                return await response.text()
+        except aiohttp.ClientError as e:
+            self.bot.logger.info(f"Failed to fetch ratings: {e}")
+
+    async def post_data(self, *args, **kwargs) -> dict | None:
+        """
+        Executes POST request with error handling.
+
+        :return: The response json, None, or RateLimitReached exception raised.
+        """
+        async with self.session.post(*args, **kwargs) as response:
+            match response.status:
+                case 200:
+                    return await response.json()
+                case 429:
+                    self.channel_logger.rate_limited()
+                    raise RateLimitReached()
+                case 403:
+                    # Forbidden access
+                    self.logger.exception(
+                        f"Post request forbidden access (code: {response.status})",
+                        response.status,
+                    )
+                    self.channel_logger.forbidden()
+                case _:
+                    self.logger.exception(
+                        f"Post request error: (code: {response.status})"
+                    )
+
+    async def on_autopost_success(self) -> None:
         """
         Runs when stats are posted to topgg
         """
@@ -128,15 +169,13 @@ class DiscordBot(commands.Bot):
         )
         self.logger.info("-------------------")
 
+        self.session = aiohttp.ClientSession()
         await initialise_mongodb_conn(self.config.MONGODB_URI, GLOBAL_LEADERBOARD_ID)
         await self.load_cogs()
         await self.init_topgg()
-        self.channel_logger = ChannelLogger(self, self.config.LOGGING_CHANNEL_ID)
-        self.ratings = Ratings(self)
-        await self.ratings.update_ratings()
 
-        schedule_question_and_stats_update.start(self)
         schedule_update_ratings.start(self)
+        schedule_question_and_stats_update.start(self)
 
     async def on_interaction(self, interaction: discord.Interaction) -> None:
         """
@@ -269,7 +308,7 @@ class DiscordBot(commands.Bot):
 
         elif "restart" in message_content:
             self.logger.info("on_message: restart")
-            os.system("sudo reboot")
+            await self.close()
 
         elif "maintenance" in message_content:
             if "on" in message_content:
@@ -303,6 +342,18 @@ class DiscordBot(commands.Bot):
                 "week" in message_content,
                 "month" in message_content,
             )
+
+    async def close(self):
+        """
+        Closes the connection to Discord, gracefully closes the session, and reboots
+        the device.
+        """
+        try:
+            await self.session.close()
+            await super().close()
+        finally:
+            if self.config.PRODUCTION:
+                os.system("sudo reboot")
 
     @staticmethod
     async def on_error(
@@ -364,7 +415,7 @@ class LoggingFormatter(logging.Formatter):
         logging.CRITICAL: red + bold,
     }
 
-    def format(self, record):
+    def format(self, record) -> None:
         log_colour = self.COLOURS[record.levelno]
         format = (
             "(black){asctime}(reset) (levelcolour){levelname:<8}(reset) "

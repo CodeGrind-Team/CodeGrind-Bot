@@ -1,7 +1,6 @@
 from enum import Enum
 from typing import TYPE_CHECKING
 
-import aiohttp
 import discord
 from discord import app_commands
 from discord.ext import commands
@@ -39,8 +38,7 @@ class ProblemsCog(commands.GroupCog, name="problem"):
         """
         Get LeetCode's problem of the day
         """
-        async with aiohttp.ClientSession() as client_session:
-            embed = await daily_question_embed(self.bot, client_session)
+        embed = await daily_question_embed(self.bot)
 
         await interaction.followup.send(embed=embed)
 
@@ -56,11 +54,7 @@ class ProblemsCog(commands.GroupCog, name="problem"):
 
         :param difficulty: The desired difficulty level
         """
-        async with aiohttp.ClientSession() as client_session:
-            embed = await random_question_embed(
-                self.bot, client_session, difficulty.value
-            )
-
+        embed = await random_question_embed(self.bot, difficulty.value)
         await interaction.followup.send(embed=embed)
 
 

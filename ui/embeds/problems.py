@@ -1,6 +1,5 @@
 from typing import TYPE_CHECKING
 
-import aiohttp
 import discord
 
 from constants import Difficulty
@@ -17,46 +16,40 @@ if TYPE_CHECKING:
     from bot import DiscordBot
 
 
-async def daily_question_embed(
-    bot: "DiscordBot", client_session: aiohttp.ClientSession
-) -> discord.Embed:
-    question_title = await fetch_daily_question(bot, client_session)
+async def daily_question_embed(bot: "DiscordBot") -> discord.Embed:
+    question_title = await fetch_daily_question(bot)
 
     if not question_title:
         return question_error_embed()
 
-    embed = await question_embed(bot, client_session, question_title)
+    embed = await question_embed(bot, question_title)
     return embed
 
 
-async def search_question_embed(
-    bot: "DiscordBot", client_session: aiohttp.ClientSession, search_text: str
-) -> discord.Embed:
-    question_title = await search_question(bot, client_session, search_text)
+async def search_question_embed(bot: "DiscordBot", search_text: str) -> discord.Embed:
+    question_title = await search_question(bot, search_text)
 
     if not question_title:
         return question_error_embed()
 
-    embed = await question_embed(bot, client_session, question_title)
+    embed = await question_embed(bot, question_title)
     return embed
 
 
 async def random_question_embed(
-    bot: "DiscordBot", client_session: aiohttp.ClientSession, difficulty: Difficulty
+    bot: "DiscordBot", difficulty: Difficulty
 ) -> discord.Embed:
-    question_title = await fetch_random_question(bot, client_session, difficulty)
+    question_title = await fetch_random_question(bot, difficulty)
 
     if not question_title:
         return question_error_embed()
 
-    embed = await question_embed(bot, client_session, question_title)
+    embed = await question_embed(bot, question_title)
     return embed
 
 
-async def question_embed(
-    bot: "DiscordBot", client_session: aiohttp.ClientSession, question_title: str
-) -> discord.Embed:
-    info = await fetch_question_info(bot, client_session, question_title)
+async def question_embed(bot: "DiscordBot", question_title: str) -> discord.Embed:
+    info = await fetch_question_info(bot, question_title)
 
     if not info:
         return question_error_embed()

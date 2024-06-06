@@ -1,18 +1,10 @@
 from typing import TYPE_CHECKING
 
-import aiohttp
 from discord.ext import tasks
 
 if TYPE_CHECKING:
     # To prevent circular imports
     from bot import DiscordBot
-
-
-@tasks.loop(hours=168)
-async def schedule_update_ratings(bot: "DiscordBot") -> None:
-    # 168 hours = 1 week.
-    # Ratings get updated weekly.
-    await bot.ratings.update_ratings()
 
 
 class Ratings:
@@ -27,15 +19,12 @@ class Ratings:
         url = """https://raw.githubusercontent.com/zerotrac/leetcode_problem_rating
         /main/ratings.txt"""
 
-        async with aiohttp.ClientSession() as client_session:
-            try:
-                async with client_session.get(url) as response:
-                    response.raise_for_status()
-                    data = await response.text()
+        response_data = await self.bot.fetch_data(url)
+        if not response_data:
+            return
 
-                self.ratings = self._parse_ratings(data)
-            except aiohttp.ClientError as e:
-                self.bot.logger.info(f"Failed to fetch ratings: {e}")
+        self.ratings = self._parse_ratings(response_data)
+        self.bot.logger.info("Updated ratings")
 
     def _parse_ratings(self, data: str) -> dict[str, float]:
         ratings = {}
@@ -49,3 +38,10 @@ class Ratings:
             ratings[title] = rating
 
         return ratings
+
+
+@tasks.loop(hours=168)
+async def schedule_update_ratings(bot: "DiscordBot") -> None:
+    # 168 hours = 1 week.
+    # Ratings get updated weekly.
+    await bot.ratings.update_ratings()

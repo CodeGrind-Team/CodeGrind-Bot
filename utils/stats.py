@@ -3,7 +3,6 @@ import os
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
-import aiohttp
 import discord
 import requests
 
@@ -19,7 +18,6 @@ if TYPE_CHECKING:
 
 async def update_stats(
     bot: "DiscordBot",
-    client_session: aiohttp.ClientSession,
     user: User,
     reset_day: bool = False,
 ) -> None:
@@ -35,7 +33,7 @@ async def update_stats(
     stats.
     """
 
-    stats = await fetch_problems_solved_and_rank(bot, client_session, user.leetcode_id)
+    stats = await fetch_problems_solved_and_rank(bot, user.leetcode_id)
     if not stats:
         return
 

@@ -4,7 +4,6 @@ import string
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
-import aiohttp
 import discord
 
 from constants import GLOBAL_LEADERBOARD_ID
@@ -48,8 +47,7 @@ async def register(
         await interaction.edit_original_response(embed=embed)
         return
 
-    async with aiohttp.ClientSession() as client_session:
-        stats = await fetch_problems_solved_and_rank(bot, client_session, leetcode_id)
+    stats = await fetch_problems_solved_and_rank(bot, leetcode_id)
 
     if not stats:
         return
@@ -172,24 +170,22 @@ async def linking_process(
     duration = 60  # seconds
     check_interval = 5  # seconds
 
-    async with aiohttp.ClientSession() as client_session:
-        # Check if the profile name matches the generated string
-        for _ in range(duration // check_interval):
-            stats = await fetch_problems_solved_and_rank(
-                bot,
-                client_session,
-                leetcode_id,
-            )
+    # Check if the profile name matches the generated string
+    for _ in range(duration // check_interval):
+        stats = await fetch_problems_solved_and_rank(
+            bot,
+            leetcode_id,
+        )
 
-            if not stats:
-                break
+        if not stats:
+            break
 
-            profile_name = stats.real_name
+        profile_name = stats.real_name
 
-            if profile_name == generated_string:
-                break
+        if profile_name == generated_string:
+            break
 
-            await asyncio.sleep(check_interval)
+        await asyncio.sleep(check_interval)
 
     return profile_name == generated_string
 
