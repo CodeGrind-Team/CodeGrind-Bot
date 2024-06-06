@@ -175,18 +175,10 @@ async def fetch_random_question(
             ),
         },
     }
-    async with bot.session as client_session:
-        async with client_session.post(
-            URL, json=payload, headers=HEADERS, timeout=10
-        ) as response:
-            if response.status != 200:
-                bot.logger.exception(
-                    f"fetch_random_question: An error occurred while trying to get the "
-                    f"question from LeetCode: {response.status}",
-                )
-                return
 
-            response_data = await response.json()
+    response_data = await bot.post_data(URL, json=payload, headers=HEADERS, timeout=10)
+    if not response_data:
+        return
 
     try:
         title_slug = response_data["data"]["randomQuestion"]["titleSlug"]
@@ -220,18 +212,10 @@ async def fetch_daily_question(bot: "DiscordBot") -> str | None:
         }
     """,
     }
-    async with bot.session as client_session:
-        async with client_session.post(
-            URL, json=data, headers=HEADERS, timeout=10
-        ) as response:
-            if response.status != 200:
-                bot.logger.exception(
-                    f"fetch_daily_question: An error occurred while trying to get the "
-                    f"question from LeetCode. Error code ({response.status})"
-                )
-                return
 
-            response_data = await response.json()
+    response_data = await bot.post_data(URL, json=data, headers=HEADERS, timeout=10)
+    if not response_data:
+        return
 
     try:
         title_slug = response_data["data"]["challenge"]["question"]["titleSlug"]
@@ -283,18 +267,10 @@ async def search_question(bot: "DiscordBot", text: str) -> str | None:
             "filters": {"searchKeywords": text},
         },
     }
-    async with bot.session as client_session:
-        async with client_session.post(
-            URL, json=payload, headers=HEADERS, timeout=10
-        ) as response:
-            if response.status != 200:
-                bot.logger.exception(
-                    f"search_question: An error occurred while trying to get the "
-                    f"question from LeetCode: {response.status}"
-                )
-                return
 
-            response_data = await response.json()
+    response_data = await bot.post_data(URL, json=payload, headers=HEADERS, timeout=10)
+    if not response_data:
+        return
 
     try:
         questions_matched_list = response_data["data"]["problemsetQuestionList"]
@@ -345,18 +321,9 @@ async def fetch_question_info(
         "variables": {"titleSlug": question_title_slug},
     }
 
-    async with bot.session as client_session:
-        async with client_session.post(
-            URL, json=payload, headers=HEADERS, timeout=10
-        ) as response:
-            if response.status != 200:
-                bot.logger.exception(
-                    f"fetch_question_info: An error occurred while trying to get the "
-                    f"question from LeetCode. Error code ({response.status})"
-                )
-                return
-
-            response_data = await response.json()
+    response_data = await bot.post_data(URL, json=payload, headers=HEADERS, timeout=10)
+    if not response_data:
+        return
 
     try:
         question = response_data["data"]["question"]
@@ -437,37 +404,12 @@ async def fetch_problems_solved_and_rank(
     }
 
     async with semaphore:
-        async with bot.session as client_session:
-            async with client_session.post(
-                URL, json=payload, headers=HEADERS, timeout=10
-            ) as response:
-                match response.status:
-                    case 200:
-                        response_data = await response.json()
-                    case 429:
-                        bot.channel_logger.rate_limited()
-                        raise RateLimitReached()
-                    case 403:
-                        # Forbidden access
-                        bot.logger.exception(
-                            "fetch_problems_solved_and_rank: Error code: % s, LeetCode "
-                            "username: % s",
-                            response.status,
-                            leetcode_id,
-                        )
-                        bot.channel_logger.forbidden()
-                        return
-                    case _:
-                        bot.logger.exception(
-                            "fetch_problems_solved_and_rank: Error code: % s, LeetCode "
-                            "username: % s",
-                            response.status,
-                            leetcode_id,
-                        )
-                        return
+        response_data = await bot.post_data(
+            URL, json=payload, headers=HEADERS, timeout=10
+        )
 
-            # Add a small delay to avoid rate limits, using random to avoid patterns
-            await asyncio.sleep(random())
+        # Add a small delay to avoid rate limits, using random to avoid patterns
+        await asyncio.sleep(random())
 
     try:
         matched_user = response_data["data"]["matchedUser"]
