@@ -8,13 +8,6 @@ if TYPE_CHECKING:
     from bot import DiscordBot
 
 
-@tasks.loop(hours=168)
-async def schedule_update_ratings(bot: "DiscordBot") -> None:
-    # 168 hours = 1 week.
-    # Ratings get updated weekly.
-    await bot.ratings.update_ratings()
-
-
 class Ratings:
     def __init__(self, bot: "DiscordBot") -> None:
         self.bot = bot
@@ -48,3 +41,10 @@ class Ratings:
             ratings[title] = rating
 
         return ratings
+
+
+@tasks.loop(hours=168)
+async def schedule_update_ratings(ratings: Ratings) -> None:
+    # 168 hours = 1 week.
+    # Ratings get updated weekly.
+    await ratings.update_ratings()

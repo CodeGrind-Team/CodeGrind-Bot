@@ -134,12 +134,11 @@ class DiscordBot(commands.Bot):
         self.channel_logger = ChannelLogger(self, self.config.LOGGING_CHANNEL_ID)
         self.ratings = Ratings(self)
         await initialise_mongodb_conn(self.config.MONGODB_URI, GLOBAL_LEADERBOARD_ID)
-        await self.ratings.update_ratings()
         await self.load_cogs()
         await self.init_topgg()
 
         schedule_question_and_stats_update.start(self)
-        schedule_update_ratings.start(self)
+        schedule_update_ratings.start(self.ratings)
 
     async def on_interaction(self, interaction: discord.Interaction) -> None:
         """
@@ -272,7 +271,7 @@ class DiscordBot(commands.Bot):
 
         elif "restart" in message_content:
             self.logger.info("on_message: restart")
-            os.system("sudo reboot")
+            await self.close()
 
         elif "maintenance" in message_content:
             if "on" in message_content:
@@ -306,6 +305,17 @@ class DiscordBot(commands.Bot):
                 "week" in message_content,
                 "month" in message_content,
             )
+
+    async def close(self):
+        """
+        Closes the connection to Discord, gracefully closes the session, and reboots
+        the device.
+        """
+        try:
+            await self.session.close()
+            await super().close()
+        finally:
+            os.system("sudo reboot")
 
     @staticmethod
     async def on_error(
