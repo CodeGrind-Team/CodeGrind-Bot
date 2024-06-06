@@ -27,10 +27,9 @@ class Ratings:
         url = """https://raw.githubusercontent.com/zerotrac/leetcode_problem_rating
         /main/ratings.txt"""
 
-        async with aiohttp.ClientSession() as client_session:
+        async with self.bot.session as client_session:
             try:
                 async with client_session.get(url) as response:
-                    response.raise_for_status()
                     data = await response.text()
 
                 self.ratings = self._parse_ratings(data)

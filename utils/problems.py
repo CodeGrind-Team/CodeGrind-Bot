@@ -5,8 +5,6 @@ from dataclasses import dataclass
 from random import random
 from typing import TYPE_CHECKING
 
-import aiohttp
-import aiohttp.client_exceptions
 import backoff
 import markdownify
 
@@ -64,7 +62,7 @@ class UserStats:
 
 class RateLimitReached(Exception):
     def __init__(self) -> None:
-        super().__init__("ExceptionWithStatusCode. Error: 429. Rate Limited.")
+        super().__init__("RateLimitReached. Error: 429. Rate Limited.")
 
 
 def parse_content(content: str) -> tuple[str, str, str | None]:
@@ -149,7 +147,7 @@ def html_to_markdown(html: str) -> str:
 
 
 async def fetch_random_question(
-    bot: "DiscordBot", client_session: aiohttp.ClientSession, difficulty: Difficulty
+    bot: "DiscordBot", difficulty: Difficulty
 ) -> str | None:
     """
     Fetches a random LeetCode question title slug based on the given difficulty.
@@ -177,18 +175,18 @@ async def fetch_random_question(
             ),
         },
     }
+    async with bot.session as client_session:
+        async with client_session.post(
+            URL, json=payload, headers=HEADERS, timeout=10
+        ) as response:
+            if response.status != 200:
+                bot.logger.exception(
+                    f"fetch_random_question: An error occurred while trying to get the "
+                    f"question from LeetCode: {response.status}",
+                )
+                return
 
-    async with client_session.post(
-        URL, json=payload, headers=HEADERS, timeout=10
-    ) as response:
-        if response.status != 200:
-            bot.logger.exception(
-                f"fetch_random_question: An error occurred while trying to get the "
-                f"question from LeetCode: {response.status}",
-            )
-            return
-
-        response_data = await response.json()
+            response_data = await response.json()
 
     try:
         title_slug = response_data["data"]["randomQuestion"]["titleSlug"]
@@ -203,9 +201,7 @@ async def fetch_random_question(
     return title_slug
 
 
-async def fetch_daily_question(
-    bot: "DiscordBot", client_session: aiohttp.ClientSession
-) -> str | None:
+async def fetch_daily_question(bot: "DiscordBot") -> str | None:
     """
     Fetches the title slug of the active daily coding challenge question.
 
@@ -224,18 +220,18 @@ async def fetch_daily_question(
         }
     """,
     }
+    async with bot.session as client_session:
+        async with client_session.post(
+            URL, json=data, headers=HEADERS, timeout=10
+        ) as response:
+            if response.status != 200:
+                bot.logger.exception(
+                    f"fetch_daily_question: An error occurred while trying to get the "
+                    f"question from LeetCode. Error code ({response.status})"
+                )
+                return
 
-    async with client_session.post(
-        URL, json=data, headers=HEADERS, timeout=10
-    ) as response:
-        if response.status != 200:
-            bot.logger.exception(
-                f"fetch_daily_question: An error occurred while trying to get the "
-                f"question from LeetCode. Error code ({response.status})"
-            )
-            return
-
-        response_data = await response.json()
+            response_data = await response.json()
 
     try:
         title_slug = response_data["data"]["challenge"]["question"]["titleSlug"]
@@ -249,9 +245,7 @@ async def fetch_daily_question(
     return title_slug
 
 
-async def search_question(
-    bot: "DiscordBot", client_session: aiohttp.ClientSession, text: str
-) -> str | None:
+async def search_question(bot: "DiscordBot", text: str) -> str | None:
     """
     Searches for a LeetCode question title slug based on the provided text.
 
@@ -289,18 +283,18 @@ async def search_question(
             "filters": {"searchKeywords": text},
         },
     }
+    async with bot.session as client_session:
+        async with client_session.post(
+            URL, json=payload, headers=HEADERS, timeout=10
+        ) as response:
+            if response.status != 200:
+                bot.logger.exception(
+                    f"search_question: An error occurred while trying to get the "
+                    f"question from LeetCode: {response.status}"
+                )
+                return
 
-    async with client_session.post(
-        URL, json=payload, headers=HEADERS, timeout=10
-    ) as response:
-        if response.status != 200:
-            bot.logger.exception(
-                f"search_question: An error occurred while trying to get the "
-                f"question from LeetCode: {response.status}"
-            )
-            return
-
-        response_data = await response.json()
+            response_data = await response.json()
 
     try:
         questions_matched_list = response_data["data"]["problemsetQuestionList"]
@@ -320,7 +314,7 @@ async def search_question(
 
 
 async def fetch_question_info(
-    bot: "DiscordBot", client_session: aiohttp.ClientSession, question_title_slug: str
+    bot: "DiscordBot", question_title_slug: str
 ) -> QuestionInfo | None:
     """
     Retrieves information about a LeetCode question based on its title slug.
@@ -351,17 +345,18 @@ async def fetch_question_info(
         "variables": {"titleSlug": question_title_slug},
     }
 
-    async with client_session.post(
-        URL, json=payload, headers=HEADERS, timeout=10
-    ) as response:
-        if response.status != 200:
-            bot.logger.exception(
-                f"fetch_question_info: An error occurred while trying to get the "
-                f"question from LeetCode. Error code ({response.status})"
-            )
-            return
+    async with bot.session as client_session:
+        async with client_session.post(
+            URL, json=payload, headers=HEADERS, timeout=10
+        ) as response:
+            if response.status != 200:
+                bot.logger.exception(
+                    f"fetch_question_info: An error occurred while trying to get the "
+                    f"question from LeetCode. Error code ({response.status})"
+                )
+                return
 
-        response_data = await response.json()
+            response_data = await response.json()
 
     try:
         question = response_data["data"]["question"]
@@ -412,12 +407,11 @@ async def fetch_question_info(
 
 @backoff.on_exception(backoff.expo, RateLimitReached, logger=None)
 async def fetch_problems_solved_and_rank(
-    bot: "DiscordBot", client_session: aiohttp.ClientSession, leetcode_id: str
+    bot: "DiscordBot", leetcode_id: str
 ) -> UserStats | None:
     """
     Retrieves the statistics of problems solved and rank of a LeetCode user.
 
-    :param client_session: The aiohttp ClientSession to use for making requests.
     :param leetcode_id: The LeetCode username.
 
     :return: Statistics of problems solved and rank of the user, or None if an error
@@ -443,36 +437,37 @@ async def fetch_problems_solved_and_rank(
     }
 
     async with semaphore:
-        async with client_session.post(
-            URL, json=payload, headers=HEADERS, timeout=10
-        ) as response:
-            match response.status:
-                case 200:
-                    response_data = await response.json()
-                case 429:
-                    bot.channel_logger.rate_limited()
-                    raise RateLimitReached()
-                case 403:
-                    # Forbidden access
-                    bot.logger.exception(
-                        "fetch_problems_solved_and_rank: Error code: % s, LeetCode "
-                        "username: % s",
-                        response.status,
-                        leetcode_id,
-                    )
-                    bot.channel_logger.forbidden()
-                    return
-                case _:
-                    bot.logger.exception(
-                        "fetch_problems_solved_and_rank: Error code: % s, LeetCode "
-                        "username: % s",
-                        response.status,
-                        leetcode_id,
-                    )
-                    return
+        async with bot.session as client_session:
+            async with client_session.post(
+                URL, json=payload, headers=HEADERS, timeout=10
+            ) as response:
+                match response.status:
+                    case 200:
+                        response_data = await response.json()
+                    case 429:
+                        bot.channel_logger.rate_limited()
+                        raise RateLimitReached()
+                    case 403:
+                        # Forbidden access
+                        bot.logger.exception(
+                            "fetch_problems_solved_and_rank: Error code: % s, LeetCode "
+                            "username: % s",
+                            response.status,
+                            leetcode_id,
+                        )
+                        bot.channel_logger.forbidden()
+                        return
+                    case _:
+                        bot.logger.exception(
+                            "fetch_problems_solved_and_rank: Error code: % s, LeetCode "
+                            "username: % s",
+                            response.status,
+                            leetcode_id,
+                        )
+                        return
 
-        # Add a small delay to avoid rate limits, using random to avoid patterns
-        await asyncio.sleep(random())
+            # Add a small delay to avoid rate limits, using random to avoid patterns
+            await asyncio.sleep(random())
 
     try:
         matched_user = response_data["data"]["matchedUser"]

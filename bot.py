@@ -22,6 +22,7 @@ import os
 import platform
 from dataclasses import dataclass
 
+import aiohttp
 import discord
 import topgg
 from beanie.odm.operators.update.general import Set
@@ -68,9 +69,10 @@ class DiscordBot(commands.Bot):
         self.tree.on_error = self.on_error
         self.config = config
         self.logger = logger
+        self.session = aiohttp.ClientSession()
         self.html2image = Html2Image(browser_executable=config.BROWSER_EXECUTABLE_PATH)
-        self.channel_logger = None
-        self.topggpy = None
+        self.channel_logger: ChannelLogger | None = None
+        self.topggpy: topgg.DBLClient | None = None
 
     async def on_autopost_success(self):
         """

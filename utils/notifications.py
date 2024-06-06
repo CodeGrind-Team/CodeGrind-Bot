@@ -2,7 +2,6 @@ import asyncio
 from datetime import UTC, datetime, time
 from typing import TYPE_CHECKING
 
-import aiohttp
 import discord
 from beanie.odm.operators.update.general import Set
 from discord.ext import tasks
@@ -64,9 +63,7 @@ async def process_daily_question_and_stats_update(
     midday = start.hour == 12 and start.minute == 0
 
     if reset_day:
-        # Send problem of the day.
-        async with aiohttp.ClientSession() as client_session:
-            embed = await daily_question_embed(bot, client_session)
+        embed = await daily_question_embed(bot)
 
         async for server in Server.all(fetch_links=True):
             await send_daily_question(bot, server, embed)
@@ -143,19 +140,17 @@ async def update_all_user_stats(bot: "DiscordBot", reset_day: bool = False) -> N
     Update stats for all users.
     """
     counter = 0
-    async with aiohttp.ClientSession() as client_session:
-        tasks = []
-        async for user in User.all():
-            task = asyncio.create_task(
-                update_stats(bot, client_session, user, reset_day)
-            )
-            tasks.append(task)
 
-        total_users = len(tasks)
-        for completed_task in asyncio.as_completed(tasks):
-            await completed_task
-            counter += 1
-            if counter % 100 == 0 or counter == total_users:
-                bot.logger.info(f"{counter} / {total_users} users stats updated")
+    tasks = []
+    async for user in User.all():
+        task = asyncio.create_task(update_stats(bot, user, reset_day))
+        tasks.append(task)
+
+    total_users = len(tasks)
+    for completed_task in asyncio.as_completed(tasks):
+        await completed_task
+        counter += 1
+        if counter % 100 == 0 or counter == total_users:
+            bot.logger.info(f"{counter} / {total_users} users stats updated")
 
     bot.logger.info("All users stats updated")
