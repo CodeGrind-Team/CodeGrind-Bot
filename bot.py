@@ -69,8 +69,8 @@ class DiscordBot(commands.Bot):
         self.tree.on_error = self.on_error
         self.config = config
         self.logger = logger
-        self.session = aiohttp.ClientSession()
         self.html2image = Html2Image(browser_executable=config.BROWSER_EXECUTABLE_PATH)
+        self.session: aiohttp.ClientSession | None = None
         self.channel_logger: ChannelLogger | None = None
         self.topggpy: topgg.DBLClient | None = None
 
@@ -130,12 +130,13 @@ class DiscordBot(commands.Bot):
         )
         self.logger.info("-------------------")
 
-        await initialise_mongodb_conn(self.config.MONGODB_URI, GLOBAL_LEADERBOARD_ID)
-        await self.load_cogs()
-        await self.init_topgg()
+        self.session = aiohttp.ClientSession()
         self.channel_logger = ChannelLogger(self, self.config.LOGGING_CHANNEL_ID)
         self.ratings = Ratings(self)
+        await initialise_mongodb_conn(self.config.MONGODB_URI, GLOBAL_LEADERBOARD_ID)
         await self.ratings.update_ratings()
+        await self.load_cogs()
+        await self.init_topgg()
 
         schedule_question_and_stats_update.start(self)
         schedule_update_ratings.start(self)
