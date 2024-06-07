@@ -49,8 +49,8 @@ class HttpClient:
                             # Add a small delay to avoid rate limits, using random to
                             # avoid patterns.
                             # TODO: Look into whether this is necessary:
-                            # TODO: increases overall execution time but decreases the
-                            # TODO: number of rate limited requests.
+                            # increases overall execution time but decreases the
+                            # number of rate limited requests.
                             await asyncio.sleep(random())
                             return await response.json()
                         case 429:
