@@ -46,6 +46,12 @@ class HttpClient:
                 async with self.session.post(*args, **kwargs) as response:
                     match response.status:
                         case 200:
+                            # Add a small delay to avoid rate limits, using random to
+                            # avoid patterns.
+                            # TODO: Look into whether this is necessary:
+                            # TODO: increases overall execution time but decreases the
+                            # TODO: number of rate limited requests.
+                            await asyncio.sleep(random())
                             return await response.json()
                         case 429:
                             self.bot.channel_logger.rate_limited()
@@ -61,7 +67,6 @@ class HttpClient:
                             self.bot.logger.exception(
                                 f"Post request error: (code: {response.status})"
                             )
-                    await asyncio.sleep(random())
 
             except aiohttp.ClientError as e:
                 self.bot.logger.exception(f"Failed to post data: {e}")
