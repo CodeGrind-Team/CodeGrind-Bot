@@ -33,11 +33,11 @@ from constants import GLOBAL_LEADERBOARD_ID
 from database.models import Preference, Server
 from database.setup import initialise_mongodb_conn
 from utils.dev import ChannelLogger
+from utils.http_client import HttpClient
 from utils.notifications import (
     process_daily_question_and_stats_update,
     schedule_question_and_stats_update,
 )
-from utils.problems import RateLimitReached
 from utils.ratings import Ratings, schedule_update_ratings
 from utils.users import delete_user, unlink_user_from_server
 
@@ -73,45 +73,8 @@ class DiscordBot(commands.Bot):
         self.html2image = Html2Image(browser_executable=config.BROWSER_EXECUTABLE_PATH)
         self.channel_logger = ChannelLogger(self, self.config.LOGGING_CHANNEL_ID)
         self.ratings = Ratings(self)
-        self.session: aiohttp.ClientSession | None = None
+        self.http_client: HttpClient | None = None
         self.topggpy: topgg.DBLClient | None = None
-
-    async def fetch_data(self, *args, **kwargs) -> str | None:
-        """
-        Executes GET request with error handling.
-
-        :return: The response text or None.
-        """
-        try:
-            async with self.session.get(*args, **kwargs) as response:
-                return await response.text()
-        except aiohttp.ClientError as e:
-            self.bot.logger.info(f"Failed to fetch ratings: {e}")
-
-    async def post_data(self, *args, **kwargs) -> dict | None:
-        """
-        Executes POST request with error handling.
-
-        :return: The response json, None, or RateLimitReached exception raised.
-        """
-        async with self.session.post(*args, **kwargs) as response:
-            match response.status:
-                case 200:
-                    return await response.json()
-                case 429:
-                    self.channel_logger.rate_limited()
-                    raise RateLimitReached()
-                case 403:
-                    # Forbidden access
-                    self.logger.exception(
-                        f"Post request forbidden access (code: {response.status})",
-                        response.status,
-                    )
-                    self.channel_logger.forbidden()
-                case _:
-                    self.logger.exception(
-                        f"Post request error: (code: {response.status})"
-                    )
 
     async def on_autopost_success(self) -> None:
         """
@@ -169,7 +132,7 @@ class DiscordBot(commands.Bot):
         )
         self.logger.info("-------------------")
 
-        self.session = aiohttp.ClientSession()
+        self.http_client = HttpClient(self, aiohttp.ClientSession())
         await initialise_mongodb_conn(self.config.MONGODB_URI, GLOBAL_LEADERBOARD_ID)
         await self.load_cogs()
         await self.init_topgg()
@@ -349,7 +312,7 @@ class DiscordBot(commands.Bot):
         the device.
         """
         try:
-            await self.session.close()
+            await self.http_client.session.close()
             await super().close()
         finally:
             if self.config.PRODUCTION:

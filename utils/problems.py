@@ -1,11 +1,8 @@
 import ast
-import asyncio
 import re
 from dataclasses import dataclass
-from random import random
 from typing import TYPE_CHECKING
 
-import backoff
 import markdownify
 
 from constants import Difficulty
@@ -25,9 +22,6 @@ HEADERS = {
     "x-csrftoken": "",
     "user-agent": "Mozilla/5.0 LeetCode API",
 }
-
-
-semaphore = asyncio.Semaphore(4)
 
 
 @dataclass
@@ -58,11 +52,6 @@ class Submissions:
 class UserStats:
     real_name: str
     submissions: Submissions
-
-
-class RateLimitReached(Exception):
-    def __init__(self) -> None:
-        super().__init__("RateLimitReached. Error: 429. Rate Limited.")
 
 
 def parse_content(content: str) -> tuple[str, str, str | None]:
@@ -176,7 +165,9 @@ async def fetch_random_question(
         },
     }
 
-    response_data = await bot.post_data(URL, json=payload, headers=HEADERS, timeout=10)
+    response_data = await bot.http_client.post_data(
+        URL, json=payload, headers=HEADERS, timeout=10
+    )
     if not response_data:
         return
 
@@ -213,7 +204,9 @@ async def fetch_daily_question(bot: "DiscordBot") -> str | None:
     """,
     }
 
-    response_data = await bot.post_data(URL, json=data, headers=HEADERS, timeout=10)
+    response_data = await bot.http_client.post_data(
+        URL, json=data, headers=HEADERS, timeout=10
+    )
     if not response_data:
         return
 
@@ -268,7 +261,9 @@ async def search_question(bot: "DiscordBot", text: str) -> str | None:
         },
     }
 
-    response_data = await bot.post_data(URL, json=payload, headers=HEADERS, timeout=10)
+    response_data = await bot.http_client.post_data(
+        URL, json=payload, headers=HEADERS, timeout=10
+    )
     if not response_data:
         return
 
@@ -321,7 +316,9 @@ async def fetch_question_info(
         "variables": {"titleSlug": question_title_slug},
     }
 
-    response_data = await bot.post_data(URL, json=payload, headers=HEADERS, timeout=10)
+    response_data = await bot.http_client.post_data(
+        URL, json=payload, headers=HEADERS, timeout=10
+    )
     if not response_data:
         return
 
@@ -372,7 +369,6 @@ async def fetch_question_info(
     )
 
 
-@backoff.on_exception(backoff.expo, RateLimitReached, logger=None)
 async def fetch_problems_solved_and_rank(
     bot: "DiscordBot", leetcode_id: str
 ) -> UserStats | None:
@@ -403,15 +399,11 @@ async def fetch_problems_solved_and_rank(
         "variables": {"username": leetcode_id},
     }
 
-    async with semaphore:
-        response_data = await bot.post_data(
-            URL, json=payload, headers=HEADERS, timeout=10
-        )
-        if not response_data:
-            return
-
-        # Add a small delay to avoid rate limits, using random to avoid patterns
-        await asyncio.sleep(random())
+    response_data = await bot.http_client.post_data(
+        URL, json=payload, headers=HEADERS, timeout=10
+    )
+    if not response_data:
+        return
 
     try:
         matched_user = response_data["data"]["matchedUser"]
