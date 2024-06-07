@@ -23,6 +23,7 @@ class NotificationOptionSelect(discord.ui.Select):
         self,
         selected_notification_options: set[NotificationOptions],
         available_notification_options: set[NotificationOptions],
+        adding: bool,
     ):
 
         self.label_to_option = {
@@ -34,7 +35,8 @@ class NotificationOptionSelect(discord.ui.Select):
         options = self._get_options(available_notification_options)
 
         super().__init__(
-            placeholder="Select notification types",
+            placeholder=f"Select the notification types to "
+            f"{'enable' if adding else 'disable'}",
             max_values=len(options),
             min_values=1,
             options=options,
@@ -191,7 +193,7 @@ class ChannelsSelectView(discord.ui.View):
         available_notification_options: set[NotificationOptions],
         adding: bool,
         *,
-        timeout=180
+        timeout=180,
     ):
 
         super().__init__(timeout=timeout)
@@ -199,7 +201,9 @@ class ChannelsSelectView(discord.ui.View):
         self.selected_notification_options = set()
         self.add_item(
             NotificationOptionSelect(
-                self.selected_notification_options, available_notification_options
+                self.selected_notification_options,
+                available_notification_options,
+                adding,
             )
         )
         self.add_item(
