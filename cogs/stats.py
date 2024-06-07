@@ -52,7 +52,7 @@ class StatsCog(commands.Cog):
             Preference.user_id == user_id, Preference.server_id == interaction.guild.id
         )
 
-        if user.id != interaction.user.id and not preference.url:
+        if not preference or (user.id != interaction.user.id and not preference.url):
             await interaction.followup.send(embed=account_hidden_embed())
             return
 
