@@ -32,9 +32,9 @@ class CommandCategory(Enum):
 CATEGORY_DESCRIPTIONS = {
     CommandCategory.HOME: f"""
 # About CodeGrind Bot
-CodeGrind Bot helps you master LeetCode by engaging in friendly competition with your friends through daily, weekly, monthly, and all-time server leaderboards. Simply connect your LeetCode account to this bot and you are ready to go!
+The all-in-one Discord bot for LeetCode users. Track and compare your LeetCode stats against friends in server leaderboards, alongside searching and viewing LeetCode questions directly within Discord.
 
-This bot also provides you commands to get a random LeetCode question, the LeetCode daily question, retrieve the Zerotrac rating of a question, and receive a notification of the LeetCode daily question and the daily/weekly winners leaderboards.
+> Please note: while the bot uses the LeetCode API for data, it's not officially affiliated with LeetCode.
 
 ## Score calculation
 Each connected user is assigned a score which calculated based on the amount of questions they have solved. 
@@ -113,18 +113,18 @@ These commands are only available to administrators of this server.
 
 ## Roles
 
-</roles:1204499698317262965>: Creates and gives verified CodeGrind user, score milestones, and streak roles that will be automatically updated each day at midday (UTC).
+</roles:1204499698317262965>: Enable/disable automatically giving verified CodeGrind user, score milestones, and streak roles that will be automatically updated each day at midday (UTC).
 
 ## Notifications
 
-</notifications:1243573686666137672>: Sends daily notifications at midnight (UTC) to the specified channel.
+</notifications:1243573686666137672>: Enable/disable daily notifications being sent at midnight (UTC) to a channel.
 >    - `channel` _(optional)_: The channel (e.g. "#home-channel") to send notifications to. By default this will be the channel where you ran this command.
 
 Note: please press the 'save' button twice!
 
 ## Settings
 
-</settings timezone:1204499698317262958>: Change the timezone of this server's leaderboards.
+</settings timezone:1204499698317262958>: Change the timezone on this server's leaderboards.
 >    - `timezone`: A timezone from the following list of timezones: https://gist.github.com/heyalexej/8bf688fd67d7199be4a1682b3eec7568 .""",
     CommandCategory.CODEGRIND_TEAM: """
 ## CodeGrind Team

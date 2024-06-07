@@ -47,8 +47,8 @@ def set_channels_instructions_embed(channel_id: int, adding: bool) -> discord.Em
     )
 
     embed.add_field(
-        name=f"Select which notification types the channel should "
-        f"{'start' if adding else 'stop'} receiving:",
+        name=f"Use the dropdown menu below to select which notification types the "
+        f"channel should {'start' if adding else 'stop'} receiving:",
         value="",
         inline=False,
     )

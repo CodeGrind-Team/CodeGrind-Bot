@@ -5,6 +5,7 @@ from beanie.odm.operators.update.array import AddToSet, Pull
 
 from constants import NotificationOptions
 from database.models import Server
+from ui.embeds.common import failure_embed
 from ui.embeds.notifications import (
     channel_receiving_all_notification_options_embed,
     channel_receiving_no_notification_options_embed,
@@ -23,6 +24,7 @@ class NotificationOptionSelect(discord.ui.Select):
         self,
         selected_notification_options: set[NotificationOptions],
         available_notification_options: set[NotificationOptions],
+        adding: bool,
     ):
 
         self.label_to_option = {
@@ -34,7 +36,8 @@ class NotificationOptionSelect(discord.ui.Select):
         options = self._get_options(available_notification_options)
 
         super().__init__(
-            placeholder="Select notification types",
+            placeholder=f"Select the notification types to "
+            f"{'enable' if adding else 'disable'}",
             max_values=len(options),
             min_values=1,
             options=options,
@@ -109,8 +112,13 @@ class SaveButton(discord.ui.Button):
 
     async def callback(self, interaction: discord.Interaction) -> None:
         if not self.selected_notification_options:
+            embed = failure_embed(
+                title="No notification types selected",
+                description=f"Use the dropdown menu to select the notification types "
+                f"to {'enable' if self.adding else 'disable'}",
+            )
+            await interaction.response.send_message(embed=embed, ephemeral=True)
             return
-            # ! return error embed
 
         await self._save_channel_options(
             self.server_id,
@@ -191,7 +199,7 @@ class ChannelsSelectView(discord.ui.View):
         available_notification_options: set[NotificationOptions],
         adding: bool,
         *,
-        timeout=180
+        timeout=180,
     ):
 
         super().__init__(timeout=timeout)
@@ -199,7 +207,9 @@ class ChannelsSelectView(discord.ui.View):
         self.selected_notification_options = set()
         self.add_item(
             NotificationOptionSelect(
-                self.selected_notification_options, available_notification_options
+                self.selected_notification_options,
+                available_notification_options,
+                adding,
             )
         )
         self.add_item(

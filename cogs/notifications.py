@@ -36,8 +36,8 @@ class NotificationsCog(commands.Cog):
 
         await interaction.followup.send(
             embed=discord.Embed(
-                description=f"Select whether you want to enable or disable \
-                    notifications in <#{channel.id}>"
+                description=f"Select whether you want to enable or disable "
+                f"notifications in <#{channel.id}>"
             ),
             view=SelectOperatorView(self.bot, channel),
         )
