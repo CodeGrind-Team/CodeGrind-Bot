@@ -31,7 +31,7 @@ class HttpClient:
         try:
             async with self.session.get(*args, **kwargs) as response:
                 return await response.text()
-        except aiohttp.ClientError as e:
+        except (aiohttp.ClientError, asyncio.TimeoutError) as e:
             self.bot.logger.exception(f"Failed to fetch data: {e}")
 
     @backoff.on_exception(backoff.expo, RateLimitExceededException, logger=None)
@@ -68,5 +68,5 @@ class HttpClient:
                                 f"Post request error: (code: {response.status})"
                             )
 
-            except aiohttp.ClientError as e:
+            except (aiohttp.ClientError, asyncio.TimeoutError) as e:
                 self.bot.logger.exception(f"Failed to post data: {e}")
