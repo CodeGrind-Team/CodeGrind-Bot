@@ -407,6 +407,8 @@ async def fetch_problems_solved_and_rank(
         response_data = await bot.post_data(
             URL, json=payload, headers=HEADERS, timeout=10
         )
+        if not response_data:
+            return
 
         # Add a small delay to avoid rate limits, using random to avoid patterns
         await asyncio.sleep(random())
