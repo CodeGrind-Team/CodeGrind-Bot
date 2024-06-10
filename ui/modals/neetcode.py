@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING
 
 import discord
 
-from ui.embeds.problems import search_question_embed
+from ui.embeds.problems import neetcode_search_embed
 
 if TYPE_CHECKING:
     # To prevent circular imports
@@ -23,6 +23,6 @@ class NeetcodeSearchModal(discord.ui.Modal, title="Search for a LeetCode problem
     async def on_submit(self, interaction: discord.Interaction) -> None:
         await interaction.response.defer()
 
-        embed = await search_question_embed(self.bot, self.search_query_answer.value)
+        embed = await neetcode_search_embed(self.bot, self.search_query_answer.value)
 
         await interaction.followup.send(embed=embed)

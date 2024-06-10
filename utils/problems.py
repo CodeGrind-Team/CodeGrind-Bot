@@ -248,7 +248,8 @@ async def search_question(bot: "DiscordBot", text: str) -> str | None:
             ) {
                 questions:
                     data {
-                        titleSlug
+                        titleSlug,
+                        questionFrontendId
                     }
                 }
             }

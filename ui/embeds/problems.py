@@ -9,8 +9,7 @@ from utils.problems import (
     fetch_daily_question,
     fetch_question_info,
     fetch_random_question,
-    search_question,
-    search_question_id
+    search_question
 )
 
 if TYPE_CHECKING:
@@ -38,12 +37,11 @@ async def search_question_embed(bot: "DiscordBot", search_text: str) -> discord.
     return embed
 
 # Neetcode Search by id
-async def search_question_embed_id(bot: "DiscordBot", search_text: str) -> discord.Embed:
-    question_id, question_title = await search_question_id(bot, search_text)
+async def neetcode_search_embed(bot: "DiscordBot", search_text: str) -> discord.Embed:
+    question_title, question_id = await search_question(bot, search_text)
 
     if not question_id:
         return question_error_embed()
-
     embed = await neetcode_embed(bot, question_id, question_title)
     return embed
 
