@@ -9,6 +9,7 @@ from constants import Difficulty
 from middleware import defer_interaction
 from ui.embeds.problems import daily_question_embed, random_question_embed
 from ui.modals.problems import ProblemSearchModal
+from ui.embeds.problems import search_question_embed
 
 if TYPE_CHECKING:
     # To prevent circular imports
@@ -30,7 +31,7 @@ class ProblemsCog(commands.GroupCog, name="problem"):
         """
         Search for a LeetCode problem
         """
-        await interaction.response.send_modal(ProblemSearchModal(self.bot))
+        await interaction.response.send_modal(ProblemSearchModal(self.bot, search_question_embed))
 
     @app_commands.command(name="daily")
     @defer_interaction()
@@ -55,9 +56,7 @@ class ProblemsCog(commands.GroupCog, name="problem"):
         :param difficulty: The desired difficulty level
         """
         embed = await random_question_embed(self.bot, difficulty.value)
-        
         await interaction.followup.send(embed=embed)
-
 
 async def setup(bot: "DiscordBot") -> None:
     await bot.add_cog(ProblemsCog(bot))
