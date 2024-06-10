@@ -151,16 +151,18 @@ async def fetch_random_question(
         "query": """
         query randomQuestion($categorySlug: String, $filters: QuestionListFilterInput) {
             randomQuestion(categorySlug: $categorySlug, filters: $filters) {
-                titleSlug
+                titleSlug,
+                isPaidOnly,
+                acRate
             }
         }
         """,
         "variables": {
             "categorySlug": "all-code-essentials",
             "filters": (
-                {"difficulty": difficulty.name}
+                {"difficulty": difficulty.name, "premiumOnly": False}
                 if difficulty != Difficulty.RANDOM
-                else {}
+                else {"premiumOnly": False}
             ),
         },
     }
@@ -168,6 +170,8 @@ async def fetch_random_question(
     response_data = await bot.http_client.post_data(
         URL, json=payload, headers=HEADERS, timeout=10
     )
+
+    bot.logger.info(f"fetch_random_question: {response_data}")
     if not response_data:
         return
 
@@ -180,8 +184,41 @@ async def fetch_random_question(
             f"({response_data})"
         )
         return
-
+    
     return title_slug
+
+async def fetch_available_filters(bot: "DiscordBot") -> None:
+    """
+    Fetches and logs the available filters for the QuestionListFilterInput type.
+
+    :param bot: The DiscordBot instance.
+    """
+    payload = {
+        "query": """
+        {
+          __type(name: "QuestionListFilterInput") {
+            name
+            inputFields {
+              name
+              type {
+                name
+                kind
+                ofType {
+                  name
+                  kind
+                }
+              }
+            }
+          }
+        }
+        """
+    }
+
+    response_data = await bot.http_client.post_data(
+        URL, json=payload, headers=HEADERS, timeout=10
+    )
+    
+    bot.logger.info(f"fetch_available_filters: {response_data}")
 
 
 async def fetch_daily_question(bot: "DiscordBot") -> str | None:

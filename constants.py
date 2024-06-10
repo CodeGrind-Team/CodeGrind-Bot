@@ -22,7 +22,6 @@ class Difficulty(Enum):
     HARD = 3
     RANDOM = 4
 
-
 class RankEmoji(Enum):
     FIRST = "🥇"
     SECOND = "🥈"
