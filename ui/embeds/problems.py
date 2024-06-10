@@ -4,11 +4,13 @@ import discord
 
 from constants import Difficulty
 from ui.embeds.common import failure_embed
+from ui.embeds.neetcode import neetcode_embed
 from utils.problems import (
     fetch_daily_question,
     fetch_question_info,
     fetch_random_question,
     search_question,
+    search_question_id
 )
 
 if TYPE_CHECKING:
@@ -35,6 +37,15 @@ async def search_question_embed(bot: "DiscordBot", search_text: str) -> discord.
     embed = await question_embed(bot, question_title)
     return embed
 
+# Neetcode Search by id
+async def search_question_embed_id(bot: "DiscordBot", search_text: str) -> discord.Embed:
+    question_id, question_title = await search_question_id(bot, search_text)
+
+    if not question_id:
+        return question_error_embed()
+
+    embed = await neetcode_embed(bot, question_id, question_title)
+    return embed
 
 async def random_question_embed(
     bot: "DiscordBot", difficulty: Difficulty

@@ -55,6 +55,7 @@ class ProblemsCog(commands.GroupCog, name="problem"):
         :param difficulty: The desired difficulty level
         """
         embed = await random_question_embed(self.bot, difficulty.value)
+        
         await interaction.followup.send(embed=embed)
 
 
