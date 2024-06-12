@@ -69,7 +69,7 @@ def parse_content(content: str) -> tuple[str, str, str | None]:
     position_example_two = content.find(
         '<p><strong class="example">Example 2:</strong></p>'
     )
-    position_follow_up = content.find("<strong>Follow up:</strong> ")
+    position_follow_up = content.find("<strong>Follow up:</strong>")
 
     description = html_to_markdown(content[:position_example_one])
     example_one = html_to_markdown(
@@ -84,7 +84,7 @@ def parse_content(content: str) -> tuple[str, str, str | None]:
     follow_up = None
     if position_follow_up != -1:
         follow_up = html_to_markdown(
-            content[position_follow_up + len("<strong>Follow up:</strong> ") :]
+            content[position_follow_up + len("<strong>Follow up:</strong>") :]
         )
 
     return description, example_one, follow_up
