@@ -1,5 +1,4 @@
 from enum import Enum
-
 import discord
 
 
@@ -27,6 +26,22 @@ class RankEmoji(Enum):
     FIRST = "🥇"
     SECOND = "🥈"
     THIRD = "🥉"
+
+class Language(Enum):
+    PYTHON3 = "python"
+    JAVA = "java"
+    CPP = "c++"
+    C = "c"
+    CSHARP = "c#"
+    JAVASCRIPT = "javascript"
+    GO = "go"
+    KOTLIN = "kotlin"
+    RUBY = "ruby"
+    SWIFT = "swift"
+    RUST = "rust"
+    SCALA = "scala"
+    TYPESCRIPT = "typescript"
+    DART = "dart"
 
 
 class StatsCardExtensions(Enum):
