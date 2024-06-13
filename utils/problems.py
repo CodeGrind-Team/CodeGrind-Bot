@@ -146,42 +146,81 @@ async def fetch_random_question(
 
     :return: The title slug of a randomly selected question, or None if an error occurs.
     """
-    payload = {
-        "operationName": "randomQuestion",
-        "query": """
-        query randomQuestion($categorySlug: String, $filters: QuestionListFilterInput) {
-            randomQuestion(categorySlug: $categorySlug, filters: $filters) {
-                titleSlug
+    while True:
+        payload = {
+            "operationName": "randomQuestion",
+            "query": """
+            query randomQuestion($categorySlug: String, $filters: QuestionListFilterInput) {
+                randomQuestion(categorySlug: $categorySlug, filters: $filters) {
+                    titleSlug,
+                    isPaidOnly
+                }
             }
+            """,
+            "variables": {
+                "categorySlug": "all-code-essentials",
+                "filters": (
+                    {"difficulty": difficulty.name}
+                    if difficulty != Difficulty.RANDOM
+                    else {}
+                ),
+            },
         }
-        """,
-        "variables": {
-            "categorySlug": "all-code-essentials",
-            "filters": (
-                {"difficulty": difficulty.name}
-                if difficulty != Difficulty.RANDOM
-                else {}
-            ),
-        },
+
+        response_data = await bot.http_client.post_data(
+            URL, json=payload, headers=HEADERS, timeout=10
+        )
+
+        bot.logger.info(f"fetch_random_question: {response_data}")
+        if not response_data:
+            return
+
+        try:
+            title_slug = response_data["data"]["randomQuestion"]["titleSlug"]
+            is_paid_only = response_data["data"]["randomQuestion"]["isPaidOnly"]
+
+            if not is_paid_only:
+                return title_slug
+
+        except ValueError:
+            bot.logger.exception(
+                f"fetch_random_question: failed to decode json. Error code "
+                f"({response_data})"
+            )
+            return
+
+async def fetch_available_filters(bot: "DiscordBot") -> None:
+    """
+    Fetches and logs the available filters for the QuestionListFilterInput type.
+
+    :param bot: The DiscordBot instance.
+    """
+    payload = {
+        "query": """
+        {
+          __type(name: "QuestionListFilterInput") {
+            name
+            inputFields {
+              name
+              type {
+                name
+                kind
+                ofType {
+                  name
+                  kind
+                }
+              }
+            }
+          }
+        }
+        """
     }
 
     response_data = await bot.http_client.post_data(
         URL, json=payload, headers=HEADERS, timeout=10
     )
-    if not response_data:
-        return
-
-    try:
-        title_slug = response_data["data"]["randomQuestion"]["titleSlug"]
-
-    except ValueError:
-        bot.logger.exception(
-            f"fetch_random_question: failed to decode json. Error code "
-            f"({response_data})"
-        )
-        return
-
-    return title_slug
+    
+    bot.logger.info(f"fetch_available_filters: {response_data}")
 
 
 async def fetch_daily_question(bot: "DiscordBot") -> str | None:
@@ -270,10 +309,8 @@ async def search_question(bot: "DiscordBot", text: str) -> str | None:
 
     try:
         questions_matched_list = response_data["data"]["problemsetQuestionList"]
-
-        if not questions_matched_list:
+        if not questions_matched_list or len(questions_matched_list['questions']) == 0:
             return
-
         question_title_slug = questions_matched_list["questions"][0]["titleSlug"]
         question_id = questions_matched_list["questions"][0]["questionFrontendId"]
 
