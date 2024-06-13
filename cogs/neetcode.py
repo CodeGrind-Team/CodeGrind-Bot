@@ -36,7 +36,7 @@ class NeetcodeCog(commands.Cog):
     @app_commands.command(name="neetcode")
     async def neetcode(self, interaction: discord.Interaction, language: LanguageField = LanguageField.Python) -> None:
         """
-        Get neetcode solution of leetcode propblem
+        Get neetcode solution of leetcode problem
         """                                                         
         await interaction.response.send_modal(ProblemSearchModal(self.bot, search_neetcode_embed, language.value))
 

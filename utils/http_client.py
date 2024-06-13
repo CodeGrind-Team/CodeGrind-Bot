@@ -30,7 +30,9 @@ class HttpClient:
         """
         try:
             async with self.session.get(*args, **kwargs) as response:
-                return await response.text()
+                # 404 response is expected for some requests.
+                if response.status != 404:
+                    return await response.text()
         except (aiohttp.ClientError, asyncio.TimeoutError) as e:
             self.bot.logger.exception(f"Failed to fetch data: {e}")
 

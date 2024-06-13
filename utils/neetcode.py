@@ -4,7 +4,7 @@ if TYPE_CHECKING:
     from bot import DiscordBot
 from constants import Language
 
-async def generate_neetcode_link(bot: "DiscordBot", question_id: str, question_title: str, language: Language):
+def generate_neetcode_link(bot: "DiscordBot", question_id: str, question_title: str, language: Language):
     language_dict = {
         Language.PYTHON3: {"name": "python", "extension": "py"},
         Language.JAVA: {"name": "java", "extension": "java"},
