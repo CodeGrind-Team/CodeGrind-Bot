@@ -13,7 +13,7 @@ async def search_neetcode_embed(bot: "DiscordBot", search_text: str, language: L
 
     try:
         question_title, question_id = await search_question(bot, search_text)
-    except:
+    except Exception as e:
         return await question_error_embed()
     
     embed = await neetcode_embed(bot, question_id, question_title, language)
