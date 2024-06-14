@@ -8,6 +8,7 @@ from discord.ext import commands
 from constants import Language
 from ui.modals.problems import ProblemSearchModal
 from ui.embeds.neetcode import search_neetcode_embed
+from functools import partial
 
 if TYPE_CHECKING:
     # To prevent circular imports
@@ -38,7 +39,7 @@ class NeetcodeCog(commands.Cog):
         """
         Get neetcode solution of leetcode problem
         """                                                         
-        await interaction.response.send_modal(ProblemSearchModal(self.bot, search_neetcode_embed, language.value))
+        await interaction.response.send_modal(ProblemSearchModal(self.bot, partial(search_neetcode_embed, language=language.value)))
 
 async def setup(bot: "DiscordBot") -> None:
     await bot.add_cog(NeetcodeCog(bot))
