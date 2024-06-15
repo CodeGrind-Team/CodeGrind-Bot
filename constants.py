@@ -1,4 +1,5 @@
 from enum import Enum
+
 import discord
 
 
@@ -26,6 +27,7 @@ class RankEmoji(Enum):
     FIRST = "🥇"
     SECOND = "🥈"
     THIRD = "🥉"
+
 
 class Language(Enum):
     PYTHON3 = "python"

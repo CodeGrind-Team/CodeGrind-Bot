@@ -1,11 +1,15 @@
-from typing import TYPE_CHECKING
-if TYPE_CHECKING:
-    # To prevent circular imports
-    from bot import DiscordBot
 from constants import Language
 
-def generate_neetcode_link(bot: "DiscordBot", question_id: str, question_title: str, language: Language):
-    language_dict = {
+
+def generate_neetcode_link(question_id: str, question_title: str, language: Language):
+    """
+    Generates the NeetCode GitHub code url.
+
+    :param question_id: The ID of the selected LeetCode problem.
+    :param question_title: The title of the selected LeetCode problem.
+    :param language: The selected programming language of the solution.
+    """
+    language_to_github = {
         Language.PYTHON3: {"name": "python", "extension": "py"},
         Language.JAVA: {"name": "java", "extension": "java"},
         Language.CPP: {"name": "cpp", "extension": "cpp"},
@@ -21,8 +25,14 @@ def generate_neetcode_link(bot: "DiscordBot", question_id: str, question_title: 
         Language.TYPESCRIPT: {"name": "typescript", "extension": "ts"},
         Language.DART: {"name": "dart", "extension": "dart"},
     }
-    
+
     question_number = question_id.zfill(4)
-    neetcode_github_title = f"{question_number}-{question_title.replace(' ', '-').lower()}"
-    neetcode_link = f"https://raw.githubusercontent.com/neetcode-gh/leetcode/main/{language_dict[language]['name']}/{neetcode_github_title}.{language_dict[language]['extension']}"
+    neetcode_github_title = (
+        f"{question_number}-{question_title.replace(' ', '-').lower()}"
+    )
+    neetcode_link = (
+        f"https://raw.githubusercontent.com/neetcode-gh/leetcode/main/"
+        f"{language_to_github[language]['name']}/{neetcode_github_title}."
+        f"{language_to_github[language]['extension']}"
+    )
     return neetcode_link
