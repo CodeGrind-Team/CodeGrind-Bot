@@ -460,34 +460,26 @@ async def fetch_problems_solved_and_rank(
         tag_problem_counts = matched_user["tagProblemCounts"]
 
         language_problem_counts = [
-            (
-                LanguageProblemCount(
-                    language=item["languageName"], problem_count=item["problemsSolved"]
-                )
+            LanguageProblemCount(
+                language=item["languageName"], problem_count=item["problemsSolved"]
             )
             for item in language_problem_count
         ]
         tag_problem_counts_advanced = [
-            (
-                SkillProblemCount(
-                    skill=item["tagName"], problem_count=item["problemsSolved"]
-                )
+            SkillProblemCount(
+                skill=item["tagName"], problem_count=item["problemsSolved"]
             )
             for item in tag_problem_counts["advanced"]
         ]
         tag_problem_counts_intermediate = [
-            (
-                SkillProblemCount(
-                    skill=item["tagName"], problem_count=item["problemsSolved"]
-                )
+            SkillProblemCount(
+                skill=item["tagName"], problem_count=item["problemsSolved"]
             )
             for item in tag_problem_counts["intermediate"]
         ]
         tag_problem_counts_fundamental = [
-            (
-                SkillProblemCount(
-                    skill=item["tagName"], problem_count=item["problemsSolved"]
-                )
+            SkillProblemCount(
+                skill=item["tagName"], problem_count=item["problemsSolved"]
             )
             for item in tag_problem_counts["fundamental"]
         ]
