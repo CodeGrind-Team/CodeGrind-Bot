@@ -61,13 +61,18 @@ class SkillProblemCount:
 
 
 @dataclass
+class SkillsProblemCount:
+    fundamental: list[SkillProblemCount]
+    intermediate: list[SkillProblemCount]
+    advanced: list[SkillProblemCount]
+
+
+@dataclass
 class UserStats:
     real_name: str
     submissions: Submissions
     languages_problem_count: list[LanguageProblemCount]
-    skills_problem_count_fundamental: list[SkillProblemCount]
-    skills_problem_count_intermediate: list[SkillProblemCount]
-    skills_problem_count_advanced: list[SkillProblemCount]
+    skills_problem_count: SkillsProblemCount
 
 
 def parse_content(content: str) -> tuple[str, str, str | None]:
@@ -532,7 +537,9 @@ async def fetch_problems_solved_and_rank(
             ),
         ),
         languages_problem_count=language_problem_counts,
-        skills_problem_count_advanced=tag_problem_counts_advanced,
-        skills_problem_count_intermediate=tag_problem_counts_intermediate,
-        skills_problem_count_fundamental=tag_problem_counts_fundamental,
+        skills_problem_count=SkillsProblemCount(
+            fundamental=tag_problem_counts_fundamental,
+            intermediate=tag_problem_counts_intermediate,
+            advanced=tag_problem_counts_advanced,
+        ),
     )

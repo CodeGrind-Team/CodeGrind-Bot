@@ -1,20 +1,23 @@
 from datetime import datetime
+from typing import List, Optional
 
+from pydantic import Field
 from beanie import Document, Granularity, TimeSeriesConfig
 
-from .user import Submissions, LanguageProblemCount, SkillProblemCount
-
-from typing import List, Optional
+from .user import LanguageProblemCount, SkillsProblemCount, Submissions
 
 
 class Record(Document):
     timestamp: datetime
     user_id: int
+
     submissions: Submissions
-    languages_problem_count: Optional[List[LanguageProblemCount]] = []
-    skills_problem_count_advanced: Optional[List[SkillProblemCount]] = []
-    skills_problem_count_intermediate: Optional[List[SkillProblemCount]] = []
-    skills_problem_count_fundamental: Optional[List[SkillProblemCount]] = []
+    languages_problem_count: Optional[List[LanguageProblemCount]] = Field(
+        default_factory=list
+    )
+    skills_problem_count: Optional[SkillsProblemCount] = Field(
+        default_factory=SkillsProblemCount
+    )
 
     class Settings:
         name = "records"

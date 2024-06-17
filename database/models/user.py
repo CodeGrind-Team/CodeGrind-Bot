@@ -1,5 +1,5 @@
 from datetime import UTC, datetime
-from typing import Optional
+from typing import List, Optional
 
 from beanie import Document
 from pydantic import BaseModel, Field
@@ -30,6 +30,12 @@ class LanguageProblemCount(BaseModel):
 class SkillProblemCount(BaseModel):
     skill: str
     count: int
+
+
+class SkillsProblemCount(BaseModel):
+    fundamental: Optional[List[SkillProblemCount]] = Field(default_factory=list)
+    intermediate: Optional[List[SkillProblemCount]] = Field(default_factory=list)
+    advanced: Optional[List[SkillProblemCount]] = Field(default_factory=list)
 
 
 class User(Document):
