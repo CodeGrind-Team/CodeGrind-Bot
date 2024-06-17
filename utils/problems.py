@@ -47,25 +47,28 @@ class Submissions:
     hard: int
     score: int
 
-@dataclass 
-class LanguageProblemCount:
-    language : str 
-    problem_count: int 
 
-@dataclass 
+@dataclass
+class LanguageProblemCount:
+    language: str
+    problem_count: int
+
+
+@dataclass
 class SkillProblemCount:
-    skill : str 
-    problem_count: int 
+    skill: str
+    problem_count: int
 
 
 @dataclass
 class UserStats:
     real_name: str
     submissions: Submissions
-    languages_problem_count: list #Made up of LanguageProblemCount objects
-    fundamental_skills_problem_count: list #Made up of SkillProblemCount objects
-    intermediate_skills_problem_count: list #Made up of SkillProblemCount objects
-    advanced_skills_problem_count: list #Made up of SkillProblemCount objects
+    languages_problem_count: list  # Made up of LanguageProblemCount objects
+    fundamental_skills_problem_count: list  # Made up of SkillProblemCount objects
+    intermediate_skills_problem_count: list  # Made up of SkillProblemCount objects
+    advanced_skills_problem_count: list  # Made up of SkillProblemCount objects
+
 
 def parse_content(content: str) -> tuple[str, str, str | None]:
     """
@@ -450,34 +453,41 @@ async def fetch_problems_solved_and_rank(
         real_name = matched_user["profile"]["realName"]
         submit_stats_global = matched_user["submitStatsGlobal"]
         ac_submission_num = submit_stats_global["acSubmissionNum"]
-
-        languages_problem_count = matched_user["languageProblemCount"]
-
+        language_problem_count = matched_user["languageProblemCount"]
         tags_problem_count = matched_user["tagProblemCounts"]
-        advanced_tags_count = tags_problem_count["advanced"]
-        intermediate_tags_count = tags_problem_count["intermediate"]
-        fundamental_tags_count = tags_problem_count["fundamental"]
 
-        languages_problem_count_list = []
-
-        for language_problem_count in languages_problem_count:
-            languages_problem_count_list.append(LanguageProblemCount(language = language_problem_count["languageName"], problem_count = language_problem_count["problemsSolved"]))
-
-        advanced_tag_list = []
-
-        for advanced_tag_count in advanced_tags_count:
-            advanced_tag_list.append(SkillProblemCount(skill = advanced_tag_count["tagName"], problem_count = advanced_tag_count["problemsSolved"]))
-
-        intermediate_tag_list = []
-
-        for intermediate_tag_count in intermediate_tags_count:
-            intermediate_tag_list.append(SkillProblemCount(skill = intermediate_tag_count["tagName"], problem_count = intermediate_tag_count["problemsSolved"]))
-
-        fundamental_tag_list = []
-
-        for fundamental_tag_count in fundamental_tags_count:
-            fundamental_tag_list.append(SkillProblemCount(skill = fundamental_tag_count["tagName"], problem_count = fundamental_tag_count["problemsSolved"]))
-
+        language_problem_counts = [
+            (
+                LanguageProblemCount(
+                    language=item["languageName"], problem_count=item["problemsSolved"]
+                )
+            )
+            for item in language_problem_count
+        ]
+        tag_problem_counts_advanced = [
+            (
+                SkillProblemCount(
+                    skill=item["tagName"], problem_count=item["problemsSolved"]
+                )
+            )
+            for item in tags_problem_count["advanced"]
+        ]
+        tag_problem_counts_intermediate = [
+            (
+                SkillProblemCount(
+                    skill=item["tagName"], problem_count=item["problemsSolved"]
+                )
+            )
+            for item in tags_problem_count["intermediate"]
+        ]
+        tag_problem_counts_fundamental = [
+            (
+                SkillProblemCount(
+                    skill=item["tagName"], problem_count=item["problemsSolved"]
+                )
+            )
+            for item in tags_problem_count["fundamental"]
+        ]
 
         easy_count = next(
             (
@@ -521,9 +531,10 @@ async def fetch_problems_solved_and_rank(
                 easy=easy_count, medium=medium_count, hard=hard_count
             ),
         ),
-        languages_problem_count= languages_problem_count_list,
-        advanced_skills_problem_count= advanced_tag_list,
-        intermediate_skills_problem_count= intermediate_tag_list,
-        fundamental_skills_problem_count= fundamental_tag_list
+        languages_problem_count=language_problem_counts,
+        advanced_skills_problem_count=tag_problem_counts_advanced,
+        intermediate_skills_problem_count=tag_problem_counts_intermediate,
+        fundamental_skills_problem_count=tag_problem_counts_fundamental,
     )
+
 
