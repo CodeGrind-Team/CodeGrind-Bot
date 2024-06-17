@@ -415,28 +415,26 @@ async def fetch_problems_solved_and_rank(
                     }
                 }
                 languageProblemCount {
-                        languageName
-                        problemsSolved
+                    languageName
+                    problemsSolved
                 }
                 tagProblemCounts {
-                      advanced {
+                    advanced {
                         tagName
                         tagSlug
                         problemsSolved
-                      }  
-                      intermediate {
+                    }
+                    intermediate {
                         tagName
                         tagSlug
                         problemsSolved
-                      }
-                      fundamental {
+                    }
+                    fundamental {
                         tagName
                         tagSlug
                         problemsSolved
-                      }
-                
+                    }
                 }
-
             }
         }
         """,
