@@ -22,6 +22,16 @@ class Stats(BaseModel):
     streak: Optional[int] = 0
 
 
+class LanguageProblemCount(BaseModel):
+    language: str
+    count: int
+
+
+class SkillProblemCount(BaseModel):
+    skill: str
+    count: int
+
+
 class User(Document):
     id: int
     leetcode_id: str
