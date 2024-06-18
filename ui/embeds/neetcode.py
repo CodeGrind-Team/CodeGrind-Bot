@@ -35,12 +35,15 @@ async def neetcode_embed(
     if not response_data:
         return error_embed()
 
-    embed = discord.Embed(
+    # `" " * 85` is needed to force the code block to span its max possible width.
+    code_block = f"```{language.value}\n{' ' * 85}\n{response_data}\n```"
+    if "||" not in code_block:
+        code_block = f"||{code_block}||"
+
+    return discord.Embed(
         title=f"{question_id}. {info.title} - NeetCode Solution "
         f"({language.value.capitalize()}) ",
         url="https://neetcode.io/",
-        # `" " * 85` is needed to force the code block to span its max possible width.
-        description=f"```{language.value}\n{' ' * 85}\n{response_data}\n```",
+        description=code_block,
         colour=discord.Colour.light_embed(),
     )
-    return embed
