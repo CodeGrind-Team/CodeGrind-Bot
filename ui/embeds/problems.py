@@ -8,7 +8,7 @@ from utils.problems import (
     fetch_daily_question,
     fetch_question_info,
     fetch_random_question,
-    search_question
+    search_question,
 )
 
 if TYPE_CHECKING:
@@ -34,6 +34,7 @@ async def search_question_embed(bot: "DiscordBot", search_text: str) -> discord.
 
     embed = await question_embed(bot, question_title)
     return embed
+
 
 async def random_question_embed(
     bot: "DiscordBot", difficulty: Difficulty

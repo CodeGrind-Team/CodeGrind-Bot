@@ -272,6 +272,7 @@ async def search_question(bot: "DiscordBot", text: str) -> str | None:
         questions_matched_list = response_data["data"]["problemsetQuestionList"]
         if not questions_matched_list or not questions_matched_list["questions"]:
             return
+
         question_title_slug = questions_matched_list["questions"][0]["titleSlug"]
         question_id = questions_matched_list["questions"][0]["questionFrontendId"]
 
