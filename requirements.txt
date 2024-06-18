@@ -46,6 +46,6 @@ soupsieve==2.5
 toml==0.10.2
 topggpy==1.4.0
 typing_extensions==4.11.0
-urllib3==2.2.1
+urllib3==2.2.2
 websocket-client==1.8.0
 yarl==1.9.4
