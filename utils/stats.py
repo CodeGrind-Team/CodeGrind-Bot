@@ -7,7 +7,14 @@ import discord
 import requests
 
 from constants import StatsCardExtensions
-from database.models import Record, Submissions, User
+from database.models import (
+    LanguageProblemCount,
+    Record,
+    SkillProblemCount,
+    SkillsProblemCount,
+    Submissions,
+    User,
+)
 from utils.common import to_thread
 from utils.problems import fetch_problems_solved_and_rank
 
@@ -54,6 +61,36 @@ async def update_stats(
     )
 
     if reset_day:
+        languages_problem_count = list(
+            map(
+                lambda x: LanguageProblemCount(
+                    language=x.language, count=x.problem_count
+                ),
+                stats.languages_problem_count,
+            )
+        )
+
+        skills_problem_count = SkillsProblemCount(
+            fundamental=list(
+                map(
+                    lambda x: SkillProblemCount(skill=x.skill, count=x.problem_count),
+                    stats.skills_problem_count.fundamental,
+                )
+            ),
+            intermediate=list(
+                map(
+                    lambda x: SkillProblemCount(skill=x.skill, count=x.problem_count),
+                    stats.skills_problem_count.intermediate,
+                )
+            ),
+            advanced=list(
+                map(
+                    lambda x: SkillProblemCount(skill=x.skill, count=x.problem_count),
+                    stats.skills_problem_count.advanced,
+                )
+            ),
+        )
+
         record = Record(
             timestamp=datetime.now(UTC).replace(
                 hour=0, minute=0, second=0, microsecond=0
@@ -65,6 +102,8 @@ async def update_stats(
                 hard=stats.submissions.hard,
                 score=stats.submissions.score,
             ),
+            languages_problem_count=languages_problem_count,
+            skills_problem_count=skills_problem_count,
         )
 
         await record.create()

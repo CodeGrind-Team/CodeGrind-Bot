@@ -49,9 +49,30 @@ class Submissions:
 
 
 @dataclass
+class LanguageProblemCount:
+    language: str
+    problem_count: int
+
+
+@dataclass
+class SkillProblemCount:
+    skill: str
+    problem_count: int
+
+
+@dataclass
+class SkillsProblemCount:
+    fundamental: list[SkillProblemCount]
+    intermediate: list[SkillProblemCount]
+    advanced: list[SkillProblemCount]
+
+
+@dataclass
 class UserStats:
     real_name: str
     submissions: Submissions
+    languages_problem_count: list[LanguageProblemCount]
+    skills_problem_count: SkillsProblemCount
 
 
 def parse_content(content: str) -> tuple[str, str, str | None]:
@@ -393,6 +414,27 @@ async def fetch_problems_solved_and_rank(
                         count
                     }
                 }
+                languageProblemCount {
+                    languageName
+                    problemsSolved
+                }
+                tagProblemCounts {
+                    advanced {
+                        tagName
+                        tagSlug
+                        problemsSolved
+                    }
+                    intermediate {
+                        tagName
+                        tagSlug
+                        problemsSolved
+                    }
+                    fundamental {
+                        tagName
+                        tagSlug
+                        problemsSolved
+                    }
+                }
             }
         }
         """,
@@ -414,6 +456,33 @@ async def fetch_problems_solved_and_rank(
         real_name = matched_user["profile"]["realName"]
         submit_stats_global = matched_user["submitStatsGlobal"]
         ac_submission_num = submit_stats_global["acSubmissionNum"]
+        language_problem_count = matched_user["languageProblemCount"]
+        tag_problem_counts = matched_user["tagProblemCounts"]
+
+        language_problem_counts = [
+            LanguageProblemCount(
+                language=item["languageName"], problem_count=item["problemsSolved"]
+            )
+            for item in language_problem_count
+        ]
+        tag_problem_counts_advanced = [
+            SkillProblemCount(
+                skill=item["tagName"], problem_count=item["problemsSolved"]
+            )
+            for item in tag_problem_counts["advanced"]
+        ]
+        tag_problem_counts_intermediate = [
+            SkillProblemCount(
+                skill=item["tagName"], problem_count=item["problemsSolved"]
+            )
+            for item in tag_problem_counts["intermediate"]
+        ]
+        tag_problem_counts_fundamental = [
+            SkillProblemCount(
+                skill=item["tagName"], problem_count=item["problemsSolved"]
+            )
+            for item in tag_problem_counts["fundamental"]
+        ]
 
         easy_count = next(
             (
@@ -456,5 +525,11 @@ async def fetch_problems_solved_and_rank(
             score=convert_to_score(
                 easy=easy_count, medium=medium_count, hard=hard_count
             ),
+        ),
+        languages_problem_count=language_problem_counts,
+        skills_problem_count=SkillsProblemCount(
+            fundamental=tag_problem_counts_fundamental,
+            intermediate=tag_problem_counts_intermediate,
+            advanced=tag_problem_counts_advanced,
         ),
     )

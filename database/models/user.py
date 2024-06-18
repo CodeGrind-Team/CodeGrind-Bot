@@ -1,5 +1,5 @@
 from datetime import UTC, datetime
-from typing import Optional
+from typing import List, Optional
 
 from beanie import Document
 from pydantic import BaseModel, Field
@@ -20,6 +20,22 @@ class Submissions(BaseModel):
 class Stats(BaseModel):
     submissions: Optional[Submissions] = Field(default_factory=Submissions)
     streak: Optional[int] = 0
+
+
+class LanguageProblemCount(BaseModel):
+    language: str
+    count: int
+
+
+class SkillProblemCount(BaseModel):
+    skill: str
+    count: int
+
+
+class SkillsProblemCount(BaseModel):
+    fundamental: Optional[List[SkillProblemCount]] = Field(default_factory=list)
+    intermediate: Optional[List[SkillProblemCount]] = Field(default_factory=list)
+    advanced: Optional[List[SkillProblemCount]] = Field(default_factory=list)
 
 
 class User(Document):
