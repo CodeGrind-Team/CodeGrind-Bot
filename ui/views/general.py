@@ -34,6 +34,11 @@ class CommandCategorySelect(discord.ui.Select):
                 description="LeetCode Problems commands",
             ),
             discord.SelectOption(
+                label=CommandCategory.NEETCODE_SOLUTIONS.value,
+                emoji="💡",
+                description="NeetCode Solutions commands",
+            ),
+            discord.SelectOption(
                 label=CommandCategory.ROLES.value,
                 emoji="🎭",
                 description="CodeGrind roles commands",

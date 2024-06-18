@@ -24,6 +24,7 @@ class CommandCategory(Enum):
     LEADERBOARD = "Leaderboard"
     STATISTICS = "Statistics"
     LEETCODE_PROBLEMS = "LeetCode Questions"
+    NEETCODE_SOLUTIONS = "NeetCode Solutions"
     ROLES = "Roles"
     ADMIN = "Admin"
     CODEGRIND_TEAM = "CodeGrind Team"
@@ -80,10 +81,15 @@ Credit to [LeetCode Stats Card](https://github.com/JacobLinCool/LeetCode-Stats-C
 
 </problem daily:1243573686666137673>: Returns LeetCode's problem of the day
 
-</problem random:1243573686666137673>: Returns a random LeetCode question.
+</problem random:1243573686666137673>: Returns a random LeetCode problem.
 >    - `difficulty` _(optional)_: A difficulty level (easy, medium or hard). By default this will be set to a random difficulty level.
 
-</problem search:1243573686666137673>: Display your searched LeetCode question.""",
+</problem search:1243573686666137673>: Display your searched LeetCode problem.""",
+    CommandCategory.NEETCODE_SOLUTIONS: """
+## NeetCode Solutions
+
+</neetcode:1252639140478976010>: Display NeetCode's solution for your searched LeetCode problem.
+>    - `language` _(optional)_: The desired programming language""",
     CommandCategory.ROLES: """
 ## Roles
 
@@ -130,12 +136,14 @@ Note: please press the 'save' button twice!
 ## CodeGrind Team
 
 ### Developers
-Nano (<@814656377188384810>)
 Kevin (<@335154148976885770>)
+Nano (<@814656377188384810>)
 
 ### Contributors
+[Chris](<https://www.linkedin.com/in/chris-fowler-b3b96a191/>) (<@586527718653558796>): Created the /neetcode command.
+[Valgo](<https://github.com/svn27/>) (<@659535036206415883>): Implemented tracking of the LeetCode language and skills problem count.
+[Aalaap](<https://www.linkedin.com/in/aalaap-d-969703239/>) (<@635232267458969631>): Created the /problem commands.
 [Shaan](<https://github.com/ShaanCoding>) (<@199662959964848128>): Created the /roles command.
-[Aalaap](<https://www.linkedin.com/in/aalaap-d-969703239/>) (<@635232267458969631>): Created the /problem commands. 
 
 Thank you to all the contributors for helping improve CodeGrind Bot!
 

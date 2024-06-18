@@ -29,7 +29,6 @@ async def search_neetcode_embed(
 async def neetcode_embed(
     bot: "DiscordBot", question_id: str, question_title: str, language: Language
 ) -> discord.Embed:
-
     info = await fetch_question_info(bot, question_title)
     neetcode_link = generate_neetcode_link(question_id, question_title, language)
     response_data = await bot.http_client.fetch_data(neetcode_link, timeout=10)
@@ -37,9 +36,11 @@ async def neetcode_embed(
         return error_embed()
 
     embed = discord.Embed(
-        title=f"{question_id}. {info.title} - Neetcode Solution ({language.value.capitalize()}) ",
+        title=f"{question_id}. {info.title} - NeetCode Solution "
+        f"({language.value.capitalize()}) ",
         url="https://neetcode.io/",
-        description=f"```{language.value}\n{response_data}\n```",
+        # `" " * 85` is needed to force the code block to span its max possible width.
+        description=f"```{language.value}\n{' ' * 85}\n{response_data}\n```",
         colour=discord.Colour.light_embed(),
     )
     return embed

@@ -44,7 +44,7 @@ class NeetcodeCog(commands.Cog):
         """
         Get the NeetCode solution of a LeetCode problem
 
-        :param language: The programming language of the solution
+        :param language: The desired programming language
         """
         await interaction.response.send_modal(
             ProblemSearchModal(
