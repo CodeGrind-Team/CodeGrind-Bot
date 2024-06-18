@@ -30,7 +30,14 @@ class HttpClient:
         """
         try:
             async with self.session.get(*args, **kwargs) as response:
-                return await response.text()
+                match response.status:
+                    case 200:
+                        return await response.text()
+                    case _:
+                        self.bot.logger.exception(
+                            f"Failed to fetch data: (code: {response.status})"
+                        )
+
         except (aiohttp.ClientError, asyncio.TimeoutError) as e:
             self.bot.logger.exception(f"Failed to fetch data: {e}")
 

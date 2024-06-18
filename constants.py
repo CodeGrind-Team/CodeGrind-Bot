@@ -29,6 +29,23 @@ class RankEmoji(Enum):
     THIRD = "🥉"
 
 
+class Language(Enum):
+    PYTHON3 = "python"
+    JAVA = "java"
+    CPP = "c++"
+    C = "c"
+    CSHARP = "c#"
+    JAVASCRIPT = "javascript"
+    GO = "go"
+    KOTLIN = "kotlin"
+    RUBY = "ruby"
+    SWIFT = "swift"
+    RUST = "rust"
+    SCALA = "scala"
+    TYPESCRIPT = "typescript"
+    DART = "dart"
+
+
 class StatsCardExtensions(Enum):
     ACTIVITY = "activity"
     HEATMAP = "heatmap"

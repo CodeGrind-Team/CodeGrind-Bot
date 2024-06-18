@@ -7,7 +7,11 @@ from discord.ext import commands
 
 from constants import Difficulty
 from middleware import defer_interaction
-from ui.embeds.problems import daily_question_embed, random_question_embed
+from ui.embeds.problems import (
+    daily_question_embed,
+    random_question_embed,
+    search_question_embed,
+)
 from ui.modals.problems import ProblemSearchModal
 
 if TYPE_CHECKING:
@@ -30,7 +34,9 @@ class ProblemsCog(commands.GroupCog, name="problem"):
         """
         Search for a LeetCode problem
         """
-        await interaction.response.send_modal(ProblemSearchModal(self.bot))
+        await interaction.response.send_modal(
+            ProblemSearchModal(self.bot, search_question_embed)
+        )
 
     @app_commands.command(name="daily")
     @defer_interaction()
