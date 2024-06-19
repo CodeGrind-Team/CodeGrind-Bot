@@ -44,8 +44,8 @@ async def neetcode_embed(
 
     # `" " * 85` is needed to force the code block to span its max possible width.
     code_block = (
-        f"**Click to reveal the solution**:\n||```{language}\n"
-        f"{' ' * 85}\n{response_data}```\n||"
+        f"**Click to reveal the solution**:\n||```{language.value}\n{' ' * 85}"
+        f"\n{response_data}\n```||"
     )
 
     embed = discord.Embed(
