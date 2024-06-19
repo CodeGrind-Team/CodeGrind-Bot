@@ -37,14 +37,16 @@ async def neetcode_embed(
     if not response_data:
         return error_embed()
 
-    # `" " * 85` is needed to force the code block to span its max possible width.
-    code_block = f"**Click to reveal the solution**:\n||```{language}\n{" " * 85}\n"
-
     if "||" in response_data:
+        # `U+200B` is a zero-width space character, this prevents Discord from
+        # collapsing the spoiler tag early.
         response_data = response_data.replace("||", "|\u200b|")
-        # `U+200B` is a zero-width space character, this prevents Discord from collapsing the spoiler tag.
 
-    code_block += f"{response_data}```\n||"
+    # `" " * 85` is needed to force the code block to span its max possible width.
+    code_block = (
+        f"**Click to reveal the solution**:\n||```{language}\n"
+        f"{' ' * 85}\n{response_data}```\n||"
+    )
 
     embed = discord.Embed(
         title=f"{info.problem_id}. {info.name} - NeetCode Solution "
