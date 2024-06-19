@@ -138,6 +138,7 @@ Note: please press the 'save' button twice!
 ### Developers
 Kevin (<@335154148976885770>)
 Nano (<@814656377188384810>)
+Liam (<@344132308644659201>)
 
 ### Contributors
 [Chris](<https://www.linkedin.com/in/chris-fowler-b3b96a191/>) (<@586527718653558796>): Created the /neetcode command.
