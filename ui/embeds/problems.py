@@ -27,7 +27,7 @@ async def daily_question_embed(bot: "DiscordBot") -> discord.Embed:
 
 
 async def search_question_embed(bot: "DiscordBot", search_text: str) -> discord.Embed:
-    question_title, _ = await search_question(bot, search_text)
+    question_title = await search_question(bot, search_text)
 
     if not question_title:
         return question_error_embed()
