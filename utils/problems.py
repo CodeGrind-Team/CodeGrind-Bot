@@ -269,8 +269,7 @@ async def search_question(bot: "DiscordBot", text: str) -> str | None:
             ) {
                 questions:
                     data {
-                        titleSlug,
-                        questionFrontendId
+                        titleSlug
                     }
                 }
             }
@@ -295,7 +294,6 @@ async def search_question(bot: "DiscordBot", text: str) -> str | None:
             return
 
         question_title_slug = questions_matched_list["questions"][0]["titleSlug"]
-        question_id = questions_matched_list["questions"][0]["questionFrontendId"]
 
     except ValueError:
         bot.logger.exception(
@@ -303,7 +301,7 @@ async def search_question(bot: "DiscordBot", text: str) -> str | None:
         )
         return
 
-    return question_title_slug, question_id
+    return question_title_slug
 
 
 async def fetch_question_info(

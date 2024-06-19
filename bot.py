@@ -34,6 +34,7 @@ from database.models import Preference, Server
 from database.setup import initialise_mongodb_conn
 from utils.dev import ChannelLogger
 from utils.http_client import HttpClient
+from utils.neetcode import NeetcodeSolutions, schedule_update_neetcode_solutions
 from utils.notifications import (
     process_daily_question_and_stats_update,
     schedule_question_and_stats_update,
@@ -73,6 +74,7 @@ class DiscordBot(commands.Bot):
         self.html2image = Html2Image(browser_executable=config.BROWSER_EXECUTABLE_PATH)
         self.channel_logger = ChannelLogger(self, self.config.LOGGING_CHANNEL_ID)
         self.ratings = Ratings(self)
+        self.neetcode = NeetcodeSolutions(self)
         self.http_client: HttpClient | None = None
         self.topggpy: topgg.DBLClient | None = None
 
@@ -138,6 +140,7 @@ class DiscordBot(commands.Bot):
         await self.init_topgg()
 
         schedule_update_ratings.start(self)
+        schedule_update_neetcode_solutions.start(self)
         schedule_question_and_stats_update.start(self)
 
     async def on_interaction(self, interaction: discord.Interaction) -> None:
