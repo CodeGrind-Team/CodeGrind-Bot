@@ -62,7 +62,8 @@ class StatsCog(commands.Cog):
         embed, file = await stats_embed(
             self.bot,
             user.leetcode_id,
-            (preference.name if preference else user.leetcode_id),
+            (preference.name if preference else interaction.user.name),
+            (preference.url if preference else False),
             extension.value,
         )
 

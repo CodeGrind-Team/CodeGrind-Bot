@@ -15,6 +15,7 @@ async def stats_embed(
     bot: "DiscordBot",
     leetcode_id: str,
     display_name: str,
+    display_url: bool,
     extension: StatsCardExtensions,
 ) -> tuple[discord.Embed, discord.File | None]:
     file = await stats_card(bot, leetcode_id, extension)
@@ -22,11 +23,17 @@ async def stats_embed(
     if not file:
         return error_embed(), None
 
-    embed = discord.Embed(
-        title=display_name,
-        url=f"https://leetcode.com/{leetcode_id}",
-        colour=discord.Colour.orange(),
-    )
+    if display_url:
+        embed = discord.Embed(
+            title=display_name,
+            url=f"https://leetcode.com/{leetcode_id}",
+            colour=discord.Colour.orange(),
+        )
+    else:
+        embed = discord.Embed(
+            title=display_name,
+            colour=discord.Colour.orange(),
+        )
     embed.set_image(url=f"attachment://{leetcode_id}.png")
 
     return embed, file
