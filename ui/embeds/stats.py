@@ -23,7 +23,7 @@ async def stats_embed(
     # use a randomised filename instead of the user's leetcode_id
     filename = ''.join(random.choices(string.ascii_letters + string.digits, k=25))
 
-    file = await stats_card(bot, leetcode_id, filename, extension)
+    file = await stats_card(bot, leetcode_id, filename, extension, display_url)
 
     if not file:
         return error_embed(), None

@@ -18,6 +18,8 @@ from database.models import (
 from utils.common import to_thread
 from utils.problems import fetch_problems_solved_and_rank
 
+from PIL import Image
+
 if TYPE_CHECKING:
     # To prevent circular imports
     from bot import DiscordBot
@@ -118,6 +120,7 @@ def stats_card(
     leetcode_id: str,
     filename: str,
     extension: StatsCardExtensions,
+    display_url: bool,
 ) -> tuple[discord.File | None]:
     width = 500
     height = 200
@@ -140,6 +143,9 @@ def stats_card(
 
     paths = bot.html2image.screenshot(url=url, size=(width, height))
 
+    if not display_url:
+        anonymise_stats_card(paths[0])
+
     with open(paths[0], "rb") as f:
         # read the file contents
         data = f.read()
@@ -153,3 +159,25 @@ def stats_card(
     os.remove(paths[0])
 
     return file
+
+def anonymise_stats_card(path: str) -> None:
+    """
+    Anonymise the stats card at the given path using Pillow (PIL).
+
+    This function modifies any given stats card to remove the user's
+    LeetCode ID from the image if they want to be anonymous.
+
+    :param path: The path to the stats card image.
+    """
+    try:
+        stats_card = Image.open(path)
+
+        hidden_banner = Image.open("ui\\hidden_banner.png")
+
+        region = hidden_banner.crop((0, 0, 435, 30))
+
+        stats_card.paste(region, (60, 20, 495, 50))
+
+        stats_card.save(path)
+    except Exception as e:
+        print(f"An error occurred while anonymising the stats card: {e}")

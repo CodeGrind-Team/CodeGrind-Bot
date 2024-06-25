@@ -30,6 +30,7 @@ lazy-model==0.2.0
 markdownify==0.12.1
 motor==3.4.0
 multidict==6.0.5
+pillow==10.2.0
 proto-plus==1.23.0
 protobuf==4.25.3
 pyasn1==0.6.0
