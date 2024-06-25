@@ -1,6 +1,8 @@
 from typing import TYPE_CHECKING
 
 import discord
+import random
+import string
 
 from constants import StatsCardExtensions
 from ui.embeds.common import error_embed
@@ -18,7 +20,10 @@ async def stats_embed(
     display_url: bool,
     extension: StatsCardExtensions,
 ) -> tuple[discord.Embed, discord.File | None]:
-    file = await stats_card(bot, leetcode_id, extension)
+    # use a randomised filename instead of the user's leetcode_id
+    filename = ''.join(random.choices(string.ascii_letters + string.digits, k=25))
+
+    file = await stats_card(bot, leetcode_id, filename, extension)
 
     if not file:
         return error_embed(), None
@@ -34,7 +39,7 @@ async def stats_embed(
             title=display_name,
             colour=discord.Colour.orange(),
         )
-    embed.set_image(url=f"attachment://{leetcode_id}.png")
+    embed.set_image(url=f"attachment://{filename}.png")
 
     return embed, file
 

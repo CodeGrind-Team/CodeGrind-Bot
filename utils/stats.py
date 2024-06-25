@@ -116,6 +116,7 @@ async def update_stats(
 def stats_card(
     bot: "DiscordBot",
     leetcode_id: str,
+    filename: str,
     extension: StatsCardExtensions,
 ) -> tuple[discord.File | None]:
     width = 500
@@ -147,7 +148,7 @@ def stats_card(
         # move the cursor to the beginning
         image_binary.seek(0)
 
-        file = discord.File(fp=image_binary, filename=f"{leetcode_id}.png")
+        file = discord.File(fp=image_binary, filename=f"{filename}.png")
 
     os.remove(paths[0])
 
