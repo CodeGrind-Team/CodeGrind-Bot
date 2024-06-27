@@ -18,7 +18,7 @@ from database.models import (
 from utils.common import to_thread
 from utils.problems import fetch_problems_solved_and_rank
 
-from PIL import Image
+from PIL import Image, UnidentifiedImageError
 
 if TYPE_CHECKING:
     # To prevent circular imports
@@ -180,5 +180,5 @@ def anonymise_stats_card(path: str) -> None:
         stats_card.paste(region, (60, 20, 495, 50))
 
         stats_card.save(path)
-    except Exception as e:
-        print(f"An error occurred while anonymising the stats card: {e}")
+    except UnidentifiedImageError as e:
+        print(f"An error occurred while opening or identifying the stats card image: {e}")
