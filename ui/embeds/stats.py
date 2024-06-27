@@ -20,7 +20,7 @@ async def stats_embed(
     display_url: bool,
     extension: StatsCardExtensions,
 ) -> tuple[discord.Embed, discord.File | None]:
-    # use a randomised filename instead of the user's leetcode_id
+    # Use a randomised filename instead of the user's leetcode_id.
     filename = ''.join(random.choices(string.ascii_letters + string.digits, k=25))
 
     file = await stats_card(bot, leetcode_id, filename, extension, display_url)
