@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 
 import discord
 import requests
+from PIL import Image, UnidentifiedImageError
 
 from constants import StatsCardExtensions
 from database.models import (
@@ -17,8 +18,6 @@ from database.models import (
 )
 from utils.common import to_thread
 from utils.problems import fetch_problems_solved_and_rank
-
-from PIL import Image, UnidentifiedImageError
 
 if TYPE_CHECKING:
     # To prevent circular imports
@@ -160,6 +159,7 @@ def stats_card(
 
     return file
 
+
 @to_thread
 def anonymise_stats_card(path: str) -> None:
     """
@@ -181,4 +181,6 @@ def anonymise_stats_card(path: str) -> None:
 
         stats_card.save(path)
     except UnidentifiedImageError as e:
-        print(f"An error occurred while opening or identifying the stats card image: {e}")
+        print(
+            f"An error occurred while opening or identifying the stats card image: {e}"
+        )
