@@ -28,17 +28,11 @@ async def stats_embed(
     if not file:
         return error_embed(), None
 
-    if display_url:
-        embed = discord.Embed(
-            title=display_name,
-            url=f"https://leetcode.com/{leetcode_id}",
-            colour=discord.Colour.orange(),
-        )
-    else:
-        embed = discord.Embed(
-            title=display_name,
-            colour=discord.Colour.orange(),
-        )
+    embed = discord.Embed(
+        title=display_name,
+        url=f"https://leetcode.com/{leetcode_id}" if display_url else None,
+        colour=discord.Colour.orange(),
+    )
     embed.set_image(url=f"attachment://{filename}.png")
 
     return embed, file
