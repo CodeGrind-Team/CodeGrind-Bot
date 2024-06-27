@@ -160,6 +160,7 @@ def stats_card(
 
     return file
 
+@to_thread
 def anonymise_stats_card(path: str) -> None:
     """
     Anonymise the stats card at the given path using Pillow (PIL).
