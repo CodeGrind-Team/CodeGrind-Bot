@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 
 import discord
 import requests
+from PIL import Image, UnidentifiedImageError
 
 from constants import StatsCardExtensions
 from database.models import (
@@ -116,7 +117,9 @@ async def update_stats(
 def stats_card(
     bot: "DiscordBot",
     leetcode_id: str,
+    filename: str,
     extension: StatsCardExtensions,
+    display_url: bool,
 ) -> tuple[discord.File | None]:
     width = 500
     height = 200
@@ -139,6 +142,9 @@ def stats_card(
 
     paths = bot.html2image.screenshot(url=url, size=(width, height))
 
+    if not display_url:
+        anonymise_stats_card(bot, paths[0])
+
     with open(paths[0], "rb") as f:
         # read the file contents
         data = f.read()
@@ -147,8 +153,30 @@ def stats_card(
         # move the cursor to the beginning
         image_binary.seek(0)
 
-        file = discord.File(fp=image_binary, filename=f"{leetcode_id}.png")
+        file = discord.File(fp=image_binary, filename=f"{filename}.png")
 
     os.remove(paths[0])
 
     return file
+
+
+def anonymise_stats_card(bot: "DiscordBot", path: str) -> None:
+    """
+    Anonymise the stats card at the given path using Pillow (PIL).
+
+    This function modifies any given stats card to remove the user's
+    LeetCode ID from the image if they want to be anonymous.
+
+    :param path: The path to the stats card image.
+    """
+    try:
+        stats_card = Image.open(path)
+        hidden_banner = Image.open("ui/assets/stats_card_hidden_banner.png")
+        region = hidden_banner.crop((0, 0, 435, 30))
+        stats_card.paste(region, (60, 20, 495, 50))
+        stats_card.save(path)
+
+    except UnidentifiedImageError as e:
+        bot.logger.exception(
+            f"An error occurred while opening or identifying the stats card image: {e}"
+        )
