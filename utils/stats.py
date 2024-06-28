@@ -143,7 +143,7 @@ def stats_card(
     paths = bot.html2image.screenshot(url=url, size=(width, height))
 
     if not display_url:
-        anonymise_stats_card(paths[0])
+        anonymise_stats_card(bot, paths[0])
 
     with open(paths[0], "rb") as f:
         # read the file contents
@@ -160,8 +160,7 @@ def stats_card(
     return file
 
 
-@to_thread
-def anonymise_stats_card(path: str) -> None:
+def anonymise_stats_card(bot: "DiscordBot", path: str) -> None:
     """
     Anonymise the stats card at the given path using Pillow (PIL).
 
@@ -172,15 +171,12 @@ def anonymise_stats_card(path: str) -> None:
     """
     try:
         stats_card = Image.open(path)
-
-        hidden_banner = Image.open("ui\\hidden_banner.png")
-
+        hidden_banner = Image.open("ui/assets/stats_card_hidden_banner.png")
         region = hidden_banner.crop((0, 0, 435, 30))
-
         stats_card.paste(region, (60, 20, 495, 50))
-
         stats_card.save(path)
+
     except UnidentifiedImageError as e:
-        print(
+        bot.logger.exception(
             f"An error occurred while opening or identifying the stats card image: {e}"
         )
