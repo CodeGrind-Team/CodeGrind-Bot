@@ -173,6 +173,7 @@ async def fetch_random_question(
         query randomQuestion($categorySlug: String, $filters: QuestionListFilterInput) {
             randomQuestion(categorySlug: $categorySlug, filters: $filters) {
                 titleSlug
+                isPaidOnly
             }
         }
         """,
@@ -193,6 +194,10 @@ async def fetch_random_question(
         return
 
     try:
+        # If the question is premium only, fetch a different question.
+        if response_data["data"]["randomQuestion"]["isPaidOnly"]:
+            return await fetch_random_question(bot, difficulty)
+
         title_slug = response_data["data"]["randomQuestion"]["titleSlug"]
 
     except ValueError:
