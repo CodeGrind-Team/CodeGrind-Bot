@@ -67,7 +67,7 @@ async def process_daily_question_and_stats_update(
         bot.logger.info("Daily question sent to all servers")
 
     if update_stats:
-        await update_all_user_stats(bot, reset_day)
+        await update_all_user_stats(bot, reset_day, reset_week, reset_month)
 
     async for server in Server.all():
         await Server.find_one(Server.id == server.id).update(

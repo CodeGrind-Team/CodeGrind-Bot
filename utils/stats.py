@@ -119,15 +119,29 @@ async def update_stats(
     await user.save()
 
 
-async def update_wins() -> None:
+async def update_wins(
+    reset_day: bool = False,
+    reset_week: bool = False,
+    reset_month: bool = False,
+) -> None:
     """
     Update the win counts for all users in all servers.
     """
     all_users = await User.all().to_list()
 
-    # Collect scores for all users in each period.
+    # Map periods to their respective reset flags and increment fields.
+    periods_and_resets = (
+        (Period.DAY, reset_day, Profile.win_count.days),
+        (Period.WEEK, reset_week, Profile.win_count.weeks),
+        (Period.MONTH, reset_month, Profile.win_count.months),
+    )
+
+    # Collect scores of all users for each period.
     user_to_score: dict[Period, dict[int, int]] = {}
-    for period in {Period.DAY, Period.WEEK, Period.MONTH}:
+    for period, reset, _ in periods_and_resets:
+        if not reset:
+            continue
+
         users_and_scores = await all_users_and_scores(all_users, period, previous=False)
         user_to_score[period] = {user.id: score for user, score in users_and_scores}
 
@@ -135,30 +149,45 @@ async def update_wins() -> None:
         profiles = await Profile.find_many(Profile.server_id == server.id).to_list()
         users: list[int] = [profile.user_id for profile in profiles]
 
+        # Could occur for global server with ID 0. Prevents error from occurring when
+        # max is used.
+        if not users:
+            continue
+
         # Update win counts for the profiles.
-        for period, increment_field in (
-            (Period.DAY, Profile.win_count.days),
-            (Period.WEEK, Profile.win_count.weeks),
-            (Period.MONTH, Profile.win_count.months),
-        ):
-            max_score = max(user_to_score[period][user] for user in users)
+        for period, reset, increment_field in periods_and_resets:
+            if not reset:
+                continue
+
+            max_score = max([user_to_score[period][user] for user in users])
+            # Scores of 0 don't count as a win.
+            if max_score <= 0:
+                continue
+
             winners = {
                 user_id
                 for user_id, score in user_to_score[period].items()
                 if score == max_score
             }
+
             await Profile.find_many(
-                Profile.server_id == server.id, In(User.id, winners)
+                Profile.server_id == server.id, In(Profile.user_id, winners)
             ).update(Inc({increment_field: 1}))
 
 
-async def update_all_user_stats(bot: "DiscordBot", reset_day: bool = False) -> None:
+async def update_all_user_stats(
+    bot: "DiscordBot",
+    reset_day: bool = False,
+    reset_week: bool = False,
+    reset_month: bool = False,
+) -> None:
     """
     Update stats for all users.
 
     :param reset_day: Whether the day needs resetting.
     """
-    await update_wins()
+    if reset_day or reset_week or reset_month:
+        await update_wins(reset_day, reset_week, reset_month)
 
     counter = 0
     tasks = []
