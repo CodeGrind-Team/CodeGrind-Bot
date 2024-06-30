@@ -26,7 +26,7 @@ class Profile(Document):
     server_id: Indexed(int)  # type: ignore
 
     preference: Preference
-    win_count: WinCount
+    win_count: Optional[WinCount] = Field(default_factory=WinCount)
 
     class Settings:
         name = "profiles"
