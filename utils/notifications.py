@@ -1,18 +1,16 @@
-import asyncio
 from datetime import UTC, datetime, time
 from typing import TYPE_CHECKING
 
 import discord
-from beanie.odm.operators.update.general import Inc, Set
-from beanie.operators import In
+from beanie.odm.operators.update.general import Set
 from discord.ext import tasks
 
 from constants import GLOBAL_LEADERBOARD_ID, Period
-from database.models import Profile, Server, User
+from database.models import Server
 from ui.embeds.problems import daily_question_embed
-from utils.leaderboards import all_users_and_scores, send_leaderboard_winners
+from utils.leaderboards import send_leaderboard_winners
 from utils.roles import update_roles
-from utils.stats import update_stats
+from utils.stats import update_all_user_stats
 
 if TYPE_CHECKING:
     # To prevent circular imports
@@ -131,60 +129,3 @@ async def send_daily_question(
                 f"Forbidden to share daily question to channel with ID: "
                 f"{channel_id}"
             )
-
-
-async def update_wins() -> None:
-    """
-    Update the win counts for all users in all servers.
-    """
-    all_users = await User.all().to_list()
-
-    # Collect scores for all users in each period.
-    user_to_score: dict[Period, dict[int, int]] = {}
-    for period in {Period.DAY, Period.WEEK, Period.MONTH}:
-        users_and_scores = await all_users_and_scores(all_users, period, previous=False)
-        user_to_score[period] = {user.id: score for user, score in users_and_scores}
-
-    async for server in Server.all():
-        profiles = await Profile.find_many(Profile.server_id == server.id).to_list()
-        users: list[int] = [profile.user_id for profile in profiles]
-
-        # Update win counts for the profiles.
-        for period, increment_field in (
-            (Period.DAY, Profile.win_count.days),
-            (Period.WEEK, Profile.win_count.weeks),
-            (Period.MONTH, Profile.win_count.months),
-        ):
-            max_score = max(user_to_score[period][user] for user in users)
-            winners = {
-                user_id
-                for user_id, score in user_to_score[period].items()
-                if score == max_score
-            }
-            await Profile.find_many(
-                Profile.server_id == server.id, In(User.id, winners)
-            ).update(Inc({increment_field: 1}))
-
-
-async def update_all_user_stats(bot: "DiscordBot", reset_day: bool = False) -> None:
-    """
-    Update stats for all users.
-
-    :param reset_day: Whether the day needs resetting.
-    """
-    await update_wins()
-
-    counter = 0
-    tasks = []
-    async for user in User.all():
-        task = asyncio.create_task(update_stats(bot, user, reset_day))
-        tasks.append(task)
-
-    total_users = len(tasks)
-    for completed_task in asyncio.as_completed(tasks):
-        await completed_task
-        counter += 1
-        if counter % 200 == 0 or counter == total_users:
-            bot.logger.info(f"{counter} / {total_users} users stats updated")
-
-    bot.logger.info("All users stats updated")
