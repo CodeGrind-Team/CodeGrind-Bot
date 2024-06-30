@@ -17,7 +17,7 @@ if TYPE_CHECKING:
     from bot import DiscordBot
 
 
-async def get_score(user: User, period: Period, previous: bool) -> int:
+async def user_score(user: User, period: Period, previous: bool) -> int:
     """
     Get the score for a given period for a user.
 
@@ -92,7 +92,7 @@ async def get_score(user: User, period: Period, previous: bool) -> int:
         return current_score - previous_score
 
 
-async def get_user_and_score(
+async def user_and_score(
     user: User, period: Period, previous: bool
 ) -> tuple[User, int]:
     """
@@ -104,15 +104,15 @@ async def get_user_and_score(
 
     :return: A tuple of the user and their score.
     """
-    score = await get_score(user, period, previous)
+    score = await user_score(user, period, previous)
     return user, score
 
 
-async def sort_users_by_score(
+async def all_users_and_scores(
     users: list[User], period: Period, previous: bool
 ) -> list[User]:
     """
-    Sort the users on a server by their score for a given period.
+    Fetch and calculate the scores for all users, for the selected time period.
 
     :param users: The users in the server.
     :param period: The period for which to retrieve and sort the scores.
@@ -120,16 +120,12 @@ async def sort_users_by_score(
 
     :return: A list of users sorted by their score in descending order.
     """
-    coroutines = [get_user_and_score(user, period, previous) for user in users]
+    coroutines = [user_and_score(user, period, previous) for user in users]
     users_with_scores = await asyncio.gather(*coroutines)
-    sorted_users_with_score = sorted(
-        users_with_scores, key=lambda pair: pair[1], reverse=True
-    )
-
-    return sorted_users_with_score
+    return users_with_scores
 
 
-async def get_users_from_profiles(
+async def users_from_profiles(
     server_id: int,
 ) -> tuple[dict[int, Profile], list[User]]:
     """
@@ -176,8 +172,11 @@ async def generate_leaderboard_embed(
     if not server:
         return empty_leaderboard_embed(), None
 
-    user_id_to_profile, users = await get_users_from_profiles(server_id)
-    sorted_users_with_score = await sort_users_by_score(users, period, previous)
+    user_id_to_profile, users = await users_from_profiles(server_id)
+    users_with_scores = await all_users_and_scores(users, period, previous)
+    sorted_users_with_score = sorted(
+        users_with_scores, key=lambda pair: pair[1], reverse=True
+    )
 
     pages: list[discord.Embed] = []
     num_pages = math.ceil(len(users) / users_per_page)
