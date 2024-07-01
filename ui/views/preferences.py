@@ -4,7 +4,7 @@ import discord
 from beanie.odm.operators.update.general import Set
 
 from constants import GLOBAL_LEADERBOARD_ID
-from database.models import Preference
+from database.models import Profile
 from ui.constants import PreferenceField
 
 
@@ -52,16 +52,16 @@ class UserPreferencesPromptView(discord.ui.View):
             guild_id = GLOBAL_LEADERBOARD_ID
 
         if self.curr_field in (PreferenceField.LOCAL_URL, PreferenceField.GLOBAL_URL):
-            await Preference.find_one(
-                Preference.user_id == user_id,
-                Preference.server_id == guild_id,
-            ).update(Set({Preference.url: value}))
+            await Profile.find_one(
+                Profile.preference.user_id == user_id,
+                Profile.preference.server_id == guild_id,
+            ).update(Set({Profile.preference.url: value}))
 
         elif self.curr_field == PreferenceField.GLOBAL_ANONYMOUS:
-            await Preference.find_one(
-                Preference.user_id == user_id,
-                Preference.server_id == guild_id,
-            ).update(Set({Preference.anonymous: not value}))
+            await Profile.find_one(
+                Profile.preference.user_id == user_id,
+                Profile.preference.server_id == guild_id,
+            ).update(Set({Profile.preference.anonymous: not value}))
 
     async def _increment_page(self, interaction: discord.Interaction):
         self.page_num += 1

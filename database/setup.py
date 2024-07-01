@@ -3,7 +3,7 @@ import os
 from beanie import init_beanie
 from motor.motor_asyncio import AsyncIOMotorClient
 
-from .models import Preference, Record, Server, User
+from .models import Profile, Record, Server, User
 
 
 async def initialise_mongodb_conn(
@@ -18,7 +18,7 @@ async def initialise_mongodb_conn(
 
     await init_beanie(
         database=mongodb_client.bot,
-        document_models=[Preference, Record, Server, User],
+        document_models=[Profile, Record, Server, User],
     )
 
     server = await Server.get(global_leaderboard_id)

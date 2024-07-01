@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 import discord
 
 from constants import GLOBAL_LEADERBOARD_ID
-from database.models import Preference, Record, Stats, Submissions, User
+from database.models import Preference, Profile, Record, Stats, Submissions, User
 from ui.embeds.users import (
     connect_account_instructions_embed,
     profile_added_embed,
@@ -82,25 +82,29 @@ async def register(
         ),
     )
 
-    preference_server = Preference(
+    profile_server = Profile(
         user_id=user_id,
         server_id=server_id,
-        # Use server username.
-        name=interaction.user.display_name,
+        preference=Preference(
+            # Use server username.
+            name=interaction.user.display_name,
+        ),
     )
 
-    preference_global = Preference(
+    profile_global = Profile(
         user_id=user_id,
         server_id=GLOBAL_LEADERBOARD_ID,
-        # User account username.
-        name=interaction.user.name,
-        url=False,
+        preference=Preference(
+            # User account username.
+            name=interaction.user.name,
+            url=False,
+        ),
     )
 
     await user.save()
     await record.create()
-    await preference_server.create()
-    await preference_global.create()
+    await profile_server.create()
+    await profile_global.create()
 
     await give_verified_role(interaction.guild, interaction.user)
 
@@ -124,24 +128,26 @@ async def login(
     """
     await give_verified_role(interaction.guild, interaction.user)
 
-    preference = await Preference.find_one(
-        Preference.user_id == user_id,
-        Preference.server_id == server_id,
+    profile = await Profile.find_one(
+        Profile.preference.user_id == user_id,
+        Profile.preference.server_id == server_id,
     )
 
-    if preference:
+    if profile:
         # User has already been added to the server.
         embed = user_already_added_in_server_embed()
         await send_message(embed=embed)
     else:
-        # Add user's preferences for this server.
-        preference = Preference(
+        # Add user's profile for this server.
+        profile = Profile(
             user_id=user_id,
             server_id=server_id,
-            name=user_display_name,
+            preference=Preference(
+                name=user_display_name,
+            ),
         )
 
-        await preference.create()
+        await profile.create()
 
         embed = synced_existing_user_embed()
         await send_message(embed=embed)
@@ -197,8 +203,8 @@ async def unlink_user_from_server(user_id: int, server_id: int) -> None:
     :param send_message: The webhook to send messages.
     :param leetcode_id: The LeetCode ID of the user.
     """
-    await Preference.find_many(
-        Preference.user_id == user_id, Preference.server_id == server_id
+    await Profile.find_many(
+        Profile.user_id == user_id, Profile.server_id == server_id
     ).delete()
 
 
@@ -208,6 +214,6 @@ async def delete_user(user_id: int) -> None:
 
     :param user_id: The user's id.
     """
-    await Preference.find_many(Preference.user_id == user_id).delete()
+    await Profile.find_many(Profile.user_id == user_id).delete()
     await Record.find_many(Record.user_id == user_id).delete()
     await User.find_one(User.id == user_id).delete()

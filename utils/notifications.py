@@ -1,4 +1,3 @@
-import asyncio
 from datetime import UTC, datetime, time
 from typing import TYPE_CHECKING
 
@@ -7,11 +6,11 @@ from beanie.odm.operators.update.general import Set
 from discord.ext import tasks
 
 from constants import GLOBAL_LEADERBOARD_ID, Period
-from database.models import Server, User
+from database.models import Server
 from ui.embeds.problems import daily_question_embed
 from utils.leaderboards import send_leaderboard_winners
 from utils.roles import update_roles
-from utils.stats import update_stats
+from utils.stats import update_all_user_stats
 
 if TYPE_CHECKING:
     # To prevent circular imports
@@ -68,7 +67,7 @@ async def process_daily_question_and_stats_update(
         bot.logger.info("Daily question sent to all servers")
 
     if update_stats:
-        await update_all_user_stats(bot, reset_day)
+        await update_all_user_stats(bot, reset_day, reset_week, reset_month)
 
     async for server in Server.all():
         await Server.find_one(Server.id == server.id).update(
@@ -130,24 +129,3 @@ async def send_daily_question(
                 f"Forbidden to share daily question to channel with ID: "
                 f"{channel_id}"
             )
-
-
-async def update_all_user_stats(bot: "DiscordBot", reset_day: bool = False) -> None:
-    """
-    Update stats for all users.
-    """
-    counter = 0
-
-    tasks = []
-    async for user in User.all():
-        task = asyncio.create_task(update_stats(bot, user, reset_day))
-        tasks.append(task)
-
-    total_users = len(tasks)
-    for completed_task in asyncio.as_completed(tasks):
-        await completed_task
-        counter += 1
-        if counter % 100 == 0 or counter == total_users:
-            bot.logger.info(f"{counter} / {total_users} users stats updated")
-
-    bot.logger.info("All users stats updated")
