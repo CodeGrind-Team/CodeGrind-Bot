@@ -173,6 +173,7 @@ async def fetch_random_question(
         query randomQuestion($categorySlug: String, $filters: QuestionListFilterInput) {
             randomQuestion(categorySlug: $categorySlug, filters: $filters) {
                 titleSlug
+                isPaidOnly
             }
         }
         """,
@@ -186,23 +187,36 @@ async def fetch_random_question(
         },
     }
 
-    response_data = await bot.http_client.post_data(
-        URL, json=payload, headers=HEADERS, timeout=10
-    )
-    if not response_data:
-        return
+    # Maximum number of attempts to fetch a non-premium question.
+    MAX_ATTEMPTS = 10
 
-    try:
-        title_slug = response_data["data"]["randomQuestion"]["titleSlug"]
-
-    except ValueError:
-        bot.logger.exception(
-            f"fetch_random_question: failed to decode json. Error code "
-            f"({response_data})"
+    # Try to fetch a non-premium question for a maximum of MAX_ATTEMPTS times.
+    # This prevents excessive (and even possibly infinite) API calls, ensuring safety.
+    for _ in range(MAX_ATTEMPTS):
+        response_data = await bot.http_client.post_data(
+            URL, json=payload, headers=HEADERS, timeout=10
         )
-        return
+        if not response_data:
+            return
 
-    return title_slug
+        try:
+            question = response_data["data"]["randomQuestion"]
+
+            if not question["isPaidOnly"]:
+                return question["titleSlug"]
+
+        except ValueError:
+            bot.logger.exception(
+                f"fetch_random_question: failed to decode json. Error code "
+                f"({response_data})"
+            )
+            return
+
+    # Log a warning if no non-premium question is found after MAX_ATTEMPTS attempts.
+    bot.logger.warning(
+        f"fetch_random_question: failed to find an unpaid question after {MAX_ATTEMPTS} attempts"
+    )
+    return
 
 
 async def fetch_daily_question(bot: "DiscordBot") -> str | None:
