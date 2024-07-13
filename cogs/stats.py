@@ -6,7 +6,7 @@ from discord import app_commands
 from discord.ext import commands
 
 from constants import StatsCardExtensions
-from database.models import Preference, User
+from database.models import Profile, User
 from middleware import defer_interaction
 from ui.embeds.stats import account_hidden_embed, stats_embed
 from ui.embeds.users import account_not_found_embed
@@ -48,11 +48,13 @@ class StatsCog(commands.Cog):
             await interaction.followup.send(embed=account_not_found_embed())
             return
 
-        preference = await Preference.find_one(
-            Preference.user_id == user_id, Preference.server_id == interaction.guild.id
+        profile = await Profile.find_one(
+            Profile.user_id == user_id, Profile.server_id == interaction.guild.id
         )
 
-        if not preference or (user.id != interaction.user.id and not preference.url):
+        if not profile or (
+            user.id != interaction.user.id and not profile.preference.url
+        ):
             await interaction.followup.send(embed=account_hidden_embed())
             return
 
@@ -62,8 +64,8 @@ class StatsCog(commands.Cog):
         embed, file = await stats_embed(
             self.bot,
             user.leetcode_id,
-            (preference.name if preference else interaction.user.name),
-            (preference.url if preference else False),
+            (profile.preference.name if profile else interaction.user.name),
+            (profile.preference.url if profile else False),
             extension.value,
         )
 

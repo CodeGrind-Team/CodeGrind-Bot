@@ -2,7 +2,7 @@ from datetime import UTC, datetime
 
 import discord
 
-from database.models import Preference
+from database.models import Profile
 from ui.embeds.preferences import preferences_update_prompt_embeds
 from ui.views.preferences import UserPreferencesPromptView
 
@@ -21,18 +21,19 @@ async def update_user_preferences_prompt(
     sent only if the preference has not been updated in over 30 days.
     """
 
-    preference = await Preference.find_one(
-        Preference.user_id == interaction.user.id,
-        Preference.server_id == interaction.guild.id,
+    profile = await Profile.find_one(
+        Profile.user_id == interaction.user.id,
+        Profile.server_id == interaction.guild.id,
     )
 
-    if not preference:
+    if not profile:
         return
 
     if (
         reminder
-        and preference.last_updated
-        and (datetime.now(UTC) - preference.last_updated.astimezone(UTC)).days <= 30
+        and profile.preference.last_updated
+        and (datetime.now(UTC) - profile.preference.last_updated.astimezone(UTC)).days
+        <= 30
     ):
         return
 
@@ -42,5 +43,5 @@ async def update_user_preferences_prompt(
     await interaction.followup.send(embed=pages[0].embed, view=view, ephemeral=True)
     await view.wait()
 
-    preference.last_updated = datetime.now(UTC)
-    await preference.save_changes()
+    profile.preference.last_updated = datetime.now(UTC)
+    await profile.save_changes()

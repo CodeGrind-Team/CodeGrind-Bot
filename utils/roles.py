@@ -1,7 +1,7 @@
 import discord
 
 from constants import MILESTONE_ROLES, STREAK_ROLES, VERIFIED_ROLE
-from database.models import Preference, User
+from database.models import Profile, User
 
 
 async def create_roles_from_string(guild: discord.Guild, role: str) -> None:
@@ -105,8 +105,8 @@ async def update_roles(guild: discord.Guild, server_id: int) -> None:
     if not guild.me.guild_permissions.manage_roles:
         return
 
-    async for preference in Preference.find_many(Preference.server_id == server_id):
-        user = await User.find_one(User.id == preference.user_id)
+    async for profile in Profile.find_many(Profile.server_id == server_id):
+        user = await User.find_one(User.id == profile.user_id)
 
         if not user:
             # This shouldn't happen

@@ -7,7 +7,7 @@ import discord
 from beanie.operators import In
 
 from constants import GLOBAL_LEADERBOARD_ID, Period, RankEmoji
-from database.models import Preference, Record, Server, User
+from database.models import Profile, Record, Server, User
 from ui.embeds.leaderboards import empty_leaderboard_embed, leaderboard_embed
 from ui.views.leaderboards import LeaderboardPagination
 from utils.common import strftime_with_suffix
@@ -17,7 +17,7 @@ if TYPE_CHECKING:
     from bot import DiscordBot
 
 
-async def get_score(user: User, period: Period, previous: bool) -> int:
+async def user_score(user: User, period: Period, previous: bool) -> int:
     """
     Get the score for a given period for a user.
 
@@ -92,7 +92,7 @@ async def get_score(user: User, period: Period, previous: bool) -> int:
         return current_score - previous_score
 
 
-async def get_user_and_score(
+async def user_and_score(
     user: User, period: Period, previous: bool
 ) -> tuple[User, int]:
     """
@@ -104,15 +104,15 @@ async def get_user_and_score(
 
     :return: A tuple of the user and their score.
     """
-    score = await get_score(user, period, previous)
+    score = await user_score(user, period, previous)
     return user, score
 
 
-async def sort_users_by_score(
+async def all_users_and_scores(
     users: list[User], period: Period, previous: bool
 ) -> list[User]:
     """
-    Sort the users on a server by their score for a given period.
+    Fetch and calculate the scores for all users, for the selected time period.
 
     :param users: The users in the server.
     :param period: The period for which to retrieve and sort the scores.
@@ -120,36 +120,26 @@ async def sort_users_by_score(
 
     :return: A list of users sorted by their score in descending order.
     """
-    coroutines = [get_user_and_score(user, period, previous) for user in users]
+    coroutines = [user_and_score(user, period, previous) for user in users]
     users_with_scores = await asyncio.gather(*coroutines)
-    sorted_users_with_score = sorted(
-        users_with_scores, key=lambda pair: pair[1], reverse=True
-    )
-
-    return sorted_users_with_score
+    return users_with_scores
 
 
-async def get_users_from_preferences(
+async def users_from_profiles(
     server_id: int,
-) -> tuple[dict[int, Preference], list[User]]:
+) -> tuple[dict[int, Profile], list[User]]:
     """
-    Retrieves the users that are part of a server, and their respective preferences.
+    Retrieves the users that are part of a server, and their respective profiles.
 
     :param server_id: the server to retrieve the users that are in it.
     """
-    preferences = await Preference.find_many(
-        Preference.server_id == server_id
-    ).to_list()
+    profiles = await Profile.find_many(Profile.server_id == server_id).to_list()
 
-    user_id_to_preference = {
-        preference.user_id: preference for preference in preferences
-    }
+    user_id_to_profile = {profile.user_id: profile for profile in profiles}
 
-    users = await User.find_many(
-        In(User.id, set(user_id_to_preference.keys()))
-    ).to_list()
+    users = await User.find_many(In(User.id, set(user_id_to_profile.keys()))).to_list()
 
-    return user_id_to_preference, users
+    return user_id_to_profile, users
 
 
 async def generate_leaderboard_embed(
@@ -182,8 +172,11 @@ async def generate_leaderboard_embed(
     if not server:
         return empty_leaderboard_embed(), None
 
-    user_id_to_preference, users = await get_users_from_preferences(server_id)
-    sorted_users_with_score = await sort_users_by_score(users, period, previous)
+    user_id_to_profile, users = await users_from_profiles(server_id)
+    users_with_scores = await all_users_and_scores(users, period, previous)
+    sorted_users_with_score = sorted(
+        users_with_scores, key=lambda pair: pair[1], reverse=True
+    )
 
     pages: list[discord.Embed] = []
     num_pages = math.ceil(len(users) / users_per_page)
@@ -195,7 +188,7 @@ async def generate_leaderboard_embed(
         page_embed, place, prev_score = await build_leaderboard_page(
             period,
             server,
-            user_id_to_preference,
+            user_id_to_profile,
             sorted_users_with_score,
             winners_only,
             global_leaderboard,
@@ -220,7 +213,7 @@ async def generate_leaderboard_embed(
 async def build_leaderboard_page(
     period: Period,
     server: Server,
-    user_id_to_preference: list[dict[int, Preference]],
+    user_id_to_profile: list[dict[int, Profile]],
     sorted_users: list[tuple[User, int]],
     winners_only: bool,
     global_leaderboard: bool,
@@ -235,6 +228,7 @@ async def build_leaderboard_page(
 
     :param period: The period.
     :param server: The server.
+    :param user_id_to_profile: Mapping from user ids to their profile.
     :param sorted_users: The list of users sorted by score in the respective period.
     :param winners_only: Whether to display only the winners.
     :param global_leaderboard: Whether to display the global leaderboard.
@@ -255,15 +249,15 @@ async def build_leaderboard_page(
 
         profile_link = f"https://leetcode.com/{user.leetcode_id}"
 
-        preference = user_id_to_preference[user.id]
+        profile = user_id_to_profile[user.id]
 
-        if not preference:
+        if not profile:
             # ! would actually lead to error. Assert
             continue
 
-        name = preference.name
-        url = preference.url
-        anonymous = preference.anonymous
+        name = profile.preference.name
+        url = profile.preference.url
+        anonymous = profile.preference.anonymous
 
         if score != prev_score:
             place += 1

@@ -30,7 +30,7 @@ from discord.ext import commands
 from html2image import Html2Image
 
 from constants import GLOBAL_LEADERBOARD_ID
-from database.models import Preference, Server
+from database.models import Profile, Server
 from database.setup import initialise_mongodb_conn
 from utils.dev import ChannelLogger
 from utils.http_client import HttpClient
@@ -173,7 +173,7 @@ class DiscordBot(commands.Bot):
         self.logger.info(
             f"Guild {guild.name} (ID: {guild.id}) discord account removed",
         )
-        await Preference.find_many(Preference.server_id == guild.id).delete()
+        await Profile.find_many(Profile.server_id == guild.id).delete()
         await Server.find_one(Server.id == guild.id).delete()
 
     async def on_raw_member_remove(self, payload: discord.RawMemberRemoveEvent) -> None:
@@ -186,12 +186,12 @@ class DiscordBot(commands.Bot):
         )
         await unlink_user_from_server(payload.guild_id, payload.user.id)
 
-        preferences = await Preference.find_many(
-            Preference.user_id == payload.user.id,
-            Preference.server_id != GLOBAL_LEADERBOARD_ID,
+        profiles = await Profile.find_many(
+            Profile.user_id == payload.user.id,
+            Profile.server_id != GLOBAL_LEADERBOARD_ID,
         ).to_list()
 
-        if len(preferences) == 0:
+        if len(profiles) == 0:
             await delete_user(payload.user.id)
 
     async def on_member_update(
@@ -208,10 +208,10 @@ class DiscordBot(commands.Bot):
             "discord account updated",
         )
 
-        await Preference.find_one(
-            Preference.user_id == before.id,
-            Preference.server_id == before.guild.id,
-        ).update(Set({Preference.name: after.display_name}))
+        await Profile.find_one(
+            Profile.user_id == before.id,
+            Profile.server_id == before.guild.id,
+        ).update(Set({Profile.preference.name: after.display_name}))
 
     async def on_user_update(self, before: discord.User, after: discord.User) -> None:
         """
@@ -224,10 +224,10 @@ class DiscordBot(commands.Bot):
             f"User {before.name} (ID: {before.id}) discord account updated",
         )
 
-        await Preference.find_one(
-            Preference.user_id == before.id,
-            Preference.server_id == GLOBAL_LEADERBOARD_ID,
-        ).update(Set({Preference.name: after.display_name}))
+        await Profile.find_one(
+            Profile.user_id == before.id,
+            Profile.server_id == GLOBAL_LEADERBOARD_ID,
+        ).update(Set({Profile.preference.name: after.display_name}))
 
     async def on_message(self, message: discord.Message) -> None:
         """
