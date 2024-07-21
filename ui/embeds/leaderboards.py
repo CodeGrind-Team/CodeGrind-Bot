@@ -4,7 +4,6 @@ import pytz
 from constants import DifficultyScore
 from database.models import Server
 from ui.embeds.common import failure_embed
-from utils.common import strftime_with_suffix
 
 
 def empty_leaderboard_embed() -> discord.Embed:
@@ -27,26 +26,22 @@ def leaderboard_embed(
         title=title, description=leaderboard, colour=discord.Colour.yellow()
     )
 
-    last_updated_start = strftime_with_suffix(
-        "{S} %b %Y between %H:%M",
-        pytz.timezone("UTC")
-        .localize(server.last_update_start)
-        .astimezone(pytz.timezone(server.timezone)),
+    # Short Date/Time relative timestamp format: <t:{timestamp}:f>,
+    last_updated_start = f"<t:{int(server.last_update_start.timestamp())}:f>"
+    # Short Time relative timestamp format: <t:{timestamp}:t>,
+    last_updated_end = f"<t:{int(server.last_update_end.timestamp())}:t>"
+    page_count_text = (
+        f"\n-# Page {page_i + 1}/{page_count}" if include_page_count else ""
     )
 
-    last_updated_end = strftime_with_suffix(
-        "%H:%M %Z",
-        pytz.timezone("UTC")
-        .localize(server.last_update_end)
-        .astimezone(pytz.timezone(server.timezone)),
-    )
-
-    page_count_text = f"\nPage {page_i + 1}/{page_count}" if include_page_count else ""
-
-    embed.set_footer(
-        text=f"Easy: {DifficultyScore.EASY.value} point, Medium: "
+    # '-#' displays as subtext (smaller font and less visible colour) whilst
+    # still allowing the use of other markdown formatting and relative timestamps
+    # unlike the embed's footer.
+    embed.description += (
+        f"\n\n-# Easy: {DifficultyScore.EASY.value} point, Medium: "
         f"{DifficultyScore.MEDIUM.value} points, Hard: {DifficultyScore.HARD.value} "
-        f"points\nUpdated on {last_updated_start} - {last_updated_end}"
+        f"points"
+        f"\n-# Updated on {last_updated_start} - {last_updated_end}"
         f"{page_count_text}"
     )
 
