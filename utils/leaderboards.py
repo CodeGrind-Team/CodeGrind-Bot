@@ -10,7 +10,6 @@ from constants import GLOBAL_LEADERBOARD_ID, Period, RankEmoji
 from database.models import Profile, Record, Server, User
 from ui.embeds.leaderboards import empty_leaderboard_embed, leaderboard_embed
 from ui.views.leaderboards import LeaderboardPagination
-from utils.common import strftime_with_suffix
 
 if TYPE_CHECKING:
     # To prevent circular imports
@@ -323,35 +322,36 @@ def get_title(period: Period, winners_only: bool, global_leaderboard: bool) -> s
 def get_winners_title(period: Period) -> str:
     """
     Get the title of the winners leaderboard.
+    The titles use the relative timestamp in the Long Date format: <t:{timestamp}:D>,
+    except the month title which displays just the month and year.
 
     :param period: The period.
 
     :return: The title of the winners leaderboard.
     """
     title = ""
+    time_now = datetime.now(UTC).replace(hour=0, minute=0, second=0, microsecond=0)
 
     match period:
         case Period.DAY:
-            time_interval_text = strftime_with_suffix(
-                "{S} %b %Y", datetime.now(UTC) - timedelta(days=1)
+            time_interval_text = (
+                f"<t:{int((time_now - timedelta(days=1)).timestamp())}:D>"
             )
             title = f"Today's Winners ({time_interval_text})"
 
         case Period.WEEK:
-            start_timestamp = strftime_with_suffix(
-                "{S} %b %Y", datetime.now(UTC) - timedelta(weeks=1)
+            start_timestamp = (
+                f"<t:{int((time_now - timedelta(weeks=1)).timestamp())}:D>"
             )
-            end_timestamp = strftime_with_suffix(
-                "{S} %b %Y", datetime.now(UTC) - timedelta(days=1)
-            )
+            end_timestamp = f"<t:{int((time_now - timedelta(days=1)).timestamp())}:D>"
             title = f"This Week's Winners ({start_timestamp} - {end_timestamp})"
 
         case Period.MONTH:
-            timestamp = strftime_with_suffix(
-                "%b %Y", (datetime.now(UTC) - timedelta(days=1)).replace(day=1)
+            month_and_year = (
+                (time_now - timedelta(days=1)).replace(day=1).strftime("%b %Y")
             )
 
-            title = f"This Month's Winners ({timestamp})"
+            title = f"This Month's Winners ({month_and_year})"
 
     return title
 

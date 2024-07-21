@@ -119,19 +119,14 @@ These commands are only available to administrators of this server.
 
 ## Roles
 
-</roles:1204499698317262965>: Enable/disable automatically giving verified CodeGrind user, score milestones, and streak roles that will be automatically updated each day at midday (UTC).
+</setup-feature roles:1204499698317262958>: Enable/disable automatically giving verified CodeGrind user, score milestones, and streak roles that will be automatically updated each day at midday (UTC).
 
 ## Notifications
 
-</notifications:1243573686666137672>: Enable/disable daily notifications being sent at midnight (UTC) to a channel.
+</setup-feature notifications:1204499698317262958>: Enable/disable daily notifications being sent at midnight (UTC) to a channel.
 >    - `channel` _(optional)_: The channel (e.g. "#home-channel") to send notifications to. By default this will be the channel where you ran this command.
 
-Note: please press the 'save' button twice!
-
-## Settings
-
-</settings timezone:1204499698317262958>: Change the timezone on this server's leaderboards.
->    - `timezone`: A timezone from the following list of timezones: https://gist.github.com/heyalexej/8bf688fd67d7199be4a1682b3eec7568 .""",
+Note: please press the 'save' button twice!""",
     CommandCategory.CODEGRIND_TEAM: """
 ## CodeGrind Team
 

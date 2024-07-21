@@ -1,6 +1,5 @@
 import asyncio
 import functools
-from datetime import datetime
 from typing import Callable
 
 from constants import DifficultyScore
@@ -38,24 +37,3 @@ def convert_to_score(easy: int = 0, medium: int = 0, hard: int = 0) -> int:
         + medium * DifficultyScore.MEDIUM.value
         + hard * DifficultyScore.HARD.value
     )
-
-
-def strftime_with_suffix(format: str, t: datetime) -> str:
-    """
-    Format the datetime object with the day as a suffix.
-
-    :param format: The format string.
-    :param t: The datetime object.
-
-    :return: The formatted string.
-    """
-
-    def suffix(d: int) -> str:
-        """
-        Get the suffix for the day.
-
-        :param d: The day.
-        """
-        return {1: "st", 2: "nd", 3: "rd"}.get(d % 20, "th")
-
-    return t.strftime(format).replace("{S}", str(t.day) + suffix(t.day))
