@@ -1,5 +1,4 @@
 import discord
-import pytz
 
 from constants import DifficultyScore
 from database.models import Server

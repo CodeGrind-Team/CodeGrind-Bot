@@ -1,6 +1,5 @@
 import asyncio
 import functools
-from datetime import datetime
 from typing import Callable
 
 from constants import DifficultyScore
