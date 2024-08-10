@@ -5,6 +5,10 @@ from typing import TYPE_CHECKING
 
 import discord
 
+from constants import GLOBAL_LEADERBOARD_ID
+from database.models import Profile, Server, User
+from utils.notifications import process_daily_question_and_stats_update
+
 if TYPE_CHECKING:
     # To prevent circular imports
     from bot import DiscordBot
@@ -131,3 +135,134 @@ class ChannelLogger:
             )
         except Exception as e:
             self.bot.logger.exception(f"ChannelLogger.log : Error: {e}")
+
+
+async def share_announcement(bot: "DiscordBot", message: discord.Message) -> None:
+    message_content = message.content.lower()
+
+    announcement = message.content[
+        message_content.find("share announcement\n") + len("share announcement\n") :
+    ]
+    bot.logger.info(f"on_message: share announcement: {announcement}")
+
+    image_url: str | None = None
+    if len(message.attachments) == 1:
+        image_url = message.attachments[0].url
+
+    async for server in Server.all():
+        for channel_id in server.channels.maintenance:
+            channel = bot.get_channel(channel_id)
+            if channel and isinstance(channel, discord.TextChannel):
+                try:
+                    if image_url:
+                        await channel.send(
+                            content=announcement + f"\n{image_url}",
+                        )
+                    else:
+                        await channel.send(content=announcement)
+
+                except discord.errors.Forbidden:
+                    bot.logger.info(
+                        f"Forbidden to share announcement to channel with ID: "
+                        f"{channel_id}"
+                    )
+
+
+async def prune_members_and_guilds(bot: "DiscordBot") -> None:
+    """
+    Refresh members in the database by deleting profiles, users, and servers that no
+    longer exist.
+    """
+    server_index = 0
+    async for server in Server.all():
+        server_index += 1
+        if server_index % 100 == 0:
+            bot.logger.info(f"Refreshing members: {server_index} servers checked")
+
+        if server.id == 0:
+            continue
+
+        # Delete servers that no longer have the bot in them.
+        try:
+            guild = await bot.fetch_guild(server.id)
+            if guild is None:
+                raise discord.errors.NotFound
+        except discord.errors.NotFound:
+            await server.delete()
+            bot.logger.info(f"Deleted server with ID: {server.id}")
+            continue
+
+        # Delete profiles that no longer have the corresponding member in the server.
+        async for profile in Profile.find_many(Profile.server_id == server.id):
+            try:
+                member = await guild.fetch_member(profile.user_id)
+                if member is None:
+                    raise discord.errors.NotFound
+            except discord.errors.NotFound:
+                await profile.delete()
+                bot.logger.info(
+                    f"Deleted profile with user ID: {profile.user_id} and "
+                    f"server ID: {server.id}"
+                )
+
+    # Delete users that no longer have any profiles.
+    async for user in User.all():
+        profiles = await Profile.find_many(Profile.user_id == user.id).to_list()
+        if len(profiles) == 1 and profiles[0].server_id == GLOBAL_LEADERBOARD_ID:
+            await user.delete()
+            bot.logger.info(f"Deleted user with user ID: {user.id}")
+
+
+async def dev_commands(bot: "DiscordBot", message: discord.Message) -> None:
+    """
+    Handle developer commands sent by a developer.
+
+    :param message: The message sent by the user.
+    """
+    message_content = message.content.lower()
+
+    if "share announcement\n" in message_content:
+        await share_announcement(bot, message)
+
+    elif "restart" in message_content:
+        bot.logger.info("on_message: restart")
+        await bot.close()
+
+    elif "maintenance" in message_content:
+        if "on" in message_content:
+            bot.logger.info("on_message: maintenance on")
+            await bot.change_presence(
+                status=discord.Status.do_not_disturb,
+                activity=discord.Game(name="Under Maintenance"),
+            )
+
+        elif "off" in message_content:
+            bot.logger.info("on_message: maintenance off")
+            await bot.change_presence(
+                status=discord.Status.online,
+                activity=None,
+            )
+
+    elif "sync" in message_content:
+        bot.logger.info("on_message: sync")
+        await bot.tree.sync()
+
+    elif "update stats" in message_content:
+        bot.logger.info("on_message: update stats")
+        await process_daily_question_and_stats_update(bot)
+
+    elif "reset stats" in message_content:
+        bot.logger.info("on_message: reset stats")
+        await process_daily_question_and_stats_update(
+            bot,
+            not ("no-update" in message_content),
+            "day" in message_content,
+            "week" in message_content,
+            "month" in message_content,
+        )
+
+    elif "prune members" in message_content:
+        bot.logger.info("on_message: prune members")
+        await prune_members_and_guilds(bot)
+
+    bot.logger.info("on_message completed")

@@ -3,8 +3,6 @@ import re
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from discord.ext import tasks
-
 from constants import Language
 
 if TYPE_CHECKING:
@@ -116,13 +114,6 @@ class NeetcodeSolutions:
                 )
 
         return link_to_solution
-
-
-@tasks.loop(hours=168)
-async def schedule_update_neetcode_solutions(bot: "DiscordBot") -> None:
-    # 168 hours = 1 week.
-    # NeetCode solutions data gets updated weekly.
-    await bot.neetcode.update_solutions()
 
 
 def neetcode_solution_github_link(github_code_filename: str, language: Language) -> str:
