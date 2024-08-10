@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 
 import discord
 import requests
-from beanie.odm.operators.update.general import Inc
+from beanie.odm.operators.update.general import Inc, Set
 from beanie.operators import In
 from PIL import Image, UnidentifiedImageError
 
@@ -142,7 +142,7 @@ async def update_wins(
         if not reset:
             continue
 
-        users_and_scores = await all_users_and_scores(all_users, period, previous=False)
+        users_and_scores = await all_users_and_scores(all_users, period, previous=True)
         user_to_score[period] = {user.id: score for user, score in users_and_scores}
 
     async for server in Server.all():
@@ -172,7 +172,10 @@ async def update_wins(
 
             await Profile.find_many(
                 Profile.server_id == server.id, In(Profile.user_id, winners)
-            ).update(Inc({increment_field: 1}))
+            ).update(
+                Inc({increment_field: 1}),
+                Set({Profile.win_count.last_updated: datetime.now(UTC)}),
+            )
 
 
 async def update_all_user_stats(
@@ -186,8 +189,6 @@ async def update_all_user_stats(
 
     :param reset_day: Whether the day needs resetting.
     """
-    if reset_day or reset_week or reset_month:
-        await update_wins(reset_day, reset_week, reset_month)
 
     counter = 0
     tasks = []
@@ -203,6 +204,10 @@ async def update_all_user_stats(
             bot.logger.info(f"{counter} / {total_users} users stats updated")
 
     bot.logger.info("All users stats updated")
+
+    if reset_day or reset_week or reset_month:
+        await update_wins(reset_day, reset_week, reset_month)
+        bot.logger.info("All users wins updated")
 
 
 @to_thread
