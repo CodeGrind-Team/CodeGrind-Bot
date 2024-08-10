@@ -1,7 +1,5 @@
 from typing import TYPE_CHECKING
 
-from discord.ext import tasks
-
 if TYPE_CHECKING:
     # To prevent circular imports
     from bot import DiscordBot
@@ -38,10 +36,3 @@ class Ratings:
             ratings[title] = rating
 
         return ratings
-
-
-@tasks.loop(hours=168)
-async def schedule_update_ratings(bot: "DiscordBot") -> None:
-    # 168 hours = 1 week.
-    # Ratings get updated weekly.
-    await bot.ratings.update_ratings()

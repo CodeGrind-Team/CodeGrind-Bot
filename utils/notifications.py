@@ -1,9 +1,8 @@
-from datetime import UTC, datetime, time
+from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
 import discord
 from beanie.odm.operators.update.general import Set
-from discord.ext import tasks
 
 from constants import GLOBAL_LEADERBOARD_ID, Period
 from database.models import Server
@@ -15,17 +14,6 @@ from utils.stats import update_all_user_stats
 if TYPE_CHECKING:
     # To prevent circular imports
     from bot import DiscordBot
-
-
-@tasks.loop(
-    time=[time(hour=hour, minute=minute) for hour in range(24) for minute in [0, 30]],
-    reconnect=False,
-)
-async def schedule_question_and_stats_update(bot: "DiscordBot") -> None:
-    """
-    Schedule to send the daily question and update the stats.
-    """
-    await process_daily_question_and_stats_update(bot)
 
 
 async def process_daily_question_and_stats_update(

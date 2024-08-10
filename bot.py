@@ -32,14 +32,16 @@ from html2image import Html2Image
 from constants import GLOBAL_LEADERBOARD_ID
 from database.models import Profile, Server
 from database.setup import initialise_mongodb_conn
-from utils.dev import ChannelLogger
+from utils.dev import ChannelLogger, dev_commands
 from utils.http_client import HttpClient
-from utils.neetcode import NeetcodeSolutions, schedule_update_neetcode_solutions
-from utils.notifications import (
-    process_daily_question_and_stats_update,
+from utils.neetcode import NeetcodeSolutions
+from utils.ratings import Ratings
+from utils.schedules import (
+    schedule_prune_members_and_guilds,
     schedule_question_and_stats_update,
+    schedule_update_neetcode_solutions,
+    schedule_update_zerotrac_ratings,
 )
-from utils.ratings import Ratings, schedule_update_ratings
 from utils.users import delete_user, unlink_user_from_server
 
 
@@ -139,9 +141,10 @@ class DiscordBot(commands.Bot):
         await self.load_cogs()
         await self.init_topgg()
 
-        schedule_update_ratings.start(self)
+        schedule_update_zerotrac_ratings.start(self)
         schedule_update_neetcode_solutions.start(self)
         schedule_question_and_stats_update.start(self)
+        schedule_prune_members_and_guilds.start(self)
 
     async def on_interaction(self, interaction: discord.Interaction) -> None:
         """
@@ -168,7 +171,8 @@ class DiscordBot(commands.Bot):
 
     async def on_guild_remove(self, guild: discord.Guild) -> None:
         """
-        Called a guild gets deleted.
+        Called when a guild gets deleted.
+        Delete the server and all it's profiles.
         """
         self.logger.info(
             f"Guild {guild.name} (ID: {guild.id}) discord account removed",
@@ -179,6 +183,7 @@ class DiscordBot(commands.Bot):
     async def on_raw_member_remove(self, payload: discord.RawMemberRemoveEvent) -> None:
         """
         Called when a member leaves a guild.
+        Delete the profile of the user.
         """
         self.logger.info(
             f"Member {payload.user.name} (ID: {payload.user.id}) in Guild "
@@ -191,14 +196,15 @@ class DiscordBot(commands.Bot):
             Profile.server_id != GLOBAL_LEADERBOARD_ID,
         ).to_list()
 
-        if len(profiles) == 0:
+        if len(profiles) == 1 and profiles[0].server_id == GLOBAL_LEADERBOARD_ID:
             await delete_user(payload.user.id)
 
     async def on_member_update(
         self, before: discord.Member, after: discord.Member
     ) -> None:
         """
-        Called a member updates their guild specific information, such as nickname.
+        Called when a member updates their guild specific information, such as nickname.
+        Update the user profile's preference name to the new nickname.
         """
         if before.display_name == after.display_name:
             return
@@ -216,6 +222,7 @@ class DiscordBot(commands.Bot):
     async def on_user_update(self, before: discord.User, after: discord.User) -> None:
         """
         Called a user updated their account information, such as username.
+        Update the user global profile's preference name to the new username.
         """
         if before.display_name == after.display_name:
             return
@@ -241,73 +248,7 @@ class DiscordBot(commands.Bot):
         ):
             return
 
-        message_content = message.content.lower()
-
-        if "share announcement\n" in message_content:
-            announcement = message.content[
-                message_content.find("share announcement\n")
-                + len("share announcement\n") :
-            ]
-            self.logger.info(f"on_message: share announcement: {announcement}")
-
-            image_url: str | None = None
-            if len(message.attachments) == 1:
-                image_url = message.attachments[0].url
-
-            async for server in Server.all():
-                for channel_id in server.channels.maintenance:
-                    channel = self.get_channel(channel_id)
-                    if channel and isinstance(channel, discord.TextChannel):
-                        try:
-                            if image_url:
-                                await channel.send(
-                                    content=announcement + f"\n{image_url}",
-                                )
-                            else:
-                                await channel.send(content=announcement)
-
-                        except discord.errors.Forbidden:
-                            self.logger.info(
-                                f"Forbidden to share announcement to channel with ID: "
-                                f"{channel_id}"
-                            )
-
-        elif "restart" in message_content:
-            self.logger.info("on_message: restart")
-            await self.close()
-
-        elif "maintenance" in message_content:
-            if "on" in message_content:
-                self.logger.info("on_message: maintenance on")
-                await self.change_presence(
-                    status=discord.Status.do_not_disturb,
-                    activity=discord.Game(name="Under Maintenance"),
-                )
-
-            elif "off" in message_content:
-                self.logger.info("on_message: maintenance off")
-                await self.change_presence(
-                    status=discord.Status.online,
-                    activity=None,
-                )
-
-        elif "sync" in message_content:
-            self.logger.info("on_message: sync")
-            await self.tree.sync()
-
-        elif "update stats" in message_content:
-            self.logger.info("on_message: update stats")
-            await process_daily_question_and_stats_update(self)
-
-        elif "reset stats" in message_content:
-            self.logger.info("on_message: reset stats")
-            await process_daily_question_and_stats_update(
-                self,
-                not ("no-update" in message_content),
-                "day" in message_content,
-                "week" in message_content,
-                "month" in message_content,
-            )
+        await dev_commands(self, message)
 
     async def close(self):
         """
