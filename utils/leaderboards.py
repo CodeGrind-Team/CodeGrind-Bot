@@ -109,7 +109,7 @@ async def user_and_score(
 
 async def all_users_and_scores(
     users: list[User], period: Period, previous: bool
-) -> list[User]:
+) -> list[tuple[User, int]]:
     """
     Fetch and calculate the scores for all users, for the selected time period.
 
