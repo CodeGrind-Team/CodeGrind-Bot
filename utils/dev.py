@@ -8,6 +8,7 @@ import discord
 from constants import GLOBAL_LEADERBOARD_ID
 from database.models import Profile, Server, User
 from utils.notifications import process_daily_question_and_stats_update
+from utils.users import delete_user
 
 if TYPE_CHECKING:
     # To prevent circular imports
@@ -207,9 +208,13 @@ async def prune_members_and_guilds(bot: "DiscordBot") -> None:
 
     # Delete users that no longer have any profiles.
     async for user in User.all():
-        profiles = await Profile.find_many(Profile.user_id == user.id).to_list()
-        if len(profiles) == 1 and profiles[0].server_id == GLOBAL_LEADERBOARD_ID:
-            await user.delete()
+        profiles = await Profile.find_many(
+            Profile.user_id == user.id,
+            Profile.server_id != GLOBAL_LEADERBOARD_ID,
+        ).to_list()
+
+        if len(profiles) == 0:
+            await delete_user(user.id)
             bot.logger.info(f"Deleted user with user ID: {user.id}")
 
 

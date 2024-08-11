@@ -159,7 +159,13 @@ async def update_wins(
             if not reset:
                 continue
 
-            max_score = max([user_to_score[period][user] for user in users])
+            max_score = max(
+                [
+                    user_to_score[period][user]
+                    for user in users
+                    if user in user_to_score[period]
+                ]
+            )
             # Scores of 0 don't count as a win.
             if max_score <= 0:
                 continue

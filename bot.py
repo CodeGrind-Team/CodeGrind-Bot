@@ -196,7 +196,7 @@ class DiscordBot(commands.Bot):
             Profile.server_id != GLOBAL_LEADERBOARD_ID,
         ).to_list()
 
-        if len(profiles) == 1 and profiles[0].server_id == GLOBAL_LEADERBOARD_ID:
+        if len(profiles) == 0:
             await delete_user(payload.user.id)
 
     async def on_member_update(
