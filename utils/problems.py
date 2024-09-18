@@ -205,7 +205,7 @@ async def fetch_random_question(
             if not question["isPaidOnly"]:
                 return question["titleSlug"]
 
-        except ValueError:
+        except (ValueError, TypeError):
             bot.logger.exception(
                 f"fetch_random_question: failed to decode json. Error code "
                 f"({response_data})"
@@ -214,7 +214,8 @@ async def fetch_random_question(
 
     # Log a warning if no non-premium question is found after MAX_ATTEMPTS attempts.
     bot.logger.warning(
-        f"fetch_random_question: failed to find an unpaid question after {MAX_ATTEMPTS} attempts"
+        f"fetch_random_question: failed to find an unpaid question after "
+        f"{MAX_ATTEMPTS} attempts"
     )
     return
 
@@ -248,7 +249,7 @@ async def fetch_daily_question(bot: "DiscordBot") -> str | None:
     try:
         title_slug = response_data["data"]["challenge"]["question"]["titleSlug"]
 
-    except ValueError:
+    except (ValueError, TypeError):
         bot.logger.exception(
             f"fetch_daily_question: failed to decode json. Error code ({response_data})"
         )
@@ -309,7 +310,7 @@ async def search_question(bot: "DiscordBot", text: str) -> str | None:
 
         question_title_slug = questions_matched_list["questions"][0]["titleSlug"]
 
-    except ValueError:
+    except (ValueError, TypeError):
         bot.logger.exception(
             f"search_question: failed to decode json. Error code ({response_data})"
         )
@@ -371,7 +372,7 @@ async def fetch_question_info(
         total_submission = stats["totalSubmission"]
         ac_rate = stats["acRate"]
 
-    except ValueError:
+    except (ValueError, TypeError):
         bot.logger.exception(
             f"fetch_question_info: failed to decode json. Error code ({response_data})",
         )
@@ -522,7 +523,7 @@ async def fetch_problems_solved_and_rank(
             0,
         )
 
-    except ValueError:
+    except (ValueError, TypeError):
         bot.logger.exception(
             f"fetch_problems_solved_and_rank: Failed to decode json for user "
             f"({leetcode_id}): {response_data}",
