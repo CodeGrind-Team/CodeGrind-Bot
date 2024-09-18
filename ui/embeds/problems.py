@@ -75,8 +75,6 @@ async def question_embed(bot: "DiscordBot", question_title: str) -> discord.Embe
         colour=colour,
     )
 
-    # TODO: handle descriptions/examples larger than the limit
-    # TODO: https://www.pythondiscord.com/pages/guides/python-guides/discord-embed-limits/
     embed.add_field(name="Example 1: ", value=info.example_one, inline=False)
 
     if info.follow_up:
