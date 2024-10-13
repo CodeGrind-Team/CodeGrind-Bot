@@ -29,6 +29,8 @@ if TYPE_CHECKING:
     # To prevent circular imports
     from bot import DiscordBot
 
+stats_update_semaphore = asyncio.Semaphore(4)
+
 
 async def update_stats(
     bot: "DiscordBot",
@@ -47,76 +49,83 @@ async def update_stats(
     stats.
     """
 
-    stats = await fetch_problems_solved_and_rank(bot, user.leetcode_id)
-    if not stats:
-        return
+    async with stats_update_semaphore:
+        stats = await fetch_problems_solved_and_rank(bot, user.leetcode_id)
+        if not stats:
+            return
 
-    user = await User.find_one(User.id == user.id)
-    if not user:
-        return
+        user = await User.find_one(User.id == user.id)
+        if not user:
+            return
 
-    (
-        user.stats.submissions.easy,
-        user.stats.submissions.medium,
-        user.stats.submissions.hard,
-        user.stats.submissions.score,
-    ) = (
-        stats.submissions.easy,
-        stats.submissions.medium,
-        stats.submissions.hard,
-        stats.submissions.score,
-    )
+        (
+            user.stats.submissions.easy,
+            user.stats.submissions.medium,
+            user.stats.submissions.hard,
+            user.stats.submissions.score,
+        ) = (
+            stats.submissions.easy,
+            stats.submissions.medium,
+            stats.submissions.hard,
+            stats.submissions.score,
+        )
 
-    if reset_day:
-        languages_problem_count = list(
-            map(
-                lambda x: LanguageProblemCount(
-                    language=x.language, count=x.problem_count
-                ),
-                stats.languages_problem_count,
+        if reset_day:
+            languages_problem_count = list(
+                map(
+                    lambda x: LanguageProblemCount(
+                        language=x.language, count=x.problem_count
+                    ),
+                    stats.languages_problem_count,
+                )
             )
-        )
 
-        skills_problem_count = SkillsProblemCount(
-            fundamental=list(
-                map(
-                    lambda x: SkillProblemCount(skill=x.skill, count=x.problem_count),
-                    stats.skills_problem_count.fundamental,
-                )
-            ),
-            intermediate=list(
-                map(
-                    lambda x: SkillProblemCount(skill=x.skill, count=x.problem_count),
-                    stats.skills_problem_count.intermediate,
-                )
-            ),
-            advanced=list(
-                map(
-                    lambda x: SkillProblemCount(skill=x.skill, count=x.problem_count),
-                    stats.skills_problem_count.advanced,
-                )
-            ),
-        )
+            skills_problem_count = SkillsProblemCount(
+                fundamental=list(
+                    map(
+                        lambda x: SkillProblemCount(
+                            skill=x.skill, count=x.problem_count
+                        ),
+                        stats.skills_problem_count.fundamental,
+                    )
+                ),
+                intermediate=list(
+                    map(
+                        lambda x: SkillProblemCount(
+                            skill=x.skill, count=x.problem_count
+                        ),
+                        stats.skills_problem_count.intermediate,
+                    )
+                ),
+                advanced=list(
+                    map(
+                        lambda x: SkillProblemCount(
+                            skill=x.skill, count=x.problem_count
+                        ),
+                        stats.skills_problem_count.advanced,
+                    )
+                ),
+            )
 
-        record = Record(
-            timestamp=datetime.now(UTC).replace(
-                hour=0, minute=0, second=0, microsecond=0
-            ),
-            user_id=user.id,
-            submissions=Submissions(
-                easy=stats.submissions.easy,
-                medium=stats.submissions.medium,
-                hard=stats.submissions.hard,
-                score=stats.submissions.score,
-            ),
-            languages_problem_count=languages_problem_count,
-            skills_problem_count=skills_problem_count,
-        )
+            record = Record(
+                timestamp=datetime.now(UTC).replace(
+                    hour=0, minute=0, second=0, microsecond=0
+                ),
+                user_id=user.id,
+                submissions=Submissions(
+                    easy=stats.submissions.easy,
+                    medium=stats.submissions.medium,
+                    hard=stats.submissions.hard,
+                    score=stats.submissions.score,
+                ),
+                languages_problem_count=languages_problem_count,
+                skills_problem_count=skills_problem_count,
+            )
 
-        await record.create()
+            await record.create()
 
-    user.last_updated = datetime.now(UTC)
-    await user.save()
+        user.last_updated = datetime.now(UTC)
+        await user.save()
 
 
 async def update_wins(

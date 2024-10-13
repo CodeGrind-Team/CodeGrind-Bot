@@ -9,7 +9,7 @@ if TYPE_CHECKING:
     # To prevent circular imports
     from bot import DiscordBot
 
-semaphore = asyncio.Semaphore(4)
+http_post_semaphore = asyncio.Semaphore(4)
 
 
 class RateLimitExceededException(Exception):
@@ -48,7 +48,7 @@ class HttpClient:
 
         :return: The response JSON if the request is successful, otherwise None.
         """
-        async with semaphore:
+        async with http_post_semaphore:
             try:
                 async with self.session.post(*args, **kwargs) as response:
                     match response.status:
