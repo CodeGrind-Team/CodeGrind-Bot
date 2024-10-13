@@ -21,6 +21,7 @@ import logging
 import os
 import platform
 from dataclasses import dataclass
+from typing import Any
 
 import aiohttp
 import discord
@@ -70,7 +71,7 @@ class DiscordBot(commands.Bot):
         Creates custom bot variables so that we can access these variables in cogs
         more easily.
         """
-        self.tree.on_error = self.on_error
+        self.tree.on_error = self.tree_on_error
         self.config = config
         self.logger = logger
         self.html2image = Html2Image(browser_executable=config.BROWSER_EXECUTABLE_PATH)
@@ -209,11 +210,6 @@ class DiscordBot(commands.Bot):
         if before.display_name == after.display_name:
             return
 
-        self.logger.info(
-            f"Member {before.name} (ID: {before.id}) in Guild (ID: {before.guild.id}) "
-            "discord account updated",
-        )
-
         await Profile.find_one(
             Profile.user_id == before.id,
             Profile.server_id == before.guild.id,
@@ -226,10 +222,6 @@ class DiscordBot(commands.Bot):
         """
         if before.display_name == after.display_name:
             return
-
-        self.logger.info(
-            f"User {before.name} (ID: {before.id}) discord account updated",
-        )
 
         await Profile.find_one(
             Profile.user_id == before.id,
@@ -250,7 +242,7 @@ class DiscordBot(commands.Bot):
 
         await dev_commands(self, message)
 
-    async def close(self):
+    async def close(self) -> None:
         """
         Closes the connection to Discord, gracefully closes the session, and reboots
         the device.
@@ -262,8 +254,20 @@ class DiscordBot(commands.Bot):
             if self.config.PRODUCTION:
                 os.system("sudo reboot")
 
+    async def on_error(self, event_method: str, /, *args: Any, **kwargs: Any) -> None:
+        """
+        Event raised errors.
+
+        Currently this causes an outage, and therefore will log the error and restart
+        the bot.
+        """
+        self.logger.critical(
+            "Critical error in %s.\nBot is closing/restarting.", event_method
+        )
+        await self.close()
+
     @staticmethod
-    async def on_error(
+    async def tree_on_error(
         interaction: discord.Interaction, error: discord.app_commands.AppCommandError
     ) -> None:
         """
