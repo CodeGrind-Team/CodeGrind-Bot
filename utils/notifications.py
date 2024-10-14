@@ -112,8 +112,11 @@ async def send_daily_question(
 
         try:
             await channel.send(embed=embed, silent=True)
-        except discord.errors.Forbidden:
+        except (
+            discord.errors.Forbidden,
+            # Embed too large error.
+            discord.app_commands.errors.CommandInvokeError,
+        ):
             bot.logger.info(
-                f"Forbidden to share daily question to channel with ID: "
-                f"{channel_id}"
+                f"Exception sharing daily question to channel with ID: " f"{channel_id}"
             )
