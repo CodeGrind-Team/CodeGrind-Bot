@@ -49,8 +49,14 @@ async def process_daily_question_and_stats_update(
     if reset_day:
         embed = await daily_question_embed(bot)
 
-        async for server in Server.all(fetch_links=True):
-            await send_daily_question(bot, server, embed)
+        try:
+            async for server in Server.all(fetch_links=True):
+                await send_daily_question(bot, server, embed)
+        except discord.errors.HTTPException:
+            bot.logger.exception(
+                "HTTPException raised when trying to share daily questions to channels:"
+                " embed length over limit."
+            )
 
         bot.logger.info("Daily question sent to all servers")
 
@@ -112,11 +118,7 @@ async def send_daily_question(
 
         try:
             await channel.send(embed=embed, silent=True)
-        except (
-            discord.errors.Forbidden,
-            # Embed too large error.
-            discord.app_commands.errors.CommandInvokeError,
-        ):
+        except discord.errors.Forbidden:
             bot.logger.info(
-                f"Exception sharing daily question to channel with ID: " f"{channel_id}"
+                f"Forbidden to share daily question to channel with ID: {channel_id}"
             )
