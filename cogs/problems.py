@@ -46,7 +46,13 @@ class ProblemsCog(commands.GroupCog, name="problem"):
         """
         embed = await daily_question_embed(self.bot)
 
-        await interaction.followup.send(embed=embed)
+        try:
+            await interaction.followup.send(embed=embed)
+        except discord.errors.HTTPException:
+            self.bot.logger.info(
+                "HTTPException raised when trying to share daily questions to channel "
+                "with ID: {interaction.channel_id}. Embed length over limit."
+            )
 
     @app_commands.command(name="random")
     @defer_interaction()
