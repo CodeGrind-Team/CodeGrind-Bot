@@ -72,6 +72,17 @@ MILESTONE_ROLES = {
     8000: ("Legend (6000 pts)", discord.Colour.gold()),
 }
 
+RANK_IMAGES = {
+    "Novice": "../assets/novice.png",
+    "Apprentice": "../assets/apprentice.png",
+    "Capable": "../assets/capable.png",
+    "Competent": "../assets/competent.png",
+    "Advanced": "../assets/advanced.png",
+    "Expert": "../assets/expert.png",
+    "Master": "../assets/master.png",
+    "Legend": "../assets/legend.png",
+}
+
 STREAK_ROLES = {
     3: ("Streak Initiate (3 Days)", discord.Colour.green()),
     7: ("Streak Pursuer (7 Days)", discord.Colour.blue()),
