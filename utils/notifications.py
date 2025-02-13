@@ -22,6 +22,7 @@ async def process_daily_question_and_stats_update(
     force_reset_day: bool = False,
     force_reset_week: bool = False,
     force_reset_month: bool = False,
+    hidden: bool = False,
 ) -> None:
     """
     Send the daily question and update the stats.
@@ -46,7 +47,7 @@ async def process_daily_question_and_stats_update(
 
     midday = start.hour == 12 and start.minute == 0
 
-    if reset_day:
+    if reset_day and not hidden:
         embed = await daily_question_embed(bot)
 
         try:
@@ -76,14 +77,15 @@ async def process_daily_question_and_stats_update(
         if server.id == GLOBAL_LEADERBOARD_ID:
             continue
 
-        if reset_day:
-            await send_leaderboard_winners(bot, server, Period.DAY)
+        if not hidden:
+            if reset_day:
+                await send_leaderboard_winners(bot, server, Period.DAY)
 
-        if reset_week:
-            await send_leaderboard_winners(bot, server, Period.WEEK)
+            if reset_week:
+                await send_leaderboard_winners(bot, server, Period.WEEK)
 
-        if reset_month:
-            await send_leaderboard_winners(bot, server, Period.MONTH)
+            if reset_month:
+                await send_leaderboard_winners(bot, server, Period.MONTH)
 
         if midday:
             if guild := bot.get_guild(server.id):
