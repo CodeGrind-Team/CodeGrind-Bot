@@ -5,11 +5,12 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-from constants import StatsCardExtensions, MILESTONE_ROLES, RANK_IMAGES
+from constants import MILESTONE_ROLES, StatsCardExtensions
 from database.models import Profile, User
 from middleware import defer_interaction
 from ui.embeds.stats import account_hidden_embed, stats_embed
 from ui.embeds.users import account_not_found_embed
+from utils.roles import get_highest_tier_info
 
 if TYPE_CHECKING:
     # To prevent circular imports
@@ -62,34 +63,29 @@ class StatsCog(commands.Cog):
         user_score = user.stats.submissions.score
 
         # Determine the milestone role based on user's score
-        current_milestone_role = "No Rank"  # Default role if no match is found
-        for milestone, (role_name, _) in MILESTONE_ROLES.items():
-            if user_score >= milestone:
-                current_milestone_role = role_name.split(" (")[0]  # Extract the word before the bracket
-
-        # Get the image URL for the current milestone role
-        rank_image_url = RANK_IMAGES.get(current_milestone_role, None)
+        milestone_info = get_highest_tier_info(MILESTONE_ROLES, user_score)
+        milestone_filename = f"{milestone_info.title}.png"
+        milestone_icon_file = discord.File(
+            milestone_info.icon_path, filename=milestone_filename
+        )
 
         # Create the embed with the title as the display name
-        embed, file = await stats_embed(
+        embed, statscard_file = await stats_embed(
             self.bot,
             user.leetcode_id,
-            member.display_name,  # Just the display name
-            (profile.preference.url if profile else False),
+            profile.preference.name,
+            profile.preference.url,
             extension.value,
         )
 
-        if not file:
-            await interaction.followup.send(embed=embed)
-            return
-
         # Set the footer with the rank and the icon
         embed.set_footer(
-            text=f"Milestone Rank: {current_milestone_role}",
-            icon_url=rank_image_url if rank_image_url else discord.Embed.Empty  # Set icon_url if available
+            text=milestone_info.role_name,
+            icon_url=f"attachment://{milestone_filename}",
         )
 
-        await interaction.followup.send(embed=embed, file=file)
+        files = list(filter(None, [statscard_file, milestone_icon_file]))
+        await interaction.followup.send(embed=embed, files=files)
 
 
 async def setup(bot: "DiscordBot") -> None:

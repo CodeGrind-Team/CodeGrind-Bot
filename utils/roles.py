@@ -1,7 +1,30 @@
+from typing import Any
+
 import discord
 
-from constants import MILESTONE_ROLES, STREAK_ROLES, VERIFIED_ROLE
+from constants import MILESTONE_ROLES, STREAK_ROLES, VERIFIED_ROLE, CodeGrindTierInfo
 from database.models import Profile, User
+
+
+def get_highest_tier_info(
+    tier_group: dict[Any, CodeGrindTierInfo], val: int
+) -> CodeGrindTierInfo:
+    """
+    Get the highest tier info based on a value.
+
+    :param val: The value to check against.
+    :return: The highest tier info.
+    """
+    highest_tier_info = None
+
+    for tier_info in tier_group.values():
+        if val < tier_info.threshold:
+            break
+
+        print(tier_info)
+        highest_tier_info = tier_info
+
+    return highest_tier_info
 
 
 async def create_roles_from_string(guild: discord.Guild, role: str) -> None:
@@ -22,19 +45,23 @@ async def create_roles_from_string(guild: discord.Guild, role: str) -> None:
         )
 
 
-async def create_roles_from_dict(guild: discord.Guild, roles: dict) -> None:
+async def create_roles_from_dict(
+    guild: discord.Guild, roles: dict[Any, CodeGrindTierInfo]
+) -> None:
     """
     Create roles in the guild based on a dictionary of roles and their colours.
 
     :param guild: The guild in which to create the roles.
     :param roles: A dictionary where keys are role names and values are role colours.
     """
-    for role in roles:
-        role_name, role_colour = roles[role]
-        role_found = discord.utils.get(guild.roles, name=role_name)
+    for codegrind_tier in roles.values():
+        role_found = discord.utils.get(guild.roles, name=codegrind_tier.role_name)
         if not role_found:
             await guild.create_role(
-                name=role_name, colour=role_colour, hoist=False, mentionable=False
+                name=codegrind_tier.role_name,
+                colour=codegrind_tier.role_colour,
+                hoist=False,
+                mentionable=False,
             )
 
 
@@ -51,17 +78,17 @@ async def remove_roles_from_string(guild: discord.Guild, role: str) -> None:
         await role_found.delete()
 
 
-async def remove_roles_from_dict(guild: discord.Guild, roles: dict) -> None:
+async def remove_roles_from_dict(
+    guild: discord.Guild, roles: dict[Any, CodeGrindTierInfo]
+) -> None:
     """
     Remove roles from the guild based on a dictionary of roles.
 
     :param guild: The guild from which to remove the roles.
     :param roles: A dictionary where keys are role names to be removed.
     """
-    for role in roles:
-        role_name, _ = roles[role]
-
-        role_found = discord.utils.get(guild.roles, name=role_name)
+    for codegrind_tier in roles.values():
+        role_found = discord.utils.get(guild.roles, name=codegrind_tier.role_name)
 
         if role_found:
             await role_found.delete()
@@ -118,8 +145,10 @@ async def update_roles(guild: discord.Guild, server_id: int) -> None:
             continue
 
         await give_verified_role(guild, member)
-        await give_streak_role(guild, member, user.stats.streak)
-        await give_milestone_role(guild, member, user.stats.submissions.score)
+        await give_tier_group_role(guild, member, STREAK_ROLES, user.stats.streak)
+        await give_tier_group_role(
+            guild, member, MILESTONE_ROLES, user.stats.submissions.score
+        )
 
 
 async def give_verified_role(guild: discord.Guild, member: discord.Member) -> None:
@@ -138,59 +167,32 @@ async def give_verified_role(guild: discord.Guild, member: discord.Member) -> No
     await member.add_roles(role)
 
 
-async def give_streak_role(
-    guild: discord.Guild, member: discord.Member, streak: int
+async def give_tier_group_role(
+    guild: discord.Guild,
+    member: discord.Member,
+    tier_group: dict[Any, CodeGrindTierInfo],
+    user_value: int,
 ) -> None:
     """
-    Give a streak role to a user based on their streak.
+    Give a tier group role to a user based on their value (e.g. points or streak).
 
     :param guild: The guild in which to give the role.
     :param member: The member to whom to give the role.
-    :param streak: The streak of the user.
+    :param tier_group: The tier group to assign roles from.
+    :param user_value: The user's value.
     """
     role_to_assign = None
-
-    for role_streak, (role_name, _) in STREAK_ROLES.items():
-        if streak >= role_streak:
-            role_to_assign = discord.utils.get(guild.roles, name=role_name)
-        else:
-            break
+    if highest_tier_info := get_highest_tier_info(MILESTONE_ROLES, user_value):
+        role_to_assign = discord.utils.get(
+            guild.roles, name=highest_tier_info.role_name
+        )
 
     # Remove all other roles.
-    for role_milestone, _ in STREAK_ROLES.items():
-        role_name, _ = STREAK_ROLES[role_milestone]
-        role = discord.utils.get(guild.roles, name=role_name)
+    for codegrind_tier in tier_group.values():
+        role = discord.utils.get(guild.roles, name=codegrind_tier.role_name)
         if role and role in member.roles:
             await member.remove_roles(role)
 
     if role_to_assign:
         # Give the member the appropriate role.
-        await member.add_roles(role_to_assign)
-
-
-async def give_milestone_role(
-    guild: discord.Guild, member: discord.Member, total_solved: int
-) -> None:
-    """
-    Give a milestone role to a user based on their total solved milestones.
-
-    :param guild: The guild in which to give the role.
-    :param member: The member to whom to give the role.
-    :param total_solved: The total solved milestones of the user.
-    """
-    role_to_assign = None
-
-    for role_milestone, (role_name, _) in MILESTONE_ROLES.items():
-        if total_solved >= role_milestone:
-            role_to_assign = discord.utils.get(guild.roles, name=role_name)
-
-    # Remove all other roles
-    for role_milestone, _ in MILESTONE_ROLES.items():
-        role_name, _ = MILESTONE_ROLES[role_milestone]
-        role = discord.utils.get(guild.roles, name=role_name)
-        if role and role in member.roles:
-            await member.remove_roles(role)
-
-    if role_to_assign:
-        # Give the member the appropriate role
         await member.add_roles(role_to_assign)

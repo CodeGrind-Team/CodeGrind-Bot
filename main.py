@@ -17,7 +17,6 @@ ANY KIND, either express or implied. See the License for the specific language
 governing permissions and limitations under the License.
 """
 
-
 import logging
 import os
 from datetime import UTC, datetime
@@ -82,6 +81,3 @@ if __name__ == "__main__":
         bot.run(config.DISCORD_TOKEN)
     except discord.errors.LoginFailure as e:
         print(f"Login failed: {e}")
-
-
-

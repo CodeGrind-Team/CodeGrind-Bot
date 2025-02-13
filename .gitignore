@@ -184,3 +184,6 @@ dailychannels.txt
 .pylintrc
 
 # End of https://www.toptal.com/developers/gitignore/api/python
+
+# MacOS
+.DS_Store
