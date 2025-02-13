@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from enum import Enum
 
 import discord
@@ -59,25 +60,128 @@ class NotificationOptions(Enum):
     WINNERS = "winners"
 
 
+class CodeGrindMilestone(Enum):
+    NOVICE = "Novice"
+    APPRENTICE = "Apprentice"
+    CAPABLE = "Capable"
+    COMPETENT = "Competent"
+    ADVANCED = "Advanced"
+    EXPERT = "Expert"
+    MASTER = "Master"
+    LEGEND = "Legend"
+
+
+class CodeGrindStreak(Enum):
+    INITIATE = "Streak Initiate"
+    PURSUER = "Streak Pursuer"
+    ADVENTURER = "Streak Adventurer"
+    DOMINATOR = "Streak Dominator"
+    LEGEND = "Streak Legend"
+
+
+@dataclass
+class CodeGrindTierInfo:
+    threshold: int
+    title: str
+    role_name: str
+    role_colour: discord.Colour
+    icon_path: str | None = None
+
+
 GLOBAL_LEADERBOARD_ID = 0
 
+# Threshold is in points.
 MILESTONE_ROLES = {
-    1: ("Novice (1 pt)", discord.Colour.dark_grey()),
-    100: ("Apprentice (100 pts)", discord.Colour.green()),
-    300: ("Capable (300 pts)", discord.Colour.blue()),
-    500: ("Competent (500 pts)", discord.Colour.dark_blue()),
-    1000: ("Advanced (1000 pts)", discord.Colour.orange()),
-    2000: ("Expert (2000 pts)", discord.Colour.red()),
-    4000: ("Master (4000 pts)", discord.Colour.purple()),
-    8000: ("Legend (6000 pts)", discord.Colour.gold()),
+    CodeGrindMilestone.NOVICE: CodeGrindTierInfo(
+        threshold=1,
+        title="Novice",
+        role_name="Novice (1 pt)",
+        role_colour=discord.Colour.dark_grey(),
+        icon_path="./ui/assets/milestones/novice.png",
+    ),
+    CodeGrindMilestone.APPRENTICE: CodeGrindTierInfo(
+        threshold=100,
+        title="Apprentice",
+        role_name="Apprentice (100 pts)",
+        role_colour=discord.Colour.green(),
+        icon_path="./ui/assets/milestones/apprentice.png",
+    ),
+    CodeGrindMilestone.CAPABLE: CodeGrindTierInfo(
+        threshold=300,
+        title="Capable",
+        role_name="Capable (300 pts)",
+        role_colour=discord.Colour.blue(),
+        icon_path="./ui/assets/milestones/capable.png",
+    ),
+    CodeGrindMilestone.COMPETENT: CodeGrindTierInfo(
+        threshold=500,
+        title="Competent",
+        role_name="Competent (500 pts)",
+        role_colour=discord.Colour.dark_blue(),
+        icon_path="./ui/assets/milestones/competent.png",
+    ),
+    CodeGrindMilestone.ADVANCED: CodeGrindTierInfo(
+        threshold=1000,
+        title="Advanced",
+        role_name="Advanced (1000 pts)",
+        role_colour=discord.Colour.orange(),
+        icon_path="./ui/assets/milestones/advanced.png",
+    ),
+    CodeGrindMilestone.EXPERT: CodeGrindTierInfo(
+        threshold=2000,
+        title="Expert",
+        role_name="Expert (2000 pts)",
+        role_colour=discord.Colour.red(),
+        icon_path="./ui/assets/milestones/expert.png",
+    ),
+    CodeGrindMilestone.MASTER: CodeGrindTierInfo(
+        threshold=4000,
+        title="Master",
+        role_name="Master (4000 pts)",
+        role_colour=discord.Colour.purple(),
+        icon_path="./ui/assets/milestones/master.png",
+    ),
+    CodeGrindMilestone.LEGEND: CodeGrindTierInfo(
+        threshold=6000,
+        title="Legend",
+        role_name="Legend (6000 pts)",
+        role_colour=discord.Colour.gold(),
+        icon_path="./ui/assets/milestones/legend.png",
+    ),
 }
 
+# Threshold is in days.
 STREAK_ROLES = {
-    3: ("Streak Initiate (3 Days)", discord.Colour.green()),
-    7: ("Streak Pursuer (7 Days)", discord.Colour.blue()),
-    14: ("Streak Adventurer (14 Days)", discord.Colour.red()),
-    30: ("Streak Dominator (30 Days)", discord.Colour.purple()),
-    90: ("Streak Legend (90 Days)", discord.Colour.gold()),
+    CodeGrindStreak.INITIATE: CodeGrindTierInfo(
+        threshold=3,
+        title="Streak Initiate",
+        role_name="Streak Initiate (3 Days)",
+        role_colour=discord.Colour.green(),
+    ),
+    CodeGrindStreak.PURSUER: CodeGrindTierInfo(
+        threshold=7,
+        title="Streak Pursuer",
+        role_name="Streak Pursuer (7 Days)",
+        role_colour=discord.Colour.blue(),
+    ),
+    CodeGrindStreak.ADVENTURER: CodeGrindTierInfo(
+        threshold=14,
+        title="Streak Advent",
+        role_name="Streak Adventurer (14 Days)",
+        role_colour=discord.Colour.red(),
+    ),
+    CodeGrindStreak.DOMINATOR: CodeGrindTierInfo(
+        threshold=30,
+        title="Streak Dominator",
+        role_name="Streak Dominator (30 Days)",
+        role_colour=discord.Colour.purple(),
+    ),
+    CodeGrindStreak.LEGEND: CodeGrindTierInfo(
+        threshold=90,
+        title="Streak Legend",
+        role_name="Streak Legend (90 Days)",
+        role_colour=discord.Colour.gold(),
+    ),
 }
 
 VERIFIED_ROLE = "CodeGrind Verified"

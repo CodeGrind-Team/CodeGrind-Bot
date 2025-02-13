@@ -25,7 +25,9 @@ import discord
 import google.cloud.logging
 from dotenv import find_dotenv, load_dotenv
 
+
 from bot import Config, DiscordBot, LoggingFormatter
+
 
 if __name__ == "__main__":
     load_dotenv(find_dotenv())
@@ -75,3 +77,7 @@ if __name__ == "__main__":
 
     bot = DiscordBot(intents, config, logger)
     bot.run(config.DISCORD_TOKEN)
+    try:
+        bot.run(config.DISCORD_TOKEN)
+    except discord.errors.LoginFailure as e:
+        print(f"Login failed: {e}")

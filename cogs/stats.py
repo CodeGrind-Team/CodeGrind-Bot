@@ -5,11 +5,12 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-from constants import StatsCardExtensions
+from constants import MILESTONE_ROLES, StatsCardExtensions
 from database.models import Profile, User
 from middleware import defer_interaction
 from ui.embeds.stats import account_hidden_embed, stats_embed
 from ui.embeds.users import account_not_found_embed
+from utils.roles import get_highest_tier_info
 
 if TYPE_CHECKING:
     # To prevent circular imports
@@ -58,22 +59,33 @@ class StatsCog(commands.Cog):
             await interaction.followup.send(embed=account_hidden_embed())
             return
 
-        # Needed because if user already has connected their account to the bot
-        # but hasn't connected their account to the corresponding server,
-        # then display_information is None.
-        embed, file = await stats_embed(
+        # Fetch user's score
+        user_score = user.stats.submissions.score
+
+        # Determine the milestone role based on user's score
+        milestone_info = get_highest_tier_info(MILESTONE_ROLES, user_score)
+        milestone_filename = f"{milestone_info.title}.png"
+        milestone_icon_file = discord.File(
+            milestone_info.icon_path, filename=milestone_filename
+        )
+
+        # Create the embed with the title as the display name
+        embed, statscard_file = await stats_embed(
             self.bot,
             user.leetcode_id,
-            (profile.preference.name if profile else interaction.user.name),
-            (profile.preference.url if profile else False),
+            profile.preference.name,
+            profile.preference.url,
             extension.value,
         )
 
-        if not file:
-            await interaction.followup.send(embed=embed)
-            return
+        # Set the footer with the rank and the icon
+        embed.set_footer(
+            text=milestone_info.role_name,
+            icon_url=f"attachment://{milestone_filename}",
+        )
 
-        await interaction.followup.send(embed=embed, file=file)
+        files = list(filter(None, [statscard_file, milestone_icon_file]))
+        await interaction.followup.send(embed=embed, files=files)
 
 
 async def setup(bot: "DiscordBot") -> None:
