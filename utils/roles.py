@@ -1,6 +1,7 @@
 from typing import Any
 
 import discord
+from discord import Role
 
 from constants import MILESTONE_ROLES, STREAK_ROLES, VERIFIED_ROLE, CodeGrindTierInfo
 from database.models import Profile, User
@@ -160,7 +161,7 @@ async def give_verified_role(guild: discord.Guild, member: discord.Member) -> No
     role = discord.utils.get(guild.roles, name=VERIFIED_ROLE)
 
     # Check if the role exists
-    if not role:
+    if not role or role in member.roles:
         return
 
     await member.add_roles(role)
@@ -180,7 +181,7 @@ async def give_tier_group_role(
     :param tier_group: The tier group to assign roles from.
     :param user_value: The user's value.
     """
-    role_to_assign = None
+    role_to_assign: Role | None = None
     if highest_tier_info := get_highest_tier_info(MILESTONE_ROLES, user_value):
         role_to_assign = discord.utils.get(
             guild.roles, name=highest_tier_info.role_name
@@ -189,7 +190,7 @@ async def give_tier_group_role(
     # Remove all other roles.
     for codegrind_tier in tier_group.values():
         role = discord.utils.get(guild.roles, name=codegrind_tier.role_name)
-        if role and role in member.roles:
+        if role and role in member.roles and role != role_to_assign:
             await member.remove_roles(role)
 
     if role_to_assign:
