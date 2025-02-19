@@ -21,7 +21,6 @@ def get_highest_tier_info(
         if val < tier_info.threshold:
             break
 
-        print(tier_info)
         highest_tier_info = tier_info
 
     return highest_tier_info
