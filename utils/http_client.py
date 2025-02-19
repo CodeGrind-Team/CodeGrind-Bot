@@ -67,7 +67,6 @@ class HttpClient:
                             self.bot.logger.exception(
                                 f"Post request forbidden access "
                                 f"(code: {response.status})",
-                                response.status,
                             )
                             self.bot.channel_logger.forbidden()
                         case _:
