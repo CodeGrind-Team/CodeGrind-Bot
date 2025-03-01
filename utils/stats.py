@@ -22,7 +22,7 @@ from database.models import (
     User,
 )
 from utils.common import to_thread
-from utils.leaderboards import all_users_and_scores
+from utils.leaderboards import all_users_scores_and_wins
 from utils.problems import fetch_problems_solved_and_rank
 
 if TYPE_CHECKING:
@@ -151,8 +151,8 @@ async def update_wins(
         if not reset:
             continue
 
-        users_and_scores = await all_users_and_scores(all_users, period, previous=True)
-        user_to_score[period] = {user.id: score for user, score in users_and_scores}
+        users_and_scores = await all_users_scores_and_wins(all_users, period, previous=True)
+        user_to_score[period] = {user.id: score for user, score, win_count in users_and_scores}
 
     async for server in Server.all():
         profiles = await Profile.find_many(Profile.server_id == server.id).to_list()

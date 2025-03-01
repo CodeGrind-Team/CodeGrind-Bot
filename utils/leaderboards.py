@@ -91,37 +91,51 @@ async def user_score(user: User, period: Period, previous: bool) -> int:
         return current_score - previous_score
 
 
-async def user_and_score(
+async def user_score_and_wins(
     user: User, period: Period, previous: bool
-) -> tuple[User, int]:
+) -> tuple[User, int, int]:
     """
-    Get the score for a given period for a user.
+    Get the score and wins for a given period for a user.
 
     :param period: The period for which to retrieve the score.
     :param user_id: The ID of the user to retrieve the score for.
     :param previous: Whether to display the leaderboard of one period before.
 
-    :return: A tuple of the user and their score.
+    :return: A tuple of the user, their score and wins.
     """
     score = await user_score(user, period, previous)
-    return user, score
+
+    profile = await Profile.find_one(Profile.user_id == user.id)
+    if profile and profile.win_count:
+        if period.value == "days":
+            win_count = profile.win_count.days
+        elif period.value == "weeks":
+            win_count = profile.win_count.weeks
+        elif period.value == "months":
+            win_count = profile.win_count.months
+        else:
+            win_count = 0
+    else:
+        win_count = 0
+
+    return user, score, win_count
 
 
-async def all_users_and_scores(
+async def all_users_scores_and_wins(
     users: list[User], period: Period, previous: bool
-) -> list[tuple[User, int]]:
+) -> list[tuple[User, int, int]]:
     """
-    Fetch and calculate the scores for all users, for the selected time period.
+    Fetch and calculate the scores and wins for all users, for the selected time period.
 
     :param users: The users in the server.
     :param period: The period for which to retrieve and sort the scores.
     :param previous: Whether to display the leaderboard of one period before.
 
-    :return: A list of users sorted by their score in descending order.
+    :return: A list of users with their scores and wins.
     """
-    coroutines = [user_and_score(user, period, previous) for user in users]
-    users_with_scores = await asyncio.gather(*coroutines)
-    return users_with_scores
+    coroutines = [user_score_and_wins(user, period, previous) for user in users]
+    users_with_scores_and_wins = await asyncio.gather(*coroutines)
+    return users_with_scores_and_wins
 
 
 async def users_from_profiles(
@@ -167,22 +181,18 @@ async def generate_leaderboard_embed(
     """
     server_id = server_id if not global_leaderboard else GLOBAL_LEADERBOARD_ID
     server = await Server.find_one(Server.id == server_id, fetch_links=True)
-
     if not server:
         return empty_leaderboard_embed(), None
-
     user_id_to_profile, users = await users_from_profiles(server_id)
-    users_with_scores = await all_users_and_scores(users, period, previous)
+    users_with_scores = await all_users_scores_and_wins(users, period, previous)
     sorted_users_with_score = sorted(
         users_with_scores, key=lambda pair: pair[1], reverse=True
     )
-
     pages: list[discord.Embed] = []
     num_pages = math.ceil(len(users) / users_per_page)
 
     place = 0
     prev_score = float("-inf")
-
     for page_index in range(num_pages):
         page_embed, place, prev_score = await build_leaderboard_page(
             period,
@@ -242,7 +252,7 @@ async def build_leaderboard_page(
 
     leaderboard = []
 
-    for user, score in sorted_users[
+    for user, score, win_count in sorted_users[
         page_index * users_per_page : page_index * users_per_page + users_per_page
     ]:
 
