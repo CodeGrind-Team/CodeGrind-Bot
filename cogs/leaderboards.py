@@ -22,11 +22,16 @@ class LeaderboardsCog(commands.Cog):
         Monthly = Period.MONTH
         AllTime = Period.ALLTIME
 
+    class SortByField(Enum):
+        Score = "score"
+        WinCount = "win_count"
+
     def __init__(self, bot: "DiscordBot") -> None:
         self.bot = bot
 
     @app_commands.command(name="leaderboard")
     @app_commands.rename(global_leaderboard="global")
+    @app_commands.rename(sort_by="sort")
     @defer_interaction(user_preferences_prompt=True)
     @ensure_server_document
     async def leaderboard(
@@ -34,14 +39,15 @@ class LeaderboardsCog(commands.Cog):
         interaction: discord.Interaction,
         timeframe: TimeFrameField,
         global_leaderboard: BooleanField = BooleanField.No,
+        sort_by: SortByField = SortByField.Score,
     ) -> None:
         """
         View the leaderboard
 
         :param timeframe: Timeframe for the leaderboard
         :param global_leaderboard: Whether to display the global leaderboard
+        :param sort_by: Sorting method (score or win count)
         """
-
         embed, view = await generate_leaderboard_embed(
             timeframe.value,
             interaction.guild.id,
