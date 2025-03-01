@@ -54,6 +54,7 @@ class LeaderboardsCog(commands.Cog):
             interaction.user.id,
             global_leaderboard=global_leaderboard.to_bool,
             page=1,
+            sort_by=sort_by.value
         )
 
         await interaction.followup.send(embed=embed, view=view)

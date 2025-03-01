@@ -164,6 +164,7 @@ async def generate_leaderboard_embed(
     previous: bool = False,
     page: int = 1,
     users_per_page: int = 10,
+    sort_by: str = "score",
 ) -> tuple[discord.Embed, discord.ui.View]:
     """
     Generate a leaderboard embed.
@@ -176,6 +177,7 @@ async def generate_leaderboard_embed(
     :param previous: Whether to display the leaderboard of one period before.
     :param page: The page number.
     :param users_per_page: The number of users per page.
+    :param sort_by: Sorting method (score or win count)
 
     :return: The leaderboard embed and view.
     """
@@ -184,10 +186,17 @@ async def generate_leaderboard_embed(
     if not server:
         return empty_leaderboard_embed(), None
     user_id_to_profile, users = await users_from_profiles(server_id)
-    users_with_scores = await all_users_scores_and_wins(users, period, previous)
-    sorted_users_with_score = sorted(
-        users_with_scores, key=lambda pair: pair[1], reverse=True
-    )
+    users_with_scores_and_wins = await all_users_scores_and_wins(users, period, previous)
+
+    if sort_by == "win_count":
+        sorted_users_with_metrics = sorted(
+            users_with_scores_and_wins, key=lambda pair: pair[2], reverse=True
+        )
+    else:
+        sorted_users_with_metrics = sorted(
+            users_with_scores_and_wins, key=lambda pair: pair[1], reverse=True
+        )
+
     pages: list[discord.Embed] = []
     num_pages = math.ceil(len(users) / users_per_page)
 
@@ -198,7 +207,8 @@ async def generate_leaderboard_embed(
             period,
             server,
             user_id_to_profile,
-            sorted_users_with_score,
+            sort_by,
+            sorted_users_with_metrics,
             winners_only,
             global_leaderboard,
             page_index,
@@ -223,7 +233,8 @@ async def build_leaderboard_page(
     period: Period,
     server: Server,
     user_id_to_profile: list[dict[int, Profile]],
-    sorted_users: list[tuple[User, int]],
+    sort_by: str,
+    sorted_users: list[tuple[User, int, int]],
     winners_only: bool,
     global_leaderboard: bool,
     page_index: int,
@@ -238,7 +249,8 @@ async def build_leaderboard_page(
     :param period: The period.
     :param server: The server.
     :param user_id_to_profile: Mapping from user ids to their profile.
-    :param sorted_users: The list of users sorted by score in the respective period.
+    :param sort_by: Sorting method (score or win count)
+    :param sorted_users: The list of users sorted by selected metric (score or win count) in the respective period.
     :param winners_only: Whether to display only the winners.
     :param global_leaderboard: Whether to display the global leaderboard.
     :param page_index: The page index.
