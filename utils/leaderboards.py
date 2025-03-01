@@ -201,7 +201,7 @@ async def generate_leaderboard_embed(
     num_pages = math.ceil(len(users) / users_per_page)
 
     place = 0
-    prev_score = float("-inf")
+    prev_metric_value = float("-inf")
     for page_index in range(num_pages):
         page_embed, place, prev_score = await build_leaderboard_page(
             period,
@@ -215,7 +215,7 @@ async def generate_leaderboard_embed(
             users_per_page,
             num_pages,
             place,
-            prev_score,
+            prev_metric_value,
         )
         pages.append(page_embed)
 
@@ -241,7 +241,7 @@ async def build_leaderboard_page(
     users_per_page: int,
     num_pages: int,
     place: int,
-    prev_score: float,
+    prev_metric_value: float,
 ) -> tuple[discord.Embed, int, float]:
     """
     Build a leaderboard page.
@@ -257,9 +257,9 @@ async def build_leaderboard_page(
     :param users_per_page: The number of users per page.
     :param num_pages: The number of pages.
     :param place: The place.
-    :param prev_score: The previous score.
+    :param prev_metric_value: The previous metric value.
 
-    :return: The leaderboard page, place, and previous score.
+    :return: The leaderboard page, place, and previous metric value.
     """
 
     leaderboard = []
@@ -280,13 +280,20 @@ async def build_leaderboard_page(
         url = profile.preference.url
         anonymous = profile.preference.anonymous
 
-        if score != prev_score:
+        if sort_by == "win_count":
+            display_metric = win_count
+            metric_label = "wins"
+        else:
+            display_metric = score
+            metric_label = "pts"
+
+        if display_metric != prev_metric_value:
             place += 1
 
-        if winners_only and (score == 0 or place == 4):
+        if winners_only and (display_metric == 0 or place == 4):
             break
 
-        prev_score = score
+        prev_metric_value = display_metric
 
         display_name = (
             "Anonymous User"
@@ -294,10 +301,10 @@ async def build_leaderboard_page(
             else (f"[{name}]({profile_link})" if url else name)
         )
 
-        rank = get_rank_emoji(place, score)
-        leaderboard.append(f"**{rank} {display_name}** - **{score}** pts")
+        rank = get_rank_emoji(place, display_metric)
+        leaderboard.append(f"**{rank} {display_name}** - **{display_metric}** {metric_label}")
 
-    title = get_title(period, winners_only, global_leaderboard)
+    title = get_title(period, winners_only, global_leaderboard, sort_by)
 
     return (
         leaderboard_embed(
@@ -309,17 +316,18 @@ async def build_leaderboard_page(
             include_page_count=not winners_only,
         ),
         place,
-        prev_score,
+        prev_metric_value,
     )
 
 
-def get_title(period: Period, winners_only: bool, global_leaderboard: bool) -> str:
+def get_title(period: Period, winners_only: bool, global_leaderboard: bool, sort_by: str) -> str:
     """
     Get the title of the leaderboard.
 
     :param period: The leaderboard's period.
     :param winners_only: Whether to display only the winners.
     :param global_leaderboard: Whether to display the global leaderboard.
+    :param sort_by: Sorting method (score or win count).
 
     :return: The title of the leaderboard.
     """
@@ -330,9 +338,12 @@ def get_title(period: Period, winners_only: bool, global_leaderboard: bool) -> s
         Period.ALLTIME: "allTime",
     }
 
+    metric_label = "Win Count" if sort_by == "win_count" else "Score"
+
     title = (
         f"{'Global ' if global_leaderboard else ''}"
         + f"{period_to_text[period].capitalize()} Leaderboard"
+        + f" ({metric_label})"
     )
 
     if winners_only:
