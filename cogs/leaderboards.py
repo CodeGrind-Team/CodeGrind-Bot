@@ -5,7 +5,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-from constants import Period, LeaderboardSortBy
+from constants import LeaderboardSortBy, Period
 from middleware import defer_interaction, ensure_server_document
 from ui.constants import BooleanField
 from utils.leaderboards import generate_leaderboard_embed

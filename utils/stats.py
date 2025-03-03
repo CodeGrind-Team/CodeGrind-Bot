@@ -151,7 +151,9 @@ async def update_wins(
         if not reset:
             continue
 
-        users_and_scores = await all_users_scores_and_wins(all_users, period, previous=True)
+        users_and_scores = await all_users_scores_and_wins(
+            all_users, period, previous=True
+        )
         user_to_score[period] = {user.id: score for user, score, _ in users_and_scores}
 
     async for server in Server.all():

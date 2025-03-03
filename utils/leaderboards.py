@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 import discord
 from beanie.operators import In
 
-from constants import GLOBAL_LEADERBOARD_ID, Period, LeaderboardSortBy, RankEmoji
+from constants import GLOBAL_LEADERBOARD_ID, LeaderboardSortBy, Period, RankEmoji
 from database.models import Profile, Record, Server, User
 from ui.embeds.leaderboards import empty_leaderboard_embed, leaderboard_embed
 from ui.views.leaderboards import LeaderboardPagination
@@ -101,7 +101,9 @@ async def user_win_count(user: User, period: Period, server_id: int) -> int:
 
     :return: The win count for the specified period.
     """
-    profile = await Profile.find_one(Profile.user_id == user.id, Profile.server_id == server_id)
+    profile = await Profile.find_one(
+        Profile.user_id == user.id, Profile.server_id == server_id
+    )
 
     if not profile or not profile.win_count:
         return 0
@@ -149,7 +151,9 @@ async def all_users_scores_and_wins(
 
     :return: A list of users with their scores and wins.
     """
-    coroutines = [user_score_and_wins(user, period, previous, server_id) for user in users]
+    coroutines = [
+        user_score_and_wins(user, period, previous, server_id) for user in users
+    ]
     users_with_scores_and_wins = await asyncio.gather(*coroutines)
     return users_with_scores_and_wins
 
@@ -202,7 +206,9 @@ async def generate_leaderboard_embed(
     if not server:
         return empty_leaderboard_embed(), None
     user_id_to_profile, users = await users_from_profiles(server_id)
-    users_with_scores_and_wins = await all_users_scores_and_wins(users, period, previous, server_id)
+    users_with_scores_and_wins = await all_users_scores_and_wins(
+        users, period, previous, server_id
+    )
 
     match sort_by:
         case LeaderboardSortBy.WIN_COUNT:
@@ -267,7 +273,8 @@ async def build_leaderboard_page(
     :param sort_by: Sorting method
     :param server: The server.
     :param user_id_to_profile: Mapping from user ids to their profile.
-    :param sorted_users: The list of users sorted by selected metric (score or win count) in the respective period.
+    :param sorted_users: The list of users sorted by selected metric
+    (score or win count) in the respective period.
     :param winners_only: Whether to display only the winners.
     :param global_leaderboard: Whether to display the global leaderboard.
     :param page_index: The page index.
@@ -320,7 +327,9 @@ async def build_leaderboard_page(
         )
 
         rank = get_rank_emoji(place, display_metric)
-        leaderboard.append(f"**{rank} {display_name}** - **{display_metric}** {metric_label}")
+        leaderboard.append(
+            f"**{rank} {display_name}** - **{display_metric}** {metric_label}"
+        )
 
     title = get_title(period, winners_only, global_leaderboard, sort_by)
 
@@ -338,7 +347,12 @@ async def build_leaderboard_page(
     )
 
 
-def get_title(period: Period, winners_only: bool, global_leaderboard: bool, sort_by: LeaderboardSortBy) -> str:
+def get_title(
+    period: Period,
+    winners_only: bool,
+    global_leaderboard: bool,
+    sort_by: LeaderboardSortBy,
+) -> str:
     """
     Get the title of the leaderboard.
 
