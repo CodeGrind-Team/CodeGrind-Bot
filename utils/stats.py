@@ -152,7 +152,7 @@ async def update_wins(
             continue
 
         users_and_scores = await all_users_scores_and_wins(all_users, period, previous=True)
-        user_to_score[period] = {user.id: score for user, score, win_count in users_and_scores}
+        user_to_score[period] = {user.id: score for user, score, _ in users_and_scores}
 
     async for server in Server.all():
         profiles = await Profile.find_many(Profile.server_id == server.id).to_list()

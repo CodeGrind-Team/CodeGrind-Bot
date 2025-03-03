@@ -91,8 +91,34 @@ async def user_score(user: User, period: Period, previous: bool) -> int:
         return current_score - previous_score
 
 
+async def user_win_count(user: User, period: Period, server_id: int) -> int:
+    """
+    Returns the win count for a given period for a user.
+
+    :param user: The user to retrieve the win count for.
+    :param period: The period for which to retrieve the win count.
+    :param server_id: The server to retrieve the win count for.
+
+    :return: The win count for the specified period.
+    """
+    profile = await Profile.find_one(Profile.user_id == user.id, Profile.server_id == server_id)
+
+    if not profile or not profile.win_count:
+        return 0
+
+    match period:
+        case Period.DAY:
+            return profile.win_count.days
+        case Period.WEEK:
+            return profile.win_count.weeks
+        case Period.MONTH:
+            return profile.win_count.months
+        case _:
+            return 0
+
+
 async def user_score_and_wins(
-    user: User, period: Period, previous: bool
+    user: User, period: Period, previous: bool, server_id: int
 ) -> tuple[User, int, int]:
     """
     Get the score and wins for a given period for a user.
@@ -100,29 +126,18 @@ async def user_score_and_wins(
     :param period: The period for which to retrieve the score.
     :param user_id: The ID of the user to retrieve the score for.
     :param previous: Whether to display the leaderboard of one period before.
+    :param server_id: The ID of the server to retrieve the score for.
 
     :return: A tuple of the user, their score and wins.
     """
     score = await user_score(user, period, previous)
-
-    profile = await Profile.find_one(Profile.user_id == user.id)
-    if profile and profile.win_count:
-        if period.value == "days":
-            win_count = profile.win_count.days
-        elif period.value == "weeks":
-            win_count = profile.win_count.weeks
-        elif period.value == "months":
-            win_count = profile.win_count.months
-        else:
-            win_count = 0
-    else:
-        win_count = 0
+    win_count = await user_win_count(user, period, server_id)
 
     return user, score, win_count
 
 
 async def all_users_scores_and_wins(
-    users: list[User], period: Period, previous: bool
+    users: list[User], period: Period, previous: bool, server_id: int
 ) -> list[tuple[User, int, int]]:
     """
     Fetch and calculate the scores and wins for all users, for the selected time period.
@@ -130,10 +145,11 @@ async def all_users_scores_and_wins(
     :param users: The users in the server.
     :param period: The period for which to retrieve and sort the scores.
     :param previous: Whether to display the leaderboard of one period before.
+    :param server_id: The ID of the server to retrieve the score for.
 
     :return: A list of users with their scores and wins.
     """
-    coroutines = [user_score_and_wins(user, period, previous) for user in users]
+    coroutines = [user_score_and_wins(user, period, previous, server_id) for user in users]
     users_with_scores_and_wins = await asyncio.gather(*coroutines)
     return users_with_scores_and_wins
 
@@ -186,7 +202,7 @@ async def generate_leaderboard_embed(
     if not server:
         return empty_leaderboard_embed(), None
     user_id_to_profile, users = await users_from_profiles(server_id)
-    users_with_scores_and_wins = await all_users_scores_and_wins(users, period, previous)
+    users_with_scores_and_wins = await all_users_scores_and_wins(users, period, previous, server_id)
 
     if sort_by == "win_count":
         sorted_users_with_metrics = sorted(
