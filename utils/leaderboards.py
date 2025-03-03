@@ -91,13 +91,13 @@ async def user_score(user: User, period: Period, previous: bool) -> int:
         return current_score - previous_score
 
 
-async def user_win_count(user: User, period: Period, server_id: int) -> int:
+async def user_win_count(user: User, server_id: int, period: Period) -> int:
     """
     Returns the win count for a given period for a user.
 
     :param user: The user to retrieve the win count for.
-    :param period: The period for which to retrieve the win count.
     :param server_id: The server to retrieve the win count for.
+    :param period: The period for which to retrieve the win count.
 
     :return: The win count for the specified period.
     """
@@ -120,7 +120,7 @@ async def user_win_count(user: User, period: Period, server_id: int) -> int:
 
 
 async def user_score_and_wins(
-    user: User, period: Period, previous: bool, server_id: int
+    user: User, period: Period, previous: bool, server_id: int | None = None
 ) -> tuple[User, int, int]:
     """
     Get the score and wins for a given period for a user.
@@ -128,18 +128,21 @@ async def user_score_and_wins(
     :param period: The period for which to retrieve the score.
     :param user_id: The ID of the user to retrieve the score for.
     :param previous: Whether to display the leaderboard of one period before.
-    :param server_id: The ID of the server to retrieve the score for.
+    :param server_id: The ID of the server to retrieve the user's win_count for.
 
     :return: A tuple of the user, their score and wins.
     """
     score = await user_score(user, period, previous)
-    win_count = await user_win_count(user, period, server_id)
+
+    win_count: int | None = None
+    if server_id:
+        win_count = await user_win_count(user, server_id, period)
 
     return user, score, win_count
 
 
 async def all_users_scores_and_wins(
-    users: list[User], period: Period, previous: bool, server_id: int
+    users: list[User], period: Period, previous: bool, server_id: int | None = None
 ) -> list[tuple[User, int, int]]:
     """
     Fetch and calculate the scores and wins for all users, for the selected time period.
@@ -147,7 +150,7 @@ async def all_users_scores_and_wins(
     :param users: The users in the server.
     :param period: The period for which to retrieve and sort the scores.
     :param previous: Whether to display the leaderboard of one period before.
-    :param server_id: The ID of the server to retrieve the score for.
+    :param server_id: The ID of the server to retrieve the user's win_count for.
 
     :return: A list of users with their scores and wins.
     """
@@ -439,7 +442,8 @@ def get_rank_emoji(place: int, score: int) -> str:
             case 3:
                 return RankEmoji.THIRD.value
 
-    return f"{place}\."  # noqa: W605
+    # Use raw string to escape the period character.
+    return rf"{place}\."
 
 
 async def send_leaderboard_winners(

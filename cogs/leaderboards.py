@@ -23,8 +23,8 @@ class LeaderboardsCog(commands.Cog):
         AllTime = Period.ALLTIME
 
     class SortByField(Enum):
-        Score = LeaderboardSortBy.SCORE
         WinCount = LeaderboardSortBy.WIN_COUNT
+        Score = LeaderboardSortBy.SCORE
 
     def __init__(self, bot: "DiscordBot") -> None:
         self.bot = bot
