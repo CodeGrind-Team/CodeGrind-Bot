@@ -4,6 +4,11 @@ from enum import Enum
 import discord
 
 
+class LeaderboardSortBy(Enum):
+    SCORE = "score"
+    WIN_COUNT = "win_count"
+
+
 class Period(Enum):
     DAY = "day"
     WEEK = "week"

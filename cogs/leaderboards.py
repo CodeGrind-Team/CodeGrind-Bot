@@ -5,7 +5,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-from constants import Period
+from constants import Period, LeaderboardSortBy
 from middleware import defer_interaction, ensure_server_document
 from ui.constants import BooleanField
 from utils.leaderboards import generate_leaderboard_embed
@@ -23,8 +23,8 @@ class LeaderboardsCog(commands.Cog):
         AllTime = Period.ALLTIME
 
     class SortByField(Enum):
-        Score = "score"
-        WinCount = "win_count"
+        Score = LeaderboardSortBy.SCORE
+        WinCount = LeaderboardSortBy.WIN_COUNT
 
     def __init__(self, bot: "DiscordBot") -> None:
         self.bot = bot
@@ -45,16 +45,16 @@ class LeaderboardsCog(commands.Cog):
         View the leaderboard
 
         :param timeframe: Timeframe for the leaderboard
+        :param sort_by: Sorting method
         :param global_leaderboard: Whether to display the global leaderboard
-        :param sort_by: Sorting method (score or win count)
         """
         embed, view = await generate_leaderboard_embed(
             timeframe.value,
+            sort_by.value,
             interaction.guild.id,
             interaction.user.id,
             global_leaderboard=global_leaderboard.to_bool,
             page=1,
-            sort_by=sort_by.value
         )
 
         await interaction.followup.send(embed=embed, view=view)
