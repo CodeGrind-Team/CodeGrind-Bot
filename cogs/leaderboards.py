@@ -31,7 +31,7 @@ class LeaderboardsCog(commands.Cog):
 
     @app_commands.command(name="leaderboard")
     @app_commands.rename(global_leaderboard="global")
-    @app_commands.rename(sort_by="sort")
+    @app_commands.rename(sort_by="sorting")
     @defer_interaction(user_preferences_prompt=True)
     @ensure_server_document
     async def leaderboard(

@@ -66,6 +66,7 @@ You can view our Privacy Policy [here](https://github.com/CodeGrind-Team/CodeGri
 </leaderboard:1243301101634060409> Display the CodeGrind leaderboard.
 >    - `timeframe`: The desired timeframe (daily, weekly, monthly, or all-time).
 >    - `global` _(optional)_: Whether display the Global CodeGrind leaderboards or the default local (server-only) leaderboards.
+>    - `sorting` _(optional)_: The sorting method (score or win count).
 
 Note: scores for `daily`, `weekly`, and `monthly` leaderboards will only start being tracked after an account is created. Any previous questions done that day/week/month will not be calculated into your score.""",
     CommandCategory.STATISTICS: """
@@ -119,11 +120,11 @@ These commands are only available to administrators of this server.
 
 ## Roles
 
-</setup-feature roles:1204499698317262958>: Enable/disable automatically giving verified CodeGrind user, score milestones, and streak roles that will be automatically updated each day at midday (UTC).
+</setup-feature roles:1264609825631764480>: Enable/disable automatically giving verified CodeGrind user, score milestones, and streak roles that will be automatically updated each day at midday (UTC).
 
 ## Notifications
 
-</setup-feature notifications:1204499698317262958>: Enable/disable daily notifications being sent at midnight (UTC) to a channel.
+</setup-feature notifications:1264609825631764480>: Enable/disable daily notifications being sent at midnight (UTC) to a channel.
 >    - `channel` _(optional)_: The channel (e.g. "#home-channel") to send notifications to. By default this will be the channel where you ran this command.
 
 Note: please press the 'save' button twice!""",
@@ -136,6 +137,7 @@ Nano (<@814656377188384810>)
 Liam (<@344132308644659201>)
 
 ### Contributors
+[Aqiil](<https://www.linkedin.com/in/abubakar-aqiil/>) (<@411495236326653965>): Added win-count sorting option to /leaderboard.
 [Chris](<https://www.linkedin.com/in/chris-fowler-b3b96a191/>) (<@586527718653558796>): Created the /neetcode command.
 [Valgo](<https://github.com/svn27/>) (<@659535036206415883>): Implemented tracking of the LeetCode language and skills problem count.
 [Aalaap](<https://www.linkedin.com/in/aalaap-d-969703239/>) (<@635232267458969631>): Created the /problem commands.
