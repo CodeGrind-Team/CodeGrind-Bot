@@ -4,16 +4,16 @@ from typing import TYPE_CHECKING
 import discord
 from beanie.odm.operators.update.general import Set
 
-from constants import GLOBAL_LEADERBOARD_ID, Period
-from database.models import Server
-from ui.embeds.problems import daily_question_embed
-from utils.leaderboards import send_leaderboard_winners
-from utils.roles import update_roles
-from utils.stats import update_all_user_stats
+from src.constants import GLOBAL_LEADERBOARD_ID, Period
+from src.database.models import Server
+from src.ui.embeds.problems import daily_question_embed
+from src.utils.leaderboards import send_leaderboard_winners
+from src.utils.roles import update_roles
+from src.utils.stats import update_all_user_stats
 
 if TYPE_CHECKING:
     # To prevent circular imports
-    from bot import DiscordBot
+    from src.bot import DiscordBot
 
 
 async def process_daily_question_and_stats_update(

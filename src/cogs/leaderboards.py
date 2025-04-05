@@ -5,14 +5,14 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-from constants import LeaderboardSortBy, Period
-from middleware import defer_interaction, ensure_server_document
-from ui.constants import BooleanField
-from utils.leaderboards import generate_leaderboard_embed
+from src.constants import LeaderboardSortBy, Period
+from src.middleware import defer_interaction, ensure_server_document
+from src.ui.constants import BooleanField
+from src.utils.leaderboards import generate_leaderboard_embed
 
 if TYPE_CHECKING:
     # To prevent circular imports
-    from bot import DiscordBot
+    from src.bot import DiscordBot
 
 
 class LeaderboardsCog(commands.Cog):

@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     # To prevent circular imports
-    from bot import DiscordBot
+    from src.bot import DiscordBot
 
 
 class Ratings:

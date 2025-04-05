@@ -5,16 +5,16 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-from constants import MILESTONE_ROLES, StatsCardExtensions
-from database.models import Profile, User
-from middleware import defer_interaction
-from ui.embeds.stats import account_hidden_embed, stats_embed
-from ui.embeds.users import account_not_found_embed
-from utils.roles import get_highest_tier_info
+from src.constants import MILESTONE_ROLES, StatsCardExtensions
+from src.database.models import Profile, User
+from src.middleware import defer_interaction
+from src.ui.embeds.stats import account_hidden_embed, stats_embed
+from src.ui.embeds.users import account_not_found_embed
+from src.utils.roles import get_highest_tier_info
 
 if TYPE_CHECKING:
     # To prevent circular imports
-    from bot import DiscordBot
+    from src.bot import DiscordBot
 
 
 class StatsCog(commands.Cog):

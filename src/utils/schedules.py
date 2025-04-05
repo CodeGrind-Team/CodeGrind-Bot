@@ -4,12 +4,12 @@ from typing import TYPE_CHECKING, Callable
 
 from discord.ext import tasks
 
-from utils.dev import prune_members_and_guilds
-from utils.notifications import process_daily_question_and_stats_update
+from src.utils.dev import prune_members_and_guilds
+from src.utils.notifications import process_daily_question_and_stats_update
 
 if TYPE_CHECKING:
     # To prevent circular imports
-    from bot import DiscordBot
+    from src.bot import DiscordBot
 
 
 def task_exception_handler(func: Callable) -> Callable:

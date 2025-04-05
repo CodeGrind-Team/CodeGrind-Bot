@@ -2,7 +2,7 @@ from typing import List
 
 import discord
 
-from ui.embeds.general import not_creator_embed
+from src.ui.embeds.general import not_creator_embed
 
 
 class LeaderboardPagination(discord.ui.View):

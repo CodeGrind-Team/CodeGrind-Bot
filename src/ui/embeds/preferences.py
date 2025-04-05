@@ -1,8 +1,8 @@
 import discord
 
-from ui.constants import PreferenceField
-from ui.embeds.common import success_embed
-from ui.views.preferences import EmbedAndField
+from src.ui.constants import PreferenceField
+from src.ui.embeds.common import success_embed
+from src.ui.views.preferences import EmbedAndField
 
 
 def preferences_update_prompt_embeds() -> tuple[list[EmbedAndField], discord.Embed]:

@@ -4,7 +4,7 @@ import discord
 
 if TYPE_CHECKING:
     # To prevent circular imports
-    from bot import DiscordBot
+    from src.bot import DiscordBot
 
 
 class ProblemSearchModal(discord.ui.Modal, title="Search for a LeetCode problem"):

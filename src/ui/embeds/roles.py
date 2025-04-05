@@ -1,6 +1,6 @@
 import discord
 
-from ui.embeds.common import success_embed
+from src.ui.embeds.common import success_embed
 
 
 def roles_menu_embed() -> discord.Embed:

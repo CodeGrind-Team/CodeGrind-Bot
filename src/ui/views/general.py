@@ -1,8 +1,8 @@
 import discord
 
-from ui.constants import CommandCategory
-from ui.embeds.common import error_embed
-from ui.embeds.general import help_embed
+from src.ui.constants import CommandCategory
+from src.ui.embeds.common import error_embed
+from src.ui.embeds.general import help_embed
 
 
 class CommandCategorySelect(discord.ui.Select):

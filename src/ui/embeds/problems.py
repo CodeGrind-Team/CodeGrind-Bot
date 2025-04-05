@@ -2,9 +2,9 @@ from typing import TYPE_CHECKING
 
 import discord
 
-from constants import Difficulty
-from ui.embeds.common import failure_embed
-from utils.problems import (
+from src.constants import Difficulty
+from src.ui.embeds.common import failure_embed
+from src.utils.problems import (
     fetch_daily_question,
     fetch_question_info,
     fetch_random_question,
@@ -13,7 +13,7 @@ from utils.problems import (
 
 if TYPE_CHECKING:
     # To prevent circular imports
-    from bot import DiscordBot
+    from src.bot import DiscordBot
 
 
 async def daily_question_embed(bot: "DiscordBot") -> discord.Embed:

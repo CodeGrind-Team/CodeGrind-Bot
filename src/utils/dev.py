@@ -5,14 +5,14 @@ from typing import TYPE_CHECKING
 
 import discord
 
-from constants import GLOBAL_LEADERBOARD_ID
-from database.models import Profile, Server, User
-from utils.notifications import process_daily_question_and_stats_update
-from utils.users import delete_user
+from src.constants import GLOBAL_LEADERBOARD_ID
+from src.database.models import Profile, Server, User
+from src.utils.notifications import process_daily_question_and_stats_update
+from src.utils.users import delete_user
 
 if TYPE_CHECKING:
     # To prevent circular imports
-    from bot import DiscordBot
+    from src.bot import DiscordBot
 
 
 class ChannelLogger:

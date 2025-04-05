@@ -1,6 +1,6 @@
 from enum import Enum
 
-from constants import DifficultyScore
+from src.constants import DifficultyScore
 
 
 class BooleanField(Enum):

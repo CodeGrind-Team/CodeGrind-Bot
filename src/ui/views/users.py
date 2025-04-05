@@ -2,12 +2,12 @@ from typing import TYPE_CHECKING
 
 import discord
 
-from ui.modals.users import RegisterModal
-from utils.preferences import update_user_preferences_prompt
+from src.ui.modals.users import RegisterModal
+from src.utils.preferences import update_user_preferences_prompt
 
 if TYPE_CHECKING:
     # To prevent circular imports
-    from bot import DiscordBot
+    from src.bot import DiscordBot
 
 
 class LoginView(discord.ui.View):

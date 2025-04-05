@@ -2,9 +2,9 @@ from datetime import UTC, datetime
 
 import discord
 
-from database.models import Profile
-from ui.embeds.preferences import preferences_update_prompt_embeds
-from ui.views.preferences import UserPreferencesPromptView
+from src.database.models import Profile
+from src.ui.embeds.preferences import preferences_update_prompt_embeds
+from src.ui.views.preferences import UserPreferencesPromptView
 
 
 async def update_user_preferences_prompt(

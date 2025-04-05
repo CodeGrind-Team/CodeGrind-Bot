@@ -4,22 +4,22 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-from database.models import User
-from middleware import defer_interaction, ensure_server_document
-from ui.constants import BooleanField
-from ui.embeds.users import (
+from src.database.models import User
+from src.middleware import defer_interaction, ensure_server_document
+from src.ui.constants import BooleanField
+from src.ui.embeds.users import (
     account_not_found_embed,
     account_permanently_deleted_embed,
     account_process_start_embed,
     account_removed_embed,
 )
-from ui.views.users import LoginView
-from utils.preferences import update_user_preferences_prompt
-from utils.users import delete_user, login, unlink_user_from_server
+from src.ui.views.users import LoginView
+from src.utils.preferences import update_user_preferences_prompt
+from src.utils.users import delete_user, login, unlink_user_from_server
 
 if TYPE_CHECKING:
     # To prevent circular imports
-    from bot import DiscordBot
+    from src.bot import DiscordBot
 
 
 class UsersCog(commands.Cog):

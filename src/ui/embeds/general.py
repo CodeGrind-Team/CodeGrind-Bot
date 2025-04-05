@@ -1,7 +1,7 @@
 import discord
 
-from ui.constants import CATEGORY_DESCRIPTIONS, CommandCategory
-from ui.embeds.common import failure_embed
+from src.ui.constants import CATEGORY_DESCRIPTIONS, CommandCategory
+from src.ui.embeds.common import failure_embed
 
 
 def help_embed(category: CommandCategory = CommandCategory.HOME) -> discord.Embed:

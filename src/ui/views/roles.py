@@ -1,7 +1,7 @@
 import discord
 
-from ui.embeds.roles import roles_created_embed, roles_removed_embed
-from utils.roles import create_roles, remove_roles, update_roles
+from src.ui.embeds.roles import roles_created_embed, roles_removed_embed
+from src.utils.roles import create_roles, remove_roles, update_roles
 
 
 class RolesView(discord.ui.View):

@@ -10,8 +10,8 @@ from beanie.odm.operators.update.general import Inc, Set
 from beanie.operators import In
 from PIL import Image, UnidentifiedImageError
 
-from constants import Period, StatsCardExtensions
-from database.models import (
+from src.constants import Period, StatsCardExtensions
+from src.database.models import (
     LanguageProblemCount,
     Profile,
     Record,
@@ -21,13 +21,13 @@ from database.models import (
     Submissions,
     User,
 )
-from utils.common import to_thread
-from utils.leaderboards import all_users_scores_and_wins
-from utils.problems import fetch_problems_solved_and_rank
+from src.utils.common import to_thread
+from src.utils.leaderboards import all_users_scores_and_wins
+from src.utils.problems import fetch_problems_solved_and_rank
 
 if TYPE_CHECKING:
     # To prevent circular imports
-    from bot import DiscordBot
+    from src.bot import DiscordBot
 
 stats_update_semaphore = asyncio.Semaphore(4)
 

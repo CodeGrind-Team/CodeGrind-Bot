@@ -4,13 +4,13 @@ from typing import TYPE_CHECKING
 
 import discord
 
-from constants import StatsCardExtensions
-from ui.embeds.common import error_embed, failure_embed
-from utils.stats import stats_card
+from src.constants import StatsCardExtensions
+from src.ui.embeds.common import error_embed, failure_embed
+from src.utils.stats import stats_card
 
 if TYPE_CHECKING:
     # To prevent circular imports
-    from bot import DiscordBot
+    from src.bot import DiscordBot
 
 
 async def stats_embed(

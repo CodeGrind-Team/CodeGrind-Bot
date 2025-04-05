@@ -6,7 +6,7 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from .models import Profile, Record, Server, User
 
 
-async def initialise_mongodb_conn(
+async def initialise_mongodb_connection(
     mongodb_uri: str, global_leaderboard_id: int = 0
 ) -> None:
     """
@@ -33,4 +33,4 @@ if __name__ == "__main__":
     from dotenv import find_dotenv, load_dotenv
 
     load_dotenv(find_dotenv())
-    asyncio.run(initialise_mongodb_conn(os.getenv("MONGODB_URI")))
+    asyncio.run(initialise_mongodb_connection(os.getenv("MONGODB_URI")))

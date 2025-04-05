@@ -3,10 +3,10 @@ from typing import TYPE_CHECKING
 import discord
 from beanie.odm.operators.update.array import AddToSet, Pull
 
-from constants import NotificationOptions
-from database.models import Server
-from ui.embeds.common import failure_embed
-from ui.embeds.notifications import (
+from src.constants import NotificationOptions
+from src.database.models import Server
+from src.ui.embeds.common import failure_embed
+from src.ui.embeds.notifications import (
     channel_receiving_all_notification_options_embed,
     channel_receiving_no_notification_options_embed,
     channel_remove_embed,
@@ -16,7 +16,7 @@ from ui.embeds.notifications import (
 
 if TYPE_CHECKING:
     # To prevent circular imports
-    from bot import DiscordBot
+    from src.bot import DiscordBot
 
 
 class NotificationOptionSelect(discord.ui.Select):

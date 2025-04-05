@@ -5,12 +5,12 @@ from typing import TYPE_CHECKING
 
 import markdownify
 
-from constants import Difficulty
-from utils.common import convert_to_score
+from src.constants import Difficulty
+from src.utils.common import convert_to_score
 
 if TYPE_CHECKING:
     # To prevent circular imports
-    from bot import DiscordBot
+    from src.bot import DiscordBot
 
 
 URL = "https://leetcode.com/graphql"

@@ -26,7 +26,7 @@ import google.cloud.logging
 from dotenv import find_dotenv, load_dotenv
 
 
-from bot import Config, DiscordBot, LoggingFormatter
+from src.bot import Config, DiscordBot, LoggingFormatter
 
 
 if __name__ == "__main__":

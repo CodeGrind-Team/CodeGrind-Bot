@@ -2,11 +2,11 @@ from typing import TYPE_CHECKING
 
 import discord
 
-from utils.users import register
+from src.utils.users import register
 
 if TYPE_CHECKING:
     # To prevent circular imports
-    from bot import DiscordBot
+    from src.bot import DiscordBot
 
 
 class RegisterModal(

@@ -2,15 +2,15 @@ from typing import TYPE_CHECKING
 
 import discord
 
-from constants import Language
-from ui.embeds.common import error_embed, failure_embed
-from ui.embeds.problems import question_error_embed
-from utils.neetcode import neetcode_solution_github_link
-from utils.problems import search_question
+from src.constants import Language
+from src.ui.embeds.common import error_embed, failure_embed
+from src.ui.embeds.problems import question_error_embed
+from src.utils.neetcode import neetcode_solution_github_link
+from src.utils.problems import search_question
 
 if TYPE_CHECKING:
     # To prevent circular imports
-    from bot import DiscordBot
+    from src.bot import DiscordBot
 
 
 async def search_neetcode_embed(

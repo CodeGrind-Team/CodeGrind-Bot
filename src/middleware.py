@@ -3,9 +3,9 @@ from typing import Callable
 
 import discord
 
-from database.models import Server
-from ui.embeds.common import error_embed
-from utils.preferences import update_user_preferences_prompt
+from src.database.models import Server
+from src.ui.embeds.common import error_embed
+from src.utils.preferences import update_user_preferences_prompt
 
 
 def ensure_server_document(func: Callable) -> Callable:

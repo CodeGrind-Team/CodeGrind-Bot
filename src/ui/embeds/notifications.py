@@ -1,7 +1,7 @@
 import discord
 
-from constants import NotificationOptions
-from ui.embeds.common import failure_embed, success_embed
+from src.constants import NotificationOptions
+from src.ui.embeds.common import failure_embed, success_embed
 
 
 def channel_receiving_all_notification_options_embed() -> discord.Embed:

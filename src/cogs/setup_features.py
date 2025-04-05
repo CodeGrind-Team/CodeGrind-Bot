@@ -4,14 +4,14 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-from middleware import defer_interaction, ensure_server_document
-from ui.embeds.roles import roles_menu_embed
-from ui.views.notifications import SelectOperatorView
-from ui.views.roles import RolesView
+from src.middleware import defer_interaction, ensure_server_document
+from src.ui.embeds.roles import roles_menu_embed
+from src.ui.views.notifications import SelectOperatorView
+from src.ui.views.roles import RolesView
 
 if TYPE_CHECKING:
     # To prevent circular imports
-    from bot import DiscordBot
+    from src.bot import DiscordBot
 
 
 class SetupFeatureGroupCog(commands.GroupCog, name="setup-feature"):

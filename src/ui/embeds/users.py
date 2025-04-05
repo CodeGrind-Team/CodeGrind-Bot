@@ -1,6 +1,6 @@
 import discord
 
-from ui.embeds.common import failure_embed, success_embed
+from src.ui.embeds.common import failure_embed, success_embed
 
 
 def account_process_start_embed() -> discord.Embed:

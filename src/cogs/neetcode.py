@@ -6,13 +6,13 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-from constants import Language
-from ui.embeds.neetcode import search_neetcode_embed
-from ui.modals.problems import ProblemSearchModal
+from src.constants import Language
+from src.ui.embeds.neetcode import search_neetcode_embed
+from src.ui.modals.problems import ProblemSearchModal
 
 if TYPE_CHECKING:
     # To prevent circular imports
-    from bot import DiscordBot
+    from src.bot import DiscordBot
 
 
 class NeetcodeCog(commands.Cog):

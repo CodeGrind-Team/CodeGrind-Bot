@@ -3,8 +3,13 @@ from typing import Any
 import discord
 from discord import Role
 
-from constants import MILESTONE_ROLES, STREAK_ROLES, VERIFIED_ROLE, CodeGrindTierInfo
-from database.models import Profile, User
+from src.constants import (
+    MILESTONE_ROLES,
+    STREAK_ROLES,
+    VERIFIED_ROLE,
+    CodeGrindTierInfo,
+)
+from src.database.models import Profile, User
 
 
 def get_highest_tier_info(

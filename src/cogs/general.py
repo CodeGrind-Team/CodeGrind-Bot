@@ -4,13 +4,13 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-from middleware import defer_interaction
-from ui.embeds.general import help_embed
-from ui.views.general import CommandCategorySelectView
+from src.middleware import defer_interaction
+from src.ui.embeds.general import help_embed
+from src.ui.views.general import CommandCategorySelectView
 
 if TYPE_CHECKING:
     # To prevent circular imports
-    from bot import DiscordBot
+    from src.bot import DiscordBot
 
 
 class GeneralCog(commands.Cog):

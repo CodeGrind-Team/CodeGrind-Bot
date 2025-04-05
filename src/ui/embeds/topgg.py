@@ -1,6 +1,6 @@
 import discord
 
-from ui.embeds.common import failure_embed
+from src.ui.embeds.common import failure_embed
 
 
 def topgg_not_voted_embed() -> discord.Embed:

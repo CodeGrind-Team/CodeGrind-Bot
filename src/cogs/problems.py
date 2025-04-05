@@ -5,18 +5,18 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-from constants import Difficulty
-from middleware import defer_interaction
-from ui.embeds.problems import (
+from src.constants import Difficulty
+from src.middleware import defer_interaction
+from src.ui.embeds.problems import (
     daily_question_embed,
     random_question_embed,
     search_question_embed,
 )
-from ui.modals.problems import ProblemSearchModal
+from src.ui.modals.problems import ProblemSearchModal
 
 if TYPE_CHECKING:
     # To prevent circular imports
-    from bot import DiscordBot
+    from src.bot import DiscordBot
 
 
 class ProblemsCog(commands.GroupCog, name="problem"):

@@ -6,14 +6,14 @@ from typing import TYPE_CHECKING
 import discord
 from beanie.operators import In
 
-from constants import GLOBAL_LEADERBOARD_ID, LeaderboardSortBy, Period, RankEmoji
-from database.models import Profile, Record, Server, User
-from ui.embeds.leaderboards import empty_leaderboard_embed, leaderboard_embed
-from ui.views.leaderboards import LeaderboardPagination
+from src.constants import GLOBAL_LEADERBOARD_ID, LeaderboardSortBy, Period, RankEmoji
+from src.database.models import Profile, Record, Server, User
+from src.ui.embeds.leaderboards import empty_leaderboard_embed, leaderboard_embed
+from src.ui.views.leaderboards import LeaderboardPagination
 
 if TYPE_CHECKING:
     # To prevent circular imports
-    from bot import DiscordBot
+    from src.bot import DiscordBot
 
 
 async def user_score(user: User, period: Period, previous: bool) -> int:

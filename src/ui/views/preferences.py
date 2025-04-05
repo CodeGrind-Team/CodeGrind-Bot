@@ -3,9 +3,9 @@ from dataclasses import dataclass
 import discord
 from beanie.odm.operators.update.general import Set
 
-from constants import GLOBAL_LEADERBOARD_ID
-from database.models import Profile
-from ui.constants import PreferenceField
+from src.constants import GLOBAL_LEADERBOARD_ID
+from src.database.models import Profile
+from src.ui.constants import PreferenceField
 
 
 @dataclass

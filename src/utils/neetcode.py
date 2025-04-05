@@ -3,11 +3,11 @@ import re
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from constants import Language
+from src.constants import Language
 
 if TYPE_CHECKING:
     # To prevent circular imports
-    from bot import DiscordBot
+    from src.bot import DiscordBot
 
 
 @dataclass

@@ -7,7 +7,7 @@ import backoff
 
 if TYPE_CHECKING:
     # To prevent circular imports
-    from bot import DiscordBot
+    from src.bot import DiscordBot
 
 http_post_semaphore = asyncio.Semaphore(4)
 

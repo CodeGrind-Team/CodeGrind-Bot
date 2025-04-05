@@ -6,21 +6,21 @@ from typing import TYPE_CHECKING
 
 import discord
 
-from constants import GLOBAL_LEADERBOARD_ID
-from database.models import Preference, Profile, Record, Stats, Submissions, User
-from ui.embeds.users import (
+from src.constants import GLOBAL_LEADERBOARD_ID
+from src.database.models import Preference, Profile, Record, Stats, Submissions, User
+from src.ui.embeds.users import (
     connect_account_instructions_embed,
     profile_added_embed,
     synced_existing_user_embed,
     user_already_added_in_server_embed,
 )
-from utils.common import convert_to_score
-from utils.problems import fetch_problems_solved_and_rank
-from utils.roles import give_verified_role
+from src.utils.common import convert_to_score
+from src.utils.problems import fetch_problems_solved_and_rank
+from src.utils.roles import give_verified_role
 
 if TYPE_CHECKING:
     # To prevent circular imports
-    from bot import DiscordBot
+    from src.bot import DiscordBot
 
 
 async def register(

@@ -30,20 +30,20 @@ from beanie.odm.operators.update.general import Set
 from discord.ext import commands
 from html2image import Html2Image
 
-from constants import GLOBAL_LEADERBOARD_ID
-from database.models import Profile, Server
-from database.setup import initialise_mongodb_conn
-from utils.dev import ChannelLogger, dev_commands
-from utils.http_client import HttpClient
-from utils.neetcode import NeetcodeSolutions
-from utils.ratings import Ratings
-from utils.schedules import (
+from src.constants import GLOBAL_LEADERBOARD_ID
+from src.database.models import Profile, Server
+from src.database.setup import initialise_mongodb_connection
+from src.utils.dev import ChannelLogger, dev_commands
+from src.utils.http_client import HttpClient
+from src.utils.neetcode import NeetcodeSolutions
+from src.utils.ratings import Ratings
+from src.utils.schedules import (
     schedule_prune_members_and_guilds,
     schedule_question_and_stats_update,
     schedule_update_neetcode_solutions,
     schedule_update_zerotrac_ratings,
 )
-from utils.users import delete_user, unlink_user_from_server
+from src.utils.users import delete_user, unlink_user_from_server
 
 
 @dataclass
@@ -138,7 +138,9 @@ class DiscordBot(commands.Bot):
         self.logger.info("-------------------")
 
         self.http_client = HttpClient(self, aiohttp.ClientSession())
-        await initialise_mongodb_conn(self.config.MONGODB_URI, GLOBAL_LEADERBOARD_ID)
+        await initialise_mongodb_connection(
+            self.config.MONGODB_URI, GLOBAL_LEADERBOARD_ID
+        )
         await self.load_cogs()
         await self.init_topgg()
 
