@@ -180,7 +180,7 @@ tempCodeRunnerFile.py
 data
 logs
 dailychannels.txt
-/temp
+temp/
 .pylintrc
 
 # End of https://www.toptal.com/developers/gitignore/api/python
