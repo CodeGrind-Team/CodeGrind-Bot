@@ -4,19 +4,19 @@
 
 ## About the Project
 
-CodeGrind Bot is a Discord bot designed for LeetCode users to promote friendly competition and continuous skill progression. Users can track and compare their LeetCode stats in daily/weekly/monthly/all-time leaderboards within their server or globally.
+CodeGrind Bot is a Discord bot designed for LeetCode users that promotes friendly competition and continuous skill progression. Users can track and compare their LeetCode stats in daily/weekly/monthly/all-time leaderboards within their server or globally, among many other LeetCode related commands.
 
-Please note: while the bot uses the LeetCode API for data, it's not officially affiliated with LeetCode. Proper respect for the copyrights and terms of use of LeetCode is expected from all users.
+> Please note: while the bot uses the LeetCode API for data, it's not officially affiliated with LeetCode. Proper respect for the copyrights and terms of use of LeetCode is expected from all users.
 
 ## Usage examples
 
 <div align="center">
     <div>
-        <img src="images/15172024-command-problemsearch-q2058-unspoilered.png" height="400">
-        <img src="images/15172024-command-neetcode-q2348-unspoilered.png" height="400">
+        <img src="docs/images/15172024-command-problemsearch-q2058-unspoilered.png" height="400">
+        <img src="docs/images/15172024-command-neetcode-q2348-unspoilered.png" height="400">
     </div>
     <div>
-        <img src="images/15172024-command-leaderboard-global-alltime-p1.png" height="300">
+        <img src="docs/images/15172024-command-leaderboard-global-alltime-p1.png" height="300">
     </div>
 </div>
 
@@ -32,7 +32,7 @@ The steps for setting up a testing version of the bot can be found in our [Setup
 
 Distributed under the GPL-3.0 License. See [LICENSE](/LICENSE) for more information.
 
-However, some files are licensed differently. Specifically, the [`./main.py`](/main.py) and [`./bot.py`](/bot.py) files are licensed under the Apache License 2.0. These files include code from [Python-Discord-Bot-Template](https://github.com/kkrypt0nn/Python-Discord-Bot-Template) and require attribution as specified in their headers.
+However, some files are licensed differently. Specifically, the [`src/main.py`](/src/main.py) and [`src/bot.py`](/src/bot.py) files are licensed under the Apache License 2.0. These files include code from [Python-Discord-Bot-Template](https://github.com/kkrypt0nn/Python-Discord-Bot-Template) and require attribution.
 
 ## Acknowledgements
 
