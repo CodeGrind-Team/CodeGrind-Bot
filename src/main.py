@@ -57,9 +57,10 @@ if __name__ == "__main__":
     console_handler = logging.StreamHandler()
     console_handler.setFormatter(LoggingFormatter())
 
+    os.makedirs("src/logs", exist_ok=True)
     # File handler
     file_handler = logging.FileHandler(
-        filename=f"logs/{datetime.now(UTC).strftime('%d%m%Y-%H%M%S')}.log",
+        filename=f"src/logs/{datetime.now(UTC).strftime('%d%m%Y-%H%M%S')}.log",
         encoding="utf-8",
         mode="w",
     )

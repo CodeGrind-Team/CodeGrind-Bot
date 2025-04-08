@@ -111,7 +111,7 @@ class DiscordBot(commands.Bot):
             if file.endswith(".py"):
                 extension = file[:-3]
                 try:
-                    await self.load_extension(f"cogs.{extension}")
+                    await self.load_extension(f"src.cogs.{extension}")
                     self.logger.info(f"Loaded extension '{extension}'")
                 except Exception as e:
                     exception = f"{type(e).__name__}: {e}"

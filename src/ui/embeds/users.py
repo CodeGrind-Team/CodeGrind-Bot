@@ -44,7 +44,7 @@ def connect_account_instructions_embed(
     embed.add_field(
         name="Account Name Change",
         value="You can do this by clicking [here](https://leetcode.com/profile/) and "
-        "changing your **Name** (not your **LeetCode ID**).",
+        "changing your **Name** (NOT YOUR LEETCODE ID).",
         inline=False,
     )
 

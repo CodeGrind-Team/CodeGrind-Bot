@@ -285,7 +285,7 @@ def anonymise_stats_card(bot: "DiscordBot", path: str) -> None:
     """
     try:
         stats_card = Image.open(path)
-        hidden_banner = Image.open("ui/assets/stats_card_hidden_banner.png")
+        hidden_banner = Image.open("src/ui/assets/stats_card_hidden_banner.png")
         region = hidden_banner.crop((0, 0, 435, 30))
         stats_card.paste(region, (60, 20, 495, 50))
         stats_card.save(path)
