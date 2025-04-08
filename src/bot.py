@@ -33,7 +33,8 @@ from html2image import Html2Image
 from src.constants import GLOBAL_LEADERBOARD_ID
 from src.database.models import Profile, Server
 from src.database.setup import initialise_mongodb_connection
-from src.utils.dev import ChannelLogger, dev_commands
+from utils.channel_logging import DiscordChannelLogger
+from src.utils.dev import dev_commands
 from src.utils.http_client import HttpClient
 from src.utils.neetcode import NeetcodeSolutions
 from src.utils.ratings import Ratings
@@ -75,7 +76,7 @@ class DiscordBot(commands.Bot):
         self.config = config
         self.logger = logger
         self.html2image = Html2Image(browser_executable=config.BROWSER_EXECUTABLE_PATH)
-        self.channel_logger = ChannelLogger(self, self.config.LOGGING_CHANNEL_ID)
+        self.channel_logger = DiscordChannelLogger(self, self.config.LOGGING_CHANNEL_ID)
         self.ratings = Ratings(self)
         self.neetcode = NeetcodeSolutions(self)
         self._http_client: HttpClient | None = None
@@ -320,37 +321,3 @@ class DiscordBot(commands.Bot):
             await interaction.response.send_message(embed=embed)
         else:
             raise error
-
-
-class LoggingFormatter(logging.Formatter):
-    # Colours
-    black = "\x1b[30m"
-    red = "\x1b[31m"
-    green = "\x1b[32m"
-    yellow = "\x1b[33m"
-    blue = "\x1b[34m"
-    gray = "\x1b[38m"
-    # Styles
-    reset = "\x1b[0m"
-    bold = "\x1b[1m"
-
-    COLOURS = {
-        logging.DEBUG: gray + bold,
-        logging.INFO: blue + bold,
-        logging.WARNING: yellow + bold,
-        logging.ERROR: red,
-        logging.CRITICAL: red + bold,
-    }
-
-    def format(self, record) -> str:
-        log_colour = self.COLOURS[record.levelno]
-        format = (
-            "(black){asctime}(reset) (levelcolour){levelname:<8}(reset) "
-            "(green){name}(reset) {message}"
-        )
-        format = format.replace("(black)", self.black + self.bold)
-        format = format.replace("(reset)", self.reset)
-        format = format.replace("(levelcolour)", log_colour)
-        format = format.replace("(green)", self.green + self.bold)
-        formatter = logging.Formatter(format, "%Y-%m-%d %H:%M:%S", style="{")
-        return formatter.format(record)
