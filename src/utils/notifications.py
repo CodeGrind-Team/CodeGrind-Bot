@@ -117,7 +117,17 @@ async def send_daily_question(
             continue
 
         try:
-            await channel.send(embed=embed, silent=True)
+            message = await channel.send(embed=embed, silent=True)
+
+            await channel.create_thread(
+                name=embed.title,
+                message=message,
+                type=discord.ChannelType.public_thread,
+                auto_archive_duration=1440,
+                reason=None
+            )
+
+            # await channel.send(embed=embed, silent=True)
         except discord.errors.Forbidden:
             bot.logger.info(
                 f"Forbidden to share daily question to channel with ID: {channel_id}"
