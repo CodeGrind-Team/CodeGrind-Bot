@@ -5,6 +5,7 @@ from discord import app_commands
 from discord.ext import commands
 
 from src.middleware import defer_interaction, ensure_server_document
+from src.ui.embeds.common import error_embed
 from src.ui.embeds.roles import roles_menu_embed
 from src.ui.views.notifications import SelectOperatorView
 from src.ui.views.roles import RolesView
@@ -34,6 +35,12 @@ class SetupFeatureGroupCog(commands.GroupCog, name="setup-feature"):
         channel if not provided.
         """
         if not channel:
+            if interaction.channel is None or not isinstance(
+                interaction.channel, discord.TextChannel
+            ):
+                await interaction.followup.send(embed=error_embed())
+                return
+
             channel = interaction.channel
 
         await interaction.followup.send(
