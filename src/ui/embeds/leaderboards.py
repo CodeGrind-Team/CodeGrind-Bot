@@ -22,9 +22,7 @@ def leaderboard_embed(
     leaderboard: str,
     include_page_count: bool = True,
 ) -> discord.Embed:
-    embed = discord.Embed(
-        title=title, description=leaderboard, colour=discord.Colour.yellow()
-    )
+    embed = discord.Embed(title=title, colour=discord.Colour.yellow())
     # Converting the unaware datetime to a timezone-aware one is required
     # to display the correct timestamp to the user.
 
@@ -43,7 +41,7 @@ def leaderboard_embed(
     # '-#' displays as subtext (smaller font and less visible colour) whilst
     # still allowing the use of other markdown formatting and relative timestamps
     # unlike the embed's footer.
-    embed.description += (
+    embed.description = leaderboard + (
         f"\n\n-# Easy: {DifficultyScore.EASY.value} pt | Medium: "
         f"{DifficultyScore.MEDIUM.value} pts | Hard: {DifficultyScore.HARD.value} "
         f"pts"
