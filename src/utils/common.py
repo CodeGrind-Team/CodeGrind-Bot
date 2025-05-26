@@ -47,3 +47,4 @@ class GuildInteraction(Protocol):
     user: discord.Member
     followup: discord.Webhook
     edit_original_response: Callable[..., Awaitable[discord.InteractionMessage]]
+    response: discord.InteractionResponse

@@ -17,7 +17,7 @@ class Ratings:
         url = """https://raw.githubusercontent.com/zerotrac/leetcode_problem_rating
         /main/ratings.txt"""
 
-        response_data = await self.bot.http_client.fetch_data(url, timeout=10)
+        response_data = await self.bot._http_client.fetch_data(url, timeout=10)
         if not response_data:
             return
 

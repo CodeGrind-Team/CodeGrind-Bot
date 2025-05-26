@@ -1,3 +1,5 @@
+# flake8: noqa
+
 from enum import Enum
 
 from src.constants import DifficultyScore
