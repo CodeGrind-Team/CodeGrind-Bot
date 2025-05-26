@@ -1,27 +1,23 @@
 from datetime import UTC, datetime
-from typing import List, Optional
+from typing import List
 
 from beanie import Document
 from pydantic import BaseModel, Field
 
 
 class Channels(BaseModel):
-    maintenance: Optional[List[int]] = []
-    daily_question: Optional[List[int]] = []
-    winners: Optional[List[int]] = []
+    maintenance: List[int] = Field(default_factory=list)
+    daily_question: List[int] = Field(default_factory=list)
+    winners: List[int] = Field(default_factory=list)
 
 
 class Server(Document):
-    id: int
-    timezone: Optional[str] = "UTC"
-    channels: Optional[Channels] = Field(default_factory=Channels)
+    id: int  # type: ignore
+    timezone: str = "UTC"
+    channels: Channels = Field(default_factory=Channels)
 
-    last_update_start: Optional[datetime] = Field(
-        default_factory=lambda: datetime.now(UTC)
-    )
-    last_update_end: Optional[datetime] = Field(
-        default_factory=lambda: datetime.now(UTC)
-    )
+    last_update_start: datetime = Field(default_factory=lambda: datetime.now(UTC))
+    last_update_end: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
     class Settings:
         name = "servers"

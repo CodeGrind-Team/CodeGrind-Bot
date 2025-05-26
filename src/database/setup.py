@@ -33,4 +33,4 @@ if __name__ == "__main__":
     from dotenv import find_dotenv, load_dotenv
 
     load_dotenv(find_dotenv())
-    asyncio.run(initialise_mongodb_connection(os.getenv("MONGODB_URI")))
+    asyncio.run(initialise_mongodb_connection(os.getenv("MONGODB_URI")))  # type: ignore
