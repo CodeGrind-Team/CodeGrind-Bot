@@ -59,7 +59,7 @@ def set_channels_instructions_embed(channel_id: int, adding: bool) -> discord.Em
 
 
 def channel_set_embed(
-    channel_name: str, selected_options: list[NotificationOptions]
+    channel_name: str, selected_options: set[NotificationOptions]
 ) -> discord.Embed:
     return success_embed(
         description=f"**#{channel_name}** will now receive "
@@ -69,7 +69,7 @@ def channel_set_embed(
 
 
 def channel_remove_embed(
-    channel_name: str, selected_options: list[NotificationOptions]
+    channel_name: str, selected_options: set[NotificationOptions]
 ) -> discord.Embed:
     return success_embed(
         description=f"**#{channel_name}** will now stop receiving "

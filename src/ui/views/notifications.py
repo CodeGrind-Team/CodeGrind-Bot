@@ -1,11 +1,11 @@
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 import discord
 from beanie.odm.operators.update.array import AddToSet, Pull
 
 from src.constants import NotificationOptions
 from src.database.models import Server
-from src.ui.embeds.common import failure_embed
+from src.ui.embeds.common import error_embed, failure_embed
 from src.ui.embeds.notifications import (
     channel_receiving_all_notification_options_embed,
     channel_receiving_no_notification_options_embed,
@@ -13,6 +13,7 @@ from src.ui.embeds.notifications import (
     channel_set_embed,
     set_channels_instructions_embed,
 )
+from src.utils.common import GuildInteraction
 
 if TYPE_CHECKING:
     # To prevent circular imports
@@ -33,14 +34,16 @@ class NotificationOptionSelect(discord.ui.Select):
             "Leaderboard Winners": NotificationOptions.WINNERS,
         }
         self.selected_notification_options = selected_notification_options
-        options = self._get_options(available_notification_options)
+        options = self._get_options(
+            {option.name for option in available_notification_options}
+        )
 
         super().__init__(
             placeholder=f"Select the notification types to "
             f"{'enable' if adding else 'disable'}",
             max_values=len(options),
             min_values=1,
-            options=options,
+            options=list(options),
         )
 
     async def callback(self, interaction: discord.Interaction) -> None:
@@ -159,34 +162,40 @@ class SaveButton(discord.ui.Button):
             for notification_option in selected_notification_options:
                 if notification_option == NotificationOptions.MAINTENANCE:
                     await Server.find_one(Server.id == server_id).update(
-                        AddToSet({Server.channels.maintenance: channel_id})
+                        AddToSet(
+                            {Server.channels.maintenance: channel_id}  # type: ignore
+                        )
                     )
 
                 elif notification_option == NotificationOptions.DAILY_QUESTION:
                     await Server.find_one(Server.id == server_id).update(
-                        AddToSet({Server.channels.daily_question: channel_id})
+                        AddToSet(
+                            {Server.channels.daily_question: channel_id}  # type: ignore
+                        )
                     )
 
                 elif notification_option == NotificationOptions.WINNERS:
                     await Server.find_one(Server.id == server_id).update(
-                        AddToSet({Server.channels.winners: channel_id})
+                        AddToSet({Server.channels.winners: channel_id})  # type: ignore
                     )
 
         else:
             for notification_option in selected_notification_options:
                 if notification_option == NotificationOptions.MAINTENANCE:
                     await Server.find_one(Server.id == server_id).update(
-                        Pull({Server.channels.maintenance: channel_id})
+                        Pull({Server.channels.maintenance: channel_id})  # type: ignore
                     )
 
                 elif notification_option == NotificationOptions.DAILY_QUESTION:
                     await Server.find_one(Server.id == server_id).update(
-                        Pull({Server.channels.daily_question: channel_id})
+                        Pull(
+                            {Server.channels.daily_question: channel_id}  # type: ignore
+                        )
                     )
 
                 elif notification_option == NotificationOptions.WINNERS:
                     await Server.find_one(Server.id == server_id).update(
-                        Pull({Server.channels.winners: channel_id})
+                        Pull({Server.channels.winners: channel_id})  # type: ignore
                     )
 
 
@@ -240,25 +249,28 @@ class SelectOperatorView(discord.ui.View):
     async def enable(
         self, interaction: discord.Interaction, _: discord.ui.Button
     ) -> None:
-        await interaction.response.defer()
+        guild_interaction = cast(GuildInteraction, interaction)
+        await guild_interaction.response.defer()
 
-        server_id = interaction.guild.id
+        server_id = guild_interaction.guild_id
 
-        server = await Server.find_one(Server.id == server_id)
+        if not (db_server := await Server.find_one(Server.id == server_id)):
+            await guild_interaction.edit_original_response(embed=error_embed())
+            return
 
-        if all(self.channel.id in channel_id for _, channel_id in server.channels):
+        if all(self.channel.id in channel_id for _, channel_id in db_server.channels):
             embed = channel_receiving_all_notification_options_embed()
-            await interaction.edit_original_response(embed=embed, view=None)
+            await guild_interaction.edit_original_response(embed=embed, view=None)
             return
 
         available_notification_options = {
             self.field_to_option[field]
-            for field, channel_id in server.channels
+            for field, channel_id in db_server.channels
             if self.channel.id not in channel_id
         }
 
         embed = set_channels_instructions_embed(self.channel.id, adding=True)
-        await interaction.edit_original_response(
+        await guild_interaction.edit_original_response(
             embed=embed,
             view=ChannelsSelectView(
                 server_id,
@@ -273,26 +285,31 @@ class SelectOperatorView(discord.ui.View):
     async def disable(
         self, interaction: discord.Interaction, _: discord.ui.Button
     ) -> None:
-        await interaction.response.defer()
+        guild_interaction = cast(GuildInteraction, interaction)
+        await guild_interaction.response.defer()
 
-        server_id = interaction.guild.id
+        server_id = guild_interaction.guild_id
 
-        server = await Server.find_one(Server.id == server_id)
+        if not (db_server := await Server.find_one(Server.id == server_id)):
+            await guild_interaction.edit_original_response(embed=error_embed())
+            return
 
-        if all(self.channel.id not in channel_id for _, channel_id in server.channels):
-            await interaction.edit_original_response(
+        if all(
+            self.channel.id not in channel_id for _, channel_id in db_server.channels
+        ):
+            await guild_interaction.edit_original_response(
                 embed=channel_receiving_no_notification_options_embed()
             )
             return
 
         available_notification_options = {
             self.field_to_option[field]
-            for field, channel_id in server.channels
+            for field, channel_id in db_server.channels
             if self.channel.id in channel_id
         }
 
         embed = set_channels_instructions_embed(self.channel.id, adding=False)
-        await interaction.edit_original_response(
+        await guild_interaction.edit_original_response(
             embed=embed,
             view=ChannelsSelectView(
                 server_id,

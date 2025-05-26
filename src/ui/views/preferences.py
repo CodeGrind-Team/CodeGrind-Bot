@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import cast
 
 import discord
 from beanie.odm.operators.update.general import Set
@@ -6,6 +7,7 @@ from beanie.odm.operators.update.general import Set
 from src.constants import GLOBAL_LEADERBOARD_ID
 from src.database.models import Profile
 from src.ui.constants import PreferenceField
+from src.utils.common import GuildInteraction
 
 
 @dataclass
@@ -30,16 +32,24 @@ class UserPreferencesPromptView(discord.ui.View):
         self.end_embed = end_embed
         self.page_num = page_num
 
-        self.curr_embed.set_footer(text=f"Question {page_num+1} of {len(self.pages)}")
+        self.curr_embed.set_footer(text=f"Question {page_num + 1} of {len(self.pages)}")
 
     @discord.ui.button(label="Yes", style=discord.ButtonStyle.blurple)
     async def yes(self, interaction: discord.Interaction, _: discord.ui.Button) -> None:
-        await self._update_preference(interaction.guild.id, interaction.user.id, True)
+        guild_interaction = cast(GuildInteraction, interaction)
+
+        await self._update_preference(
+            guild_interaction.guild_id, guild_interaction.user.id, True
+        )
         await self._increment_page(interaction)
 
     @discord.ui.button(label="No", style=discord.ButtonStyle.gray)
     async def no(self, interaction: discord.Interaction, _: discord.ui.Button) -> None:
-        await self._update_preference(interaction.guild.id, interaction.user.id, False)
+        guild_interaction = cast(GuildInteraction, interaction)
+
+        await self._update_preference(
+            guild_interaction.guild_id, interaction.user.id, False
+        )
         await self._increment_page(interaction)
 
     async def _update_preference(
@@ -53,15 +63,19 @@ class UserPreferencesPromptView(discord.ui.View):
 
         if self.curr_field in (PreferenceField.LOCAL_URL, PreferenceField.GLOBAL_URL):
             await Profile.find_one(
-                Profile.preference.user_id == user_id,
-                Profile.preference.server_id == guild_id,
-            ).update(Set({Profile.preference.url: value}))
+                Profile.user_id == user_id,
+                Profile.server_id == guild_id,
+            ).update(
+                Set({Profile.preference.url: value})
+            )  # type: ignore
 
         elif self.curr_field == PreferenceField.GLOBAL_ANONYMOUS:
             await Profile.find_one(
-                Profile.preference.user_id == user_id,
-                Profile.preference.server_id == guild_id,
-            ).update(Set({Profile.preference.anonymous: not value}))
+                Profile.user_id == user_id,
+                Profile.server_id == guild_id,
+            ).update(
+                Set({Profile.preference.anonymous: not value})
+            )  # type: ignore
 
     async def _increment_page(self, interaction: discord.Interaction):
         self.page_num += 1
@@ -76,7 +90,7 @@ class UserPreferencesPromptView(discord.ui.View):
         self.curr_field = self.pages[self.page_num].field
 
         self.curr_embed.set_footer(
-            text=f"Question {self.page_num+1} of {len(self.pages)}"
+            text=f"Question {self.page_num + 1} of {len(self.pages)}"
         )
 
         await interaction.response.edit_message(
