@@ -62,20 +62,6 @@ class StatsCog(commands.Cog):
             await interaction.followup.send(embed=account_hidden_embed())
             return
 
-        # Fetch user's score
-        user_score = db_user.stats.submissions.score
-
-        # Determine the milestone role based on user's score
-        milestone_info = get_highest_tier_info(MILESTONE_ROLES, user_score)
-        if not milestone_info.icon_path:
-            await interaction.followup.send(embed=error_embed())
-            return
-
-        milestone_filename = f"{milestone_info.title}.png"
-        milestone_icon_file = discord.File(
-            milestone_info.icon_path, filename=milestone_filename
-        )
-
         # Create the embed with the title as the display name
         embed, statscard_file = await stats_embed(
             self.bot,
@@ -85,13 +71,31 @@ class StatsCog(commands.Cog):
             extension.value,
         )
 
-        # Set the footer with the rank and the icon
-        embed.set_footer(
-            text=milestone_info.role_name,
-            icon_url=f"attachment://{milestone_filename}",
+        # Determine the milestone role based on user's score
+        milestone_info = get_highest_tier_info(
+            MILESTONE_ROLES, db_user.stats.submissions.score
         )
 
-        files = list(filter(None, [statscard_file, milestone_icon_file]))
+        milestone_icon_file: discord.File | None = None
+        if milestone_info:
+            if not milestone_info.icon_path:
+                await interaction.followup.send(embed=error_embed())
+                return
+
+            milestone_filename = f"{milestone_info.title}.png"
+            milestone_icon_file = discord.File(
+                milestone_info.icon_path, filename=milestone_filename
+            )
+
+            # Set the footer with the rank and the icon.
+            embed.set_footer(
+                text=milestone_info.role_name,
+                icon_url=f"attachment://{milestone_filename}",
+            )
+
+        files = [
+            obj for obj in [statscard_file, milestone_icon_file] if obj is not None
+        ]
         await interaction.followup.send(embed=embed, files=files)
 
 

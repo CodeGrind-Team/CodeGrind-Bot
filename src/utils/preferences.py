@@ -1,14 +1,13 @@
 from datetime import UTC, datetime
 
-import discord
-
 from src.database.models import Profile
 from src.ui.embeds.preferences import preferences_update_prompt_embeds
 from src.ui.views.preferences import UserPreferencesPromptView
+from src.utils.common import GuildInteraction
 
 
 async def update_user_preferences_prompt(
-    interaction: discord.Interaction, reminder: bool = False
+    interaction: GuildInteraction, reminder: bool = False
 ) -> None:
     """
     Sends a prompt to update user preferences if certain conditions are met.
@@ -23,7 +22,7 @@ async def update_user_preferences_prompt(
 
     profile = await Profile.find_one(
         Profile.user_id == interaction.user.id,
-        Profile.server_id == interaction.guild.id,
+        Profile.server_id == interaction.guild_id,
     )
 
     if not profile:
@@ -33,7 +32,7 @@ async def update_user_preferences_prompt(
         reminder
         and profile.preference.last_updated
         and (datetime.now(UTC) - profile.preference.last_updated.astimezone(UTC)).days
-        <= 30
+        <= 365
     ):
         return
 

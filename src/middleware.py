@@ -1,10 +1,11 @@
 from functools import wraps
-from typing import Callable
+from typing import Callable, cast
 
 import discord
 
 from src.database.models import Server
 from src.ui.embeds.common import error_embed
+from src.utils.common import GuildInteraction
 from src.utils.preferences import update_user_preferences_prompt
 
 
@@ -25,7 +26,9 @@ def ensure_server_document(func: Callable) -> Callable:
     async def wrapper(
         self, interaction: discord.Interaction, *args, **kwargs
     ) -> Callable | None:
-        server_id = interaction.guild.id
+        guild_interaction = cast(GuildInteraction, interaction)
+
+        server_id = guild_interaction.guild_id
         server = await Server.get(server_id)
 
         if not server:
@@ -89,7 +92,7 @@ def defer_interaction(
             await interaction.response.defer(ephemeral=ephemeral)
 
             # Basic validation to ensure the interaction is within a guild, channel,
-            # and by a member
+            # and by a member.
             if (
                 not interaction.guild
                 or not isinstance(
@@ -105,7 +108,9 @@ def defer_interaction(
             ret = await func(self, interaction, *args, **kwargs)
 
             if user_preferences_prompt:
-                await update_user_preferences_prompt(interaction, reminder=True)
+                await update_user_preferences_prompt(
+                    cast(GuildInteraction, interaction), reminder=True
+                )
 
             return ret
 

@@ -54,15 +54,15 @@ async def update_stats(
         if not stats:
             return
 
-        user = await User.find_one(User.id == user.id)
-        if not user:
+        db_user = await User.find_one(User.id == user.id)
+        if not db_user:
             return
 
         (
-            user.stats.submissions.easy,
-            user.stats.submissions.medium,
-            user.stats.submissions.hard,
-            user.stats.submissions.score,
+            db_user.stats.submissions.easy,
+            db_user.stats.submissions.medium,
+            db_user.stats.submissions.hard,
+            db_user.stats.submissions.score,
         ) = (
             stats.submissions.easy,
             stats.submissions.medium,
@@ -111,7 +111,7 @@ async def update_stats(
                 timestamp=datetime.now(UTC).replace(
                     hour=0, minute=0, second=0, microsecond=0
                 ),
-                user_id=user.id,
+                user_id=db_user.id,
                 submissions=Submissions(
                     easy=stats.submissions.easy,
                     medium=stats.submissions.medium,
@@ -124,8 +124,8 @@ async def update_stats(
 
             await record.create()
 
-        user.last_updated = datetime.now(UTC)
-        await user.save()
+        db_user.last_updated = datetime.now(UTC)
+        await db_user.save()
 
 
 async def update_wins(
@@ -192,7 +192,7 @@ async def update_wins(
             ).update(
                 Inc({increment_field: 1}),
                 Set({Profile.win_count.last_updated: datetime.now(UTC)}),
-            )
+            )  # type: ignore
 
 
 async def update_all_user_stats(
@@ -234,7 +234,7 @@ def stats_card(
     filename: str,
     extension: StatsCardExtensions,
     display_url: bool,
-) -> tuple[discord.File | None]:
+) -> discord.File | None:
     width = 500
     height = 200
     if extension in (StatsCardExtensions.ACTIVITY, StatsCardExtensions.CONTEST):

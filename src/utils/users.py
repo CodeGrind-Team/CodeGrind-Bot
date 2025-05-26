@@ -108,7 +108,7 @@ async def register(
     await profile_server.create()
     await profile_global.create()
 
-    await give_verified_role(guild, user)
+    await give_verified_role(guild, member)
 
     await edit_original_response(embed=profile_added_embed(leetcode_id))
 
@@ -158,7 +158,7 @@ async def login(
 
 async def linking_process(
     bot: "DiscordBot",
-    send_message: Callable[..., Awaitable[Optional[discord.WebhookMessage]]],
+    send_message: Callable[..., Awaitable[discord.InteractionCallbackResponse]],
     leetcode_id: str,
 ) -> bool:
     """

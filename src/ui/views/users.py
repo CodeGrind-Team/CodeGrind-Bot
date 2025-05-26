@@ -1,8 +1,9 @@
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 import discord
 
 from src.ui.modals.users import RegisterModal
+from src.utils.common import GuildInteraction
 from src.utils.preferences import update_user_preferences_prompt
 
 if TYPE_CHECKING:
@@ -20,4 +21,4 @@ class LoginView(discord.ui.View):
         self, interaction: discord.Interaction, _: discord.ui.Button
     ) -> None:
         await interaction.response.send_modal(RegisterModal(self.bot))
-        await update_user_preferences_prompt(interaction)
+        await update_user_preferences_prompt(cast(GuildInteraction, interaction))

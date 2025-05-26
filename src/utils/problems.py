@@ -193,7 +193,7 @@ async def fetch_random_question(
     # Try to fetch a non-premium question for a maximum of MAX_ATTEMPTS times.
     # This prevents excessive (and even possibly infinite) API calls, ensuring safety.
     for _ in range(MAX_ATTEMPTS):
-        response_data = await bot._http_client.post_data(
+        response_data = await bot.http_client.post_data(
             URL, json=payload, headers=HEADERS, timeout=10
         )
         if not response_data:
@@ -240,7 +240,7 @@ async def fetch_daily_question(bot: "DiscordBot") -> str | None:
     """,
     }
 
-    response_data = await bot._http_client.post_data(
+    response_data = await bot.http_client.post_data(
         URL, json=data, headers=HEADERS, timeout=10
     )
     if not response_data:
@@ -297,7 +297,7 @@ async def search_question(bot: "DiscordBot", text: str) -> str | None:
         },
     }
 
-    response_data = await bot._http_client.post_data(
+    response_data = await bot.http_client.post_data(
         URL, json=payload, headers=HEADERS, timeout=10
     )
     if not response_data:
@@ -351,7 +351,7 @@ async def fetch_question_info(
         "variables": {"titleSlug": question_title_slug},
     }
 
-    response_data = await bot._http_client.post_data(
+    response_data = await bot.http_client.post_data(
         URL, json=payload, headers=HEADERS, timeout=10
     )
     if not response_data:
@@ -455,7 +455,7 @@ async def fetch_problems_solved_and_rank(
         "variables": {"username": leetcode_id},
     }
 
-    response_data = await bot._http_client.post_data(
+    response_data = await bot.http_client.post_data(
         URL, json=payload, headers=HEADERS, timeout=10
     )
     if not response_data:

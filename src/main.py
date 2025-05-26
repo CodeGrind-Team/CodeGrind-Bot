@@ -20,27 +20,26 @@ governing permissions and limitations under the License.
 import logging
 import os
 from datetime import UTC, datetime
+from os import environ
 
 import discord
 import google.cloud.logging
 from dotenv import find_dotenv, load_dotenv
 
-
 from src.bot import Config, DiscordBot, LoggingFormatter
-
 
 if __name__ == "__main__":
     load_dotenv(find_dotenv())
 
     config = Config(
-        os.getenv("DISCORD_TOKEN"),
-        os.getenv("MONGODB_URI"),
-        os.getenv("TOPGG_TOKEN"),
-        os.getenv("BROWSER_EXECUTABLE_PATH"),
-        os.getenv("GOOGLE_APPLICATION_CREDENTIALS"),
-        int(os.getenv("LOGGING_CHANNEL_ID")),
-        int(os.getenv("DEVELOPER_DISCORD_ID")),
+        environ["DISCORD_TOKEN"],
+        environ["MONGODB_URI"],
+        environ["BROWSER_EXECUTABLE_PATH"],
+        int(environ["LOGGING_CHANNEL_ID"]),
+        int(environ["DEVELOPER_DISCORD_ID"]),
         os.getenv("PRODUCTION", "False") == "True",
+        os.getenv("TOPGG_TOKEN", None),
+        os.getenv("GOOGLE_APPLICATION_CREDENTIALS", None),
     )
 
     logs_path = os.path.join(os.path.dirname(__file__), "logs")

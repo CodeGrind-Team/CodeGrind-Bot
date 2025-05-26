@@ -117,8 +117,8 @@ class ChannelLogger:
         :param silent: If `True`, the embed is sent silently (without user
         notifications).
         """
-        embed = discord.Embed(colour=colour, description=message)
-        embed.description += f"\n<t:{int(datetime.now(UTC).timestamp())}:T>"
+        embed = discord.Embed(colour=colour)
+        embed.description = message + f"\n<t:{int(datetime.now(UTC).timestamp())}:T>"
 
         try:
             # Get the designated logging channel
@@ -186,8 +186,6 @@ async def prune_members_and_guilds(bot: "DiscordBot") -> None:
         # Delete servers that no longer have the bot in them.
         try:
             guild = await bot.fetch_guild(server.id)
-            if guild is None:
-                raise discord.errors.NotFound
         except discord.errors.NotFound:
             await server.delete()
             bot.logger.info(f"Deleted server with ID: {server.id}")
@@ -196,9 +194,7 @@ async def prune_members_and_guilds(bot: "DiscordBot") -> None:
         # Delete profiles that no longer have the corresponding member in the server.
         async for profile in Profile.find_many(Profile.server_id == server.id):
             try:
-                member = await guild.fetch_member(profile.user_id)
-                if member is None:
-                    raise discord.errors.NotFound
+                await guild.fetch_member(profile.user_id)
             except discord.errors.NotFound:
                 await profile.delete()
                 bot.logger.info(

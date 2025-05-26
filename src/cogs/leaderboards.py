@@ -60,7 +60,7 @@ class LeaderboardsCog(commands.Cog):
             page=1,
         )
 
-        await interaction.followup.send(embed=embed, view=view)
+        await interaction.followup.send(embed=embed, view=view)  # type: ignore
 
 
 async def setup(bot: "DiscordBot") -> None:

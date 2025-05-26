@@ -14,7 +14,7 @@ from src.database.models import Profile, User
 
 def get_highest_tier_info(
     tier_group: dict[Any, CodeGrindTierInfo], val: int
-) -> CodeGrindTierInfo:
+) -> CodeGrindTierInfo | None:
     """
     Get the highest tier info based on a value.
 

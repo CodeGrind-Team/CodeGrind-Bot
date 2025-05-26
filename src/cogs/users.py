@@ -13,6 +13,7 @@ from src.ui.embeds.users import (
     account_process_start_embed,
     account_removed_embed,
 )
+from src.utils.common import GuildInteraction
 from src.ui.views.users import LoginView
 from src.utils.preferences import update_user_preferences_prompt
 from src.utils.users import delete_user, login, unlink_user_from_server
@@ -64,7 +65,7 @@ class UsersCog(commands.Cog):
         db_user = await User.find_one(User.id == user_id)
 
         if db_user:
-            await update_user_preferences_prompt(interaction)
+            await update_user_preferences_prompt(cast(GuildInteraction, interaction))
             return
 
         embed = account_not_found_embed()

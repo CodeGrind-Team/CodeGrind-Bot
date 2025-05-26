@@ -48,7 +48,7 @@ class UserPreferencesPromptView(discord.ui.View):
         guild_interaction = cast(GuildInteraction, interaction)
 
         await self._update_preference(
-            guild_interaction.guild_id, interaction.user.id, False
+            guild_interaction.guild_id, guild_interaction.user.id, False
         )
         await self._increment_page(interaction)
 

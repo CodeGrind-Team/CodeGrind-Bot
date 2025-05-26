@@ -188,7 +188,7 @@ async def generate_leaderboard_embed(
     previous: bool = False,
     page: int = 1,
     users_per_page: int = 10,
-) -> tuple[discord.Embed, discord.ui.View]:
+) -> tuple[discord.Embed, discord.ui.View | None]:
     """
     Generate a leaderboard embed.
 
@@ -259,7 +259,7 @@ async def build_leaderboard_page(
     period: Period,
     sort_by: LeaderboardSortBy,
     server: Server,
-    user_id_to_profile: list[dict[int, Profile]],
+    user_id_to_profile: dict[int, Profile],
     sorted_users: list[tuple[User, int, int]],
     winners_only: bool,
     global_leaderboard: bool,
@@ -478,7 +478,7 @@ async def send_leaderboard_winners(
                 previous=True,
             )
 
-            await channel.send(embed=embed, view=view, silent=True)
+            await channel.send(embed=embed, view=view, silent=True)  # type: ignore
 
         except discord.errors.Forbidden:
             bot.logger.exception(

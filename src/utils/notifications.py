@@ -71,7 +71,7 @@ async def process_daily_question_and_stats_update(
                     Server.last_update_end: datetime.now(UTC),
                 }
             )
-        )
+        )  # type: ignore
 
         if server.id == GLOBAL_LEADERBOARD_ID:
             continue
