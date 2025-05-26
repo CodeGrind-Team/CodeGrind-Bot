@@ -1,8 +1,9 @@
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 import discord
 
 from src.utils.users import register
+from src.utils.common import GuildInteraction
 
 if TYPE_CHECKING:
     # To prevent circular imports
@@ -21,11 +22,12 @@ class RegisterModal(
         super().__init__()
 
     async def on_submit(self, interaction: discord.Interaction) -> None:
+        guild_interaction = cast(GuildInteraction, interaction)
         await register(
             self.bot,
-            interaction,
-            interaction.response.send_message,
-            interaction.guild.id,
-            interaction.user.id,
+            guild_interaction.guild,
+            guild_interaction.user,
+            guild_interaction.response.send_message,
+            guild_interaction.edit_original_response,
             self.leetcode_id_answer.value,
         )
