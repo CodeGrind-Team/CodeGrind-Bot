@@ -116,16 +116,16 @@ async def send_daily_question(
         if not channel or not isinstance(channel, discord.TextChannel):
             continue
 
-    try:
-        message = await channel.send(embed=embed, silent=True)
+        try:
+            message = await channel.send(embed=embed, silent=True)
 
-        await channel.create_thread(
-            name=embed.title if embed.title else "Daily Question",
-            message=message,
-            auto_archive_duration=1440,  # in minutes (1 day).
-        )
+            await channel.create_thread(
+                name=embed.title if embed.title else "Daily Question",
+                message=message,
+                auto_archive_duration=1440,  # in minutes (1 day).
+            )
 
-    except discord.errors.Forbidden:
-        bot.logger.info(
-            f"Forbidden to share daily question to channel with ID: {channel_id}"
-        )
+        except discord.errors.Forbidden:
+            bot.logger.info(
+                f"Forbidden to share daily question to channel with ID: {channel_id}"
+            )
