@@ -36,7 +36,7 @@ class NeetcodeSolutions:
         self.solutions = await self._fetch_neetcode_solutions()
         self.bot.logger.info("Updated NeetCode solutions")
 
-    async def _fetch_neetcode_solutions(self) -> dict[int, NeetcodeSolution]:
+    async def _fetch_neetcode_solutions(self) -> dict[str, NeetcodeSolution]:
         """
         Fetches the NeetCode solutions data.
 
@@ -45,11 +45,12 @@ class NeetcodeSolutions:
         """
         main_js_filename = await self._retrieve_neetcode_main_js_filename()
 
-        response_data = await self.bot.http_client.fetch_data(
-            f"https://neetcode.io/{main_js_filename}", timeout=10
-        )
-        if not response_data:
-            return
+        if not (
+            response_data := await self.bot.http_client.fetch_data(
+                f"https://neetcode.io/{main_js_filename}", timeout=10
+            )
+        ):
+            return {}
 
         solutions = self._parse_main_js(response_data)
         return solutions
@@ -61,10 +62,11 @@ class NeetcodeSolutions:
 
         :return: The full name of the main.[a-z0-9]{16}.js file.
         """
-        response_data = await self.bot.http_client.fetch_data(
-            "https://neetcode.io/", timeout=10
-        )
-        if not response_data:
+        if not (
+            response_data := await self.bot.http_client.fetch_data(
+                "https://neetcode.io/", timeout=10
+            )
+        ):
             return
 
         filename = re.search(r"main\.[a-z0-9]{16}\.js", response_data)

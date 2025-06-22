@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import List, Optional
+from typing import List
 
 from pydantic import Field
 from beanie import Document, Granularity, TimeSeriesConfig
@@ -12,12 +12,8 @@ class Record(Document):
     user_id: int
 
     submissions: Submissions
-    languages_problem_count: Optional[List[LanguageProblemCount]] = Field(
-        default_factory=list
-    )
-    skills_problem_count: Optional[SkillsProblemCount] = Field(
-        default_factory=SkillsProblemCount
-    )
+    languages_problem_count: List[LanguageProblemCount] = Field(default_factory=list)
+    skills_problem_count: SkillsProblemCount = Field(default_factory=SkillsProblemCount)
 
     class Settings:
         name = "records"

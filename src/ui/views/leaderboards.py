@@ -1,5 +1,3 @@
-from typing import List
-
 import discord
 
 from src.ui.embeds.general import not_creator_embed
@@ -7,7 +5,12 @@ from src.ui.embeds.general import not_creator_embed
 
 class LeaderboardPagination(discord.ui.View):
     def __init__(
-        self, user_id: int, pages: List[discord.Embed], page: int = 0, *, timeout=180
+        self,
+        user_id: int | None,
+        pages: list[discord.Embed],
+        page: int = 0,
+        *,
+        timeout=180
     ):
         super().__init__(timeout=timeout)
         self.page = page

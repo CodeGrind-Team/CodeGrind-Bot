@@ -1,6 +1,8 @@
 import asyncio
 import functools
-from typing import Callable
+from typing import Awaitable, Callable, Protocol
+
+import discord
 
 from src.constants import DifficultyScore
 
@@ -37,3 +39,14 @@ def convert_to_score(easy: int = 0, medium: int = 0, hard: int = 0) -> int:
         + medium * DifficultyScore.MEDIUM.value
         + hard * DifficultyScore.HARD.value
     )
+
+
+class GuildInteraction(Protocol):
+    guild: discord.Guild
+    guild_id: int
+    user: discord.Member
+    followup: discord.Webhook
+    edit_original_response: Callable[..., Awaitable[discord.InteractionMessage]]
+    response: discord.InteractionResponse
+
+    async def original_response(self) -> discord.InteractionMessage: ...  # noqa: E704

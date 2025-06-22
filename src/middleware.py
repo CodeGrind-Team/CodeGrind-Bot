@@ -1,10 +1,11 @@
 from functools import wraps
-from typing import Callable
+from typing import Callable, cast
 
 import discord
 
 from src.database.models import Server
 from src.ui.embeds.common import error_embed
+from src.utils.common import GuildInteraction
 from src.utils.preferences import update_user_preferences_prompt
 
 
@@ -15,17 +16,15 @@ def ensure_server_document(func: Callable) -> Callable:
 
     If the server document does not exist, it creates a new one. This is used
     as a decorator for functions interacting with server-specific data.
-
-    :param func: The function to wrap.
-
-    :return: The wrapped function that ensures the server document exists.
     """
 
     @wraps(func)
     async def wrapper(
         self, interaction: discord.Interaction, *args, **kwargs
     ) -> Callable | None:
-        server_id = interaction.guild.id
+        guild_interaction = cast(GuildInteraction, interaction)
+
+        server_id = guild_interaction.guild_id
         server = await Server.get(server_id)
 
         if not server:
@@ -53,8 +52,6 @@ def defer_interaction(
     default.
     :param user_preferences_prompt: Whether to trigger a user preferences prompt upon
     completion.
-
-    :return: A decorator that defers interaction responses and checks for user prompts.
     """
 
     def ephemeral_response(func: Callable) -> Callable:
@@ -66,10 +63,6 @@ def defer_interaction(
         basic validation checks, sending an error message if the interaction is not
         in a valid state. Additionally, it may prompt the user to update their
         preferences if configured.
-
-        :param func: The function to be wrapped.
-
-        :return: The wrapped function that defers the interaction response.
         """
 
         @wraps(func)
@@ -89,7 +82,7 @@ def defer_interaction(
             await interaction.response.defer(ephemeral=ephemeral)
 
             # Basic validation to ensure the interaction is within a guild, channel,
-            # and by a member
+            # and by a member.
             if (
                 not interaction.guild
                 or not isinstance(
@@ -105,7 +98,9 @@ def defer_interaction(
             ret = await func(self, interaction, *args, **kwargs)
 
             if user_preferences_prompt:
-                await update_user_preferences_prompt(interaction, reminder=True)
+                await update_user_preferences_prompt(
+                    cast(GuildInteraction, interaction), reminder=True
+                )
 
             return ret
 

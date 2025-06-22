@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 import discord
 from discord import app_commands
@@ -13,6 +13,7 @@ from src.ui.embeds.users import (
     account_process_start_embed,
     account_removed_embed,
 )
+from src.utils.common import GuildInteraction
 from src.ui.views.users import LoginView
 from src.utils.preferences import update_user_preferences_prompt
 from src.utils.users import delete_user, login, unlink_user_from_server
@@ -26,6 +27,7 @@ class UsersCog(commands.Cog):
     def __init__(self, bot: "DiscordBot") -> None:
         self.bot = bot
 
+    @app_commands.guild_only()
     @app_commands.command(name="add")
     @defer_interaction(ephemeral_default=True)
     @ensure_server_document
@@ -33,18 +35,16 @@ class UsersCog(commands.Cog):
         """
         Connect your LeetCode account to this server's CodeGrind leaderboards
         """
-        server_id = interaction.guild.id
-        user_id = interaction.user.id
+        guild = cast(discord.Guild, interaction.guild)
+        member = cast(discord.Member, interaction.user)
 
-        user = await User.find_one(User.id == user_id)
+        db_user = await User.find_one(User.id == member.id)
 
-        if user:
+        if db_user:
             await login(
-                interaction,
+                guild,
+                member,
                 interaction.followup.send,
-                user_id,
-                server_id,
-                interaction.user.display_name,
             )
         else:
             await interaction.followup.send(
@@ -52,6 +52,7 @@ class UsersCog(commands.Cog):
                 view=LoginView(self.bot),
             )
 
+    @app_commands.guild_only()
     @app_commands.command(name="update")
     @defer_interaction(ephemeral_default=True)
     @ensure_server_document
@@ -61,15 +62,16 @@ class UsersCog(commands.Cog):
         """
         user_id = interaction.user.id
 
-        user = await User.find_one(User.id == user_id)
+        db_user = await User.find_one(User.id == user_id)
 
-        if user:
-            await update_user_preferences_prompt(interaction)
+        if db_user:
+            await update_user_preferences_prompt(cast(GuildInteraction, interaction))
             return
 
         embed = account_not_found_embed()
         await interaction.followup.send(embed=embed)
 
+    @app_commands.guild_only()
     @app_commands.command(name="remove")
     @defer_interaction(ephemeral_default=True)
     @ensure_server_document
@@ -83,12 +85,12 @@ class UsersCog(commands.Cog):
 
         :param permanently: Permanently delete all CodeGrind's stored data on you
         """
-        server_id = interaction.guild.id
+        server_id = cast(int, interaction.guild_id)
         user_id = interaction.user.id
 
-        user = await User.find_one(User.id == user_id)
+        db_user = await User.find_one(User.id == user_id)
 
-        if not user:
+        if not db_user:
             await interaction.followup.send(embed=account_not_found_embed())
             return
 

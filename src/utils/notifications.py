@@ -71,7 +71,7 @@ async def process_daily_question_and_stats_update(
                     Server.last_update_end: datetime.now(UTC),
                 }
             )
-        )
+        )  # type: ignore
 
         if server.id == GLOBAL_LEADERBOARD_ID:
             continue
@@ -102,15 +102,15 @@ async def process_daily_question_and_stats_update(
 
 
 async def send_daily_question(
-    bot: "DiscordBot", server: Server, embed: discord.Embed
+    bot: "DiscordBot", db_server: Server, embed: discord.Embed
 ) -> None:
     """
     Send the daily question to the server's daily question channels.
 
-    :param server: The server to send the daily question to (with links fetched).
+    :param db_server: The server to send the daily question to (with links fetched).
     :param embed: The embed containing the daily question.
     """
-    for channel_id in server.channels.daily_question:
+    for channel_id in db_server.channels.daily_question:
         channel = bot.get_channel(channel_id)
 
         if not channel or not isinstance(channel, discord.TextChannel):

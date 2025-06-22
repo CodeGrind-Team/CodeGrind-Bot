@@ -50,12 +50,12 @@ from src.utils.users import delete_user, unlink_user_from_server
 class Config:
     DISCORD_TOKEN: str
     MONGODB_URI: str
-    TOPGG_TOKEN: str
     BROWSER_EXECUTABLE_PATH: str
-    GOOGLE_APPLICATION_CREDENTIALS: str
     LOGGING_CHANNEL_ID: int
     DEVELOPER_DISCORD_ID: int
     PRODUCTION: bool
+    TOPGG_TOKEN: str | None
+    GOOGLE_APPLICATION_CREDENTIALS: str | None
 
 
 class DiscordBot(commands.Bot):
@@ -78,8 +78,20 @@ class DiscordBot(commands.Bot):
         self.channel_logger = ChannelLogger(self, self.config.LOGGING_CHANNEL_ID)
         self.ratings = Ratings(self)
         self.neetcode = NeetcodeSolutions(self)
-        self.http_client: HttpClient | None = None
-        self.topggpy: topgg.DBLClient | None = None
+        self._http_client: HttpClient | None = None
+        self._topggpy: topgg.client.DBLClient | None = None
+
+    @property
+    def http_client(self) -> HttpClient:
+        if self._http_client is None:
+            raise RuntimeError("setup_hook() must be called first")
+        return self._http_client
+
+    @property
+    def topggpy(self) -> topgg.client.DBLClient:
+        if self._topggpy is None:
+            raise RuntimeError("setup_hook() must be called first")
+        return self._topggpy
 
     async def on_autopost_success(self) -> None:
         """
@@ -90,16 +102,14 @@ class DiscordBot(commands.Bot):
             f"({self.shard_count})",
         )
 
-        self.logger.info(
-            f"Total bot member count ({ len(set(self.get_all_members()))})"
-        )
+        self.logger.info(f"Total bot member count ({len(set(self.get_all_members()))})")
 
     async def init_topgg(self) -> None:
         """
         Initialises the topgg client.
         """
-        if self.config.PRODUCTION:
-            self.topggpy = topgg.DBLClient(
+        if self.config.PRODUCTION and self.config.TOPGG_TOKEN:
+            self._topggpy = topgg.client.DBLClient(
                 self, self.config.TOPGG_TOKEN, autopost=True, post_shard_count=True
             )
 
@@ -129,7 +139,7 @@ class DiscordBot(commands.Bot):
         """
         Called only once to setup the bot.
         """
-        self.logger.info(f"Logged in as {self.user.name}")
+        self.logger.info(f"Logged in as {self.user.name if self.user else 'Unknown'} ")
         self.logger.info(f"discord.py API version: {discord.__version__}")
         self.logger.info(f"Python version: {platform.python_version()}")
         self.logger.info(
@@ -137,7 +147,7 @@ class DiscordBot(commands.Bot):
         )
         self.logger.info("-------------------")
 
-        self.http_client = HttpClient(self, aiohttp.ClientSession())
+        self._http_client = HttpClient(self, aiohttp.ClientSession())
         await initialise_mongodb_connection(
             self.config.MONGODB_URI, GLOBAL_LEADERBOARD_ID
         )
@@ -194,12 +204,12 @@ class DiscordBot(commands.Bot):
         )
         await unlink_user_from_server(payload.guild_id, payload.user.id)
 
-        profiles = await Profile.find_many(
+        db_profiles = await Profile.find_many(
             Profile.user_id == payload.user.id,
             Profile.server_id != GLOBAL_LEADERBOARD_ID,
         ).to_list()
 
-        if len(profiles) == 0:
+        if len(db_profiles) == 0:
             await delete_user(payload.user.id)
 
     async def on_member_update(
@@ -215,7 +225,9 @@ class DiscordBot(commands.Bot):
         await Profile.find_one(
             Profile.user_id == before.id,
             Profile.server_id == before.guild.id,
-        ).update(Set({Profile.preference.name: after.display_name}))
+        ).update(
+            Set({Profile.preference.name: after.display_name})
+        )  # type: ignore
 
     async def on_user_update(self, before: discord.User, after: discord.User) -> None:
         """
@@ -228,7 +240,9 @@ class DiscordBot(commands.Bot):
         await Profile.find_one(
             Profile.user_id == before.id,
             Profile.server_id == GLOBAL_LEADERBOARD_ID,
-        ).update(Set({Profile.preference.name: after.display_name}))
+        ).update(
+            Set({Profile.preference.name: after.display_name})
+        )  # type: ignore
 
     async def on_message(self, message: discord.Message) -> None:
         """
@@ -236,7 +250,7 @@ class DiscordBot(commands.Bot):
         only messages that mention the bot will give us access to the message's
         contents.
         """
-        if not (
+        if not self.user or not (
             (message.author.id == self.config.DEVELOPER_DISCORD_ID)
             and self.user.mentioned_in(message)
         ):
@@ -328,7 +342,7 @@ class LoggingFormatter(logging.Formatter):
         logging.CRITICAL: red + bold,
     }
 
-    def format(self, record) -> None:
+    def format(self, record) -> str:
         log_colour = self.COLOURS[record.levelno]
         format = (
             "(black){asctime}(reset) (levelcolour){levelname:<8}(reset) "

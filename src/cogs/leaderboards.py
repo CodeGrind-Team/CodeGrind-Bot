@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 import discord
 from discord import app_commands
@@ -29,6 +29,7 @@ class LeaderboardsCog(commands.Cog):
     def __init__(self, bot: "DiscordBot") -> None:
         self.bot = bot
 
+    @app_commands.guild_only()
     @app_commands.command(name="leaderboard")
     @app_commands.rename(global_leaderboard="global")
     @app_commands.rename(sort_by="sorting")
@@ -45,19 +46,21 @@ class LeaderboardsCog(commands.Cog):
         View the leaderboard
 
         :param timeframe: Timeframe for the leaderboard
-        :param sort_by: Sorting method
         :param global_leaderboard: Whether to display the global leaderboard
+        :param sort_by: The sorting method
         """
+        guild_id = cast(int, interaction.guild_id)
+
         embed, view = await generate_leaderboard_embed(
             timeframe.value,
-            interaction.guild.id,
+            guild_id,
             sort_by.value,
             author_user_id=interaction.user.id,
             global_leaderboard=global_leaderboard.to_bool,
             page=1,
         )
 
-        await interaction.followup.send(embed=embed, view=view)
+        await interaction.followup.send(embed=embed, view=view)  # type: ignore
 
 
 async def setup(bot: "DiscordBot") -> None:

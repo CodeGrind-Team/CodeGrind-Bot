@@ -10,7 +10,7 @@ class Ratings:
         self.bot = bot
         self.ratings: dict[str, float] = {}
 
-    def fetch_rating(self, title: str) -> dict[str, float] | None:
+    def fetch_rating(self, title: str) -> float | None:
         return self.ratings.get(title.lower())
 
     async def update_ratings(self) -> None:

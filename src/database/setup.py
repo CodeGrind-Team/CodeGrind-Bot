@@ -13,6 +13,7 @@ async def initialise_mongodb_connection(
     Initialise the MongoDB connection and create the necessary collections
 
     :param mongodb_uri: The MongoDB URI
+    :param global_leaderboard_id: The ID of the global leaderboard server document
     """
     mongodb_client = AsyncIOMotorClient(mongodb_uri)
 
@@ -33,4 +34,4 @@ if __name__ == "__main__":
     from dotenv import find_dotenv, load_dotenv
 
     load_dotenv(find_dotenv())
-    asyncio.run(initialise_mongodb_connection(os.getenv("MONGODB_URI")))
+    asyncio.run(initialise_mongodb_connection(os.getenv("MONGODB_URI")))  # type: ignore

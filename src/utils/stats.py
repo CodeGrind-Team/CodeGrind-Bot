@@ -34,7 +34,7 @@ stats_update_semaphore = asyncio.Semaphore(4)
 
 async def update_stats(
     bot: "DiscordBot",
-    user: User,
+    db_user: User,
     reset_day: bool = False,
 ) -> None:
     """
@@ -44,25 +44,21 @@ async def update_stats(
     user's submission statistics, and optionally creates a record with the updated
     stats.
 
-    :param user: The user whose stats are being updated.
+    :param db_user: The user whose stats are being updated.
     :param reset_day: If `True`, a new record is created and stored with the updated
     stats.
     """
 
     async with stats_update_semaphore:
-        stats = await fetch_problems_solved_and_rank(bot, user.leetcode_id)
+        stats = await fetch_problems_solved_and_rank(bot, db_user.leetcode_id)
         if not stats:
             return
 
-        user = await User.find_one(User.id == user.id)
-        if not user:
-            return
-
         (
-            user.stats.submissions.easy,
-            user.stats.submissions.medium,
-            user.stats.submissions.hard,
-            user.stats.submissions.score,
+            db_user.stats.submissions.easy,
+            db_user.stats.submissions.medium,
+            db_user.stats.submissions.hard,
+            db_user.stats.submissions.score,
         ) = (
             stats.submissions.easy,
             stats.submissions.medium,
@@ -111,7 +107,7 @@ async def update_stats(
                 timestamp=datetime.now(UTC).replace(
                     hour=0, minute=0, second=0, microsecond=0
                 ),
-                user_id=user.id,
+                user_id=db_user.id,
                 submissions=Submissions(
                     easy=stats.submissions.easy,
                     medium=stats.submissions.medium,
@@ -124,8 +120,8 @@ async def update_stats(
 
             await record.create()
 
-        user.last_updated = datetime.now(UTC)
-        await user.save()
+        db_user.last_updated = datetime.now(UTC)
+        await db_user.save()
 
 
 async def update_wins(
@@ -157,12 +153,12 @@ async def update_wins(
         user_to_score[period] = {user.id: score for user, score, _ in users_and_scores}
 
     async for server in Server.all():
-        profiles = await Profile.find_many(Profile.server_id == server.id).to_list()
-        users: list[int] = [profile.user_id for profile in profiles]
+        db_profiles = await Profile.find_many(Profile.server_id == server.id).to_list()
+        user_ids: list[int] = [profile.user_id for profile in db_profiles]
 
         # Could occur for global server with ID 0. Prevents error from occurring when
         # max is used.
-        if not users:
+        if not user_ids:
             continue
 
         # Update win counts for the profiles.
@@ -173,7 +169,7 @@ async def update_wins(
             max_score = max(
                 [
                     user_to_score[period][user]
-                    for user in users
+                    for user in user_ids
                     if user in user_to_score[period]
                 ]
             )
@@ -192,7 +188,7 @@ async def update_wins(
             ).update(
                 Inc({increment_field: 1}),
                 Set({Profile.win_count.last_updated: datetime.now(UTC)}),
-            )
+            )  # type: ignore
 
 
 async def update_all_user_stats(
@@ -234,7 +230,7 @@ def stats_card(
     filename: str,
     extension: StatsCardExtensions,
     display_url: bool,
-) -> tuple[discord.File | None]:
+) -> discord.File | None:
     width = 500
     height = 200
     if extension in (StatsCardExtensions.ACTIVITY, StatsCardExtensions.CONTEST):
@@ -260,11 +256,11 @@ def stats_card(
         anonymise_stats_card(bot, paths[0])
 
     with open(paths[0], "rb") as f:
-        # read the file contents
+        # Read the file contents.
         data = f.read()
-        # create a BytesIO object from the data
+        # Create a BytesIO object from the data.
         image_binary = io.BytesIO(data)
-        # move the cursor to the beginning
+        # Move the cursor to the beginning.
         image_binary.seek(0)
 
         file = discord.File(fp=image_binary, filename=f"{filename}.png")

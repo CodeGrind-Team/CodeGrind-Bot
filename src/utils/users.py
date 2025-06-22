@@ -2,7 +2,7 @@ import asyncio
 import random
 import string
 from datetime import UTC, datetime
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Awaitable, Callable, Optional
 
 import discord
 
@@ -25,26 +25,29 @@ if TYPE_CHECKING:
 
 async def register(
     bot: "DiscordBot",
-    interaction: discord.Interaction,
-    send_message: discord.Webhook,
-    server_id: int,
-    user_id: int,
+    guild: discord.Guild,
+    member: discord.Member,
+    send_message: Callable[..., Awaitable[discord.InteractionCallbackResponse]],
+    edit_original_response: Callable[..., Awaitable[discord.InteractionMessage]],
     leetcode_id: str,
 ) -> None:
     """
     Registers a user to the system for the selected server.
 
+    :param guild: The Discord guild (server) to register the user into.
+    :param member: The user to register.
     :param send_message: The webhook to send messages.
-    :param server_id: The ID of the server to register the user into.
-    :param user: The user to register.
+    :param edit_original_response: The webhook to edit the original response.
     :param leetcode_id: The LeetCode ID of the user.
     """
+    user_id = member.id
+    server_id = guild.id
 
     matched = await linking_process(bot, send_message, leetcode_id)
 
     if not matched:
         embed = profile_added_embed(leetcode_id, added=False)
-        await interaction.edit_original_response(embed=embed)
+        await edit_original_response(embed=embed)
         return
 
     stats = await fetch_problems_solved_and_rank(bot, leetcode_id)
@@ -87,7 +90,7 @@ async def register(
         server_id=server_id,
         preference=Preference(
             # Use server username.
-            name=interaction.user.display_name,
+            name=member.display_name,
         ),
     )
 
@@ -96,7 +99,7 @@ async def register(
         server_id=GLOBAL_LEADERBOARD_ID,
         preference=Preference(
             # User account username.
-            name=interaction.user.name,
+            name=member.name,
             url=False,
         ),
     )
@@ -106,56 +109,58 @@ async def register(
     await profile_server.create()
     await profile_global.create()
 
-    await give_verified_role(interaction.guild, interaction.user)
+    await give_verified_role(guild, member)
 
-    await interaction.edit_original_response(embed=profile_added_embed(leetcode_id))
+    await edit_original_response(embed=profile_added_embed(leetcode_id))
 
 
 async def login(
-    interaction: discord.Interaction,
-    send_message: discord.Webhook,
-    user_id: int,
-    server_id: int,
-    user_display_name: str,
+    guild: discord.Guild,
+    member: discord.Member,
+    send_message: Callable[..., Awaitable[Optional[discord.WebhookMessage]]],
 ) -> None:
     """
     Logs in a user to a server if user already exists.
 
+    :param guild: The Discord guild (server) to log the user into.
+    :param member: The user to log in.
     :param send_message: The webhook to send messages.
-    :param user_id: The user to log in.
-    :param server_id: The ID of the server to log the user into.
-    :param user_display_name: The display name of the user.
     """
-    await give_verified_role(interaction.guild, interaction.user)
+    user_id = member.id
+    server_id = guild.id
 
-    profile = await Profile.find_one(
-        Profile.preference.user_id == user_id,
-        Profile.preference.server_id == server_id,
+    await give_verified_role(guild, member)
+
+    db_profile = await Profile.find_one(
+        Profile.user_id == user_id,
+        Profile.server_id == server_id,
     )
 
-    if profile:
+    if db_profile:
         # User has already been added to the server.
         embed = user_already_added_in_server_embed()
         await send_message(embed=embed)
     else:
         # Add user's profile for this server.
-        profile = Profile(
+        db_profile = Profile(
             user_id=user_id,
             server_id=server_id,
             preference=Preference(
-                name=user_display_name,
+                name=member.display_name,
             ),
         )
 
-        await profile.create()
+        await db_profile.create()
 
         embed = synced_existing_user_embed()
         await send_message(embed=embed)
 
 
 async def linking_process(
-    bot: "DiscordBot", send_message: discord.Webhook, leetcode_id: str
-) -> None:
+    bot: "DiscordBot",
+    send_message: Callable[..., Awaitable[discord.InteractionCallbackResponse]],
+    leetcode_id: str,
+) -> bool:
     """
     Initiates the account linking process.
 
@@ -199,9 +204,6 @@ async def linking_process(
 async def unlink_user_from_server(user_id: int, server_id: int) -> None:
     """
     Removes user's profile for specified server.
-
-    :param send_message: The webhook to send messages.
-    :param leetcode_id: The LeetCode ID of the user.
     """
     await Profile.find_many(
         Profile.user_id == user_id, Profile.server_id == server_id
@@ -211,8 +213,6 @@ async def unlink_user_from_server(user_id: int, server_id: int) -> None:
 async def delete_user(user_id: int) -> None:
     """
     Deletes all of user's stored information.
-
-    :param user_id: The user's id.
     """
     await Profile.find_many(Profile.user_id == user_id).delete()
     await Record.find_many(Record.user_id == user_id).delete()

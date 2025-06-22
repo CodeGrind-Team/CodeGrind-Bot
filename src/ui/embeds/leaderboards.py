@@ -15,26 +15,24 @@ def empty_leaderboard_embed() -> discord.Embed:
 
 
 def leaderboard_embed(
-    server: Server,
+    db_server: Server,
     page_i: int,
     page_count: int,
     title: str,
     leaderboard: str,
     include_page_count: bool = True,
 ) -> discord.Embed:
-    embed = discord.Embed(
-        title=title, description=leaderboard, colour=discord.Colour.yellow()
-    )
+    embed = discord.Embed(title=title, colour=discord.Colour.yellow())
     # Converting the unaware datetime to a timezone-aware one is required
     # to display the correct timestamp to the user.
 
     # Short Date/Time relative timestamp format: <t:{timestamp}:f>,
     last_updated_start = (
-        f"<t:{int(pytz.utc.localize(server.last_update_start).timestamp())}:f>"
+        f"<t:{int(pytz.utc.localize(db_server.last_update_start).timestamp())}:f>"
     )
     # Short Time relative timestamp format: <t:{timestamp}:t>,
     last_updated_end = (
-        f"<t:{int(pytz.utc.localize(server.last_update_end).timestamp())}:t>"
+        f"<t:{int(pytz.utc.localize(db_server.last_update_end).timestamp())}:t>"
     )
     page_count_text = (
         f"\n-# Page {page_i + 1}/{page_count}" if include_page_count else ""
@@ -43,7 +41,7 @@ def leaderboard_embed(
     # '-#' displays as subtext (smaller font and less visible colour) whilst
     # still allowing the use of other markdown formatting and relative timestamps
     # unlike the embed's footer.
-    embed.description += (
+    embed.description = leaderboard + (
         f"\n\n-# Easy: {DifficultyScore.EASY.value} pt | Medium: "
         f"{DifficultyScore.MEDIUM.value} pts | Hard: {DifficultyScore.HARD.value} "
         f"pts"
