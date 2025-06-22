@@ -5,6 +5,8 @@ from src.ui.embeds.preferences import preferences_update_prompt_embeds
 from src.ui.views.preferences import UserPreferencesPromptView
 from src.utils.common import GuildInteraction
 
+PREFERENCE_PROMPT_INTERVAL_DAYS = 365
+
 
 async def update_user_preferences_prompt(
     interaction: GuildInteraction, reminder: bool = False
@@ -32,7 +34,7 @@ async def update_user_preferences_prompt(
         reminder
         and profile.preference.last_updated
         and (datetime.now(UTC) - profile.preference.last_updated.astimezone(UTC)).days
-        <= 365
+        <= PREFERENCE_PROMPT_INTERVAL_DAYS
     ):
         return
 

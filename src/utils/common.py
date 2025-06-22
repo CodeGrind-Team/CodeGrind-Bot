@@ -48,3 +48,5 @@ class GuildInteraction(Protocol):
     followup: discord.Webhook
     edit_original_response: Callable[..., Awaitable[discord.InteractionMessage]]
     response: discord.InteractionResponse
+
+    async def original_response(self) -> discord.InteractionMessage: ...  # noqa: E704

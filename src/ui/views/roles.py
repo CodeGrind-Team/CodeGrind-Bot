@@ -1,4 +1,4 @@
-from typing import cast
+from typing import Awaitable, Callable, cast
 
 import discord
 
@@ -14,12 +14,11 @@ class RolesView(discord.ui.View):
     ) -> None:
         guild_interaction = cast(GuildInteraction, interaction)
 
-        await guild_interaction.response.defer()
+        async def modify_roles() -> None:
+            await create_roles(guild_interaction.guild)
+            await update_roles(guild_interaction.guild, guild_interaction.guild_id)
 
-        await create_roles(guild_interaction.guild)
-        await update_roles(guild_interaction.guild, guild_interaction.guild_id)
-
-        await guild_interaction.followup.send(embed=roles_created_embed())
+        await self.toggle(guild_interaction, modify_roles, roles_created_embed)
 
     @discord.ui.button(label="Disable", style=discord.ButtonStyle.gray)
     async def disable(
@@ -27,8 +26,25 @@ class RolesView(discord.ui.View):
     ) -> None:
         guild_interaction = cast(GuildInteraction, interaction)
 
+        async def modify_roles() -> None:
+            await remove_roles(guild_interaction.guild)
+
+        await self.toggle(guild_interaction, modify_roles, roles_removed_embed)
+
+    async def toggle(
+        self,
+        guild_interaction: GuildInteraction,
+        modify_roles: Callable[[], Awaitable[None]],
+        return_embed: Callable[[], discord.Embed],
+    ) -> None:
         await guild_interaction.response.defer()
+        message = await guild_interaction.original_response()
 
-        await remove_roles(guild_interaction.guild)
+        self.enable.disabled, self.disable.disabled = True, True
+        await guild_interaction.followup.edit_message(message.id, view=self)
 
-        await guild_interaction.followup.send(embed=roles_removed_embed())
+        await modify_roles()
+
+        await guild_interaction.followup.edit_message(
+            message.id, embed=return_embed(), view=None
+        )

@@ -34,9 +34,7 @@ class NotificationOptionSelect(discord.ui.Select):
             "Leaderboard Winners": NotificationOptions.WINNERS,
         }
         self.selected_notification_options = selected_notification_options
-        options = self._get_options(
-            {option.name for option in available_notification_options}
-        )
+        options = self._get_options(available_notification_options)
 
         super().__init__(
             placeholder=f"Select the notification types to "
@@ -59,7 +57,7 @@ class NotificationOptionSelect(discord.ui.Select):
                 self.selected_notification_options.add(notification_option)
 
     def _get_options(
-        self, available_notification_options: set[str]
+        self, available_notification_options: set[NotificationOptions]
     ) -> set[discord.SelectOption]:
         """
         Get the options for the select menu.

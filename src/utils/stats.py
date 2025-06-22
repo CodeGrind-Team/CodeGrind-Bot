@@ -260,11 +260,11 @@ def stats_card(
         anonymise_stats_card(bot, paths[0])
 
     with open(paths[0], "rb") as f:
-        # read the file contents
+        # Read the file contents.
         data = f.read()
-        # create a BytesIO object from the data
+        # Create a BytesIO object from the data.
         image_binary = io.BytesIO(data)
-        # move the cursor to the beginning
+        # Move the cursor to the beginning.
         image_binary.seek(0)
 
         file = discord.File(fp=image_binary, filename=f"{filename}.png")
