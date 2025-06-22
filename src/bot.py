@@ -204,12 +204,12 @@ class DiscordBot(commands.Bot):
         )
         await unlink_user_from_server(payload.guild_id, payload.user.id)
 
-        profiles = await Profile.find_many(
+        db_profiles = await Profile.find_many(
             Profile.user_id == payload.user.id,
             Profile.server_id != GLOBAL_LEADERBOARD_ID,
         ).to_list()
 
-        if len(profiles) == 0:
+        if len(db_profiles) == 0:
             await delete_user(payload.user.id)
 
     async def on_member_update(

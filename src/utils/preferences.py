@@ -22,18 +22,20 @@ async def update_user_preferences_prompt(
     sent only if the preference has not been updated in over 30 days.
     """
 
-    profile = await Profile.find_one(
+    db_profile = await Profile.find_one(
         Profile.user_id == interaction.user.id,
         Profile.server_id == interaction.guild_id,
     )
 
-    if not profile:
+    if not db_profile:
         return
 
     if (
         reminder
-        and profile.preference.last_updated
-        and (datetime.now(UTC) - profile.preference.last_updated.astimezone(UTC)).days
+        and db_profile.preference.last_updated
+        and (
+            datetime.now(UTC) - db_profile.preference.last_updated.astimezone(UTC)
+        ).days
         <= PREFERENCE_PROMPT_INTERVAL_DAYS
     ):
         return
@@ -44,5 +46,5 @@ async def update_user_preferences_prompt(
     await interaction.followup.send(embed=pages[0].embed, view=view, ephemeral=True)
     await view.wait()
 
-    profile.preference.last_updated = datetime.now(UTC)
-    await profile.save_changes()
+    db_profile.preference.last_updated = datetime.now(UTC)
+    await db_profile.save_changes()

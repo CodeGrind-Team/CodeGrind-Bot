@@ -138,21 +138,21 @@ async def update_roles(guild: discord.Guild, server_id: int) -> None:
         return
 
     async for profile in Profile.find_many(Profile.server_id == server_id):
-        user = await User.find_one(User.id == profile.user_id)
+        db_user = await User.find_one(User.id == profile.user_id)
 
-        if not user:
+        if not db_user:
             # This shouldn't happen
             continue
 
-        member = guild.get_member(user.id)
+        member = guild.get_member(db_user.id)
 
         if not member:
             continue
 
         await give_verified_role(guild, member)
-        await give_tier_group_role(guild, member, STREAK_ROLES, user.stats.streak)
+        await give_tier_group_role(guild, member, STREAK_ROLES, db_user.stats.streak)
         await give_tier_group_role(
-            guild, member, MILESTONE_ROLES, user.stats.submissions.score
+            guild, member, MILESTONE_ROLES, db_user.stats.submissions.score
         )
 
 

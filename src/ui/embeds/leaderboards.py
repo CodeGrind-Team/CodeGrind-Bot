@@ -15,7 +15,7 @@ def empty_leaderboard_embed() -> discord.Embed:
 
 
 def leaderboard_embed(
-    server: Server,
+    db_server: Server,
     page_i: int,
     page_count: int,
     title: str,
@@ -28,11 +28,11 @@ def leaderboard_embed(
 
     # Short Date/Time relative timestamp format: <t:{timestamp}:f>,
     last_updated_start = (
-        f"<t:{int(pytz.utc.localize(server.last_update_start).timestamp())}:f>"
+        f"<t:{int(pytz.utc.localize(db_server.last_update_start).timestamp())}:f>"
     )
     # Short Time relative timestamp format: <t:{timestamp}:t>,
     last_updated_end = (
-        f"<t:{int(pytz.utc.localize(server.last_update_end).timestamp())}:t>"
+        f"<t:{int(pytz.utc.localize(db_server.last_update_end).timestamp())}:t>"
     )
     page_count_text = (
         f"\n-# Page {page_i + 1}/{page_count}" if include_page_count else ""

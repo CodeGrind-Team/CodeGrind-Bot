@@ -16,11 +16,11 @@ if TYPE_CHECKING:
     from src.bot import DiscordBot
 
 
-async def user_score(user: User, period: Period, previous: bool) -> int:
+async def user_score(db_user: User, period: Period, previous: bool) -> int:
     """
     Get the score for a given period for a user.
 
-    :param user: The user to retrieve the score for.
+    :param db_user: The user to retrieve the score for.
     :param period: The period for which to retrieve the score.
     :param previous: Whether to get the score for the previous period.
 
@@ -28,7 +28,7 @@ async def user_score(user: User, period: Period, previous: bool) -> int:
     """
 
     if period == Period.ALLTIME:
-        return user.stats.submissions.score
+        return db_user.stats.submissions.score
 
     record_timestamp_end: datetime | None = None
     record_timestamp_start: datetime | None = None
@@ -59,95 +59,95 @@ async def user_score(user: User, period: Period, previous: bool) -> int:
             )
 
     if previous:
-        record_end = await Record.find_one(
-            Record.user_id == user.id,
+        db_record_end = await Record.find_one(
+            Record.user_id == db_user.id,
             Record.timestamp == record_timestamp_end,
         )
-        if not record_end:
+        if not db_record_end:
             return 0
 
-        record_start = await Record.find_one(
-            Record.user_id == user.id,
+        db_record_start = await Record.find_one(
+            Record.user_id == db_user.id,
             Record.timestamp >= record_timestamp_start,
             Record.timestamp < record_timestamp_end,
         )
-        if not record_start:
+        if not db_record_start:
             return 0
 
-        score_end = record_end.submissions.score
-        score_start = record_start.submissions.score
+        score_end = db_record_end.submissions.score
+        score_start = db_record_start.submissions.score
         return score_end - score_start
 
     else:
-        current_score = user.stats.submissions.score
-        record = await Record.find_one(
-            Record.user_id == user.id,
+        current_score = db_user.stats.submissions.score
+        db_record = await Record.find_one(
+            Record.user_id == db_user.id,
             Record.timestamp >= record_timestamp_end,
         )
-        if not record:
+        if not db_record:
             return 0
 
-        previous_score = record.submissions.score
+        previous_score = db_record.submissions.score
         return current_score - previous_score
 
 
-async def user_win_count(user: User, server_id: int, period: Period) -> int:
+async def user_win_count(db_user: User, server_id: int, period: Period) -> int:
     """
     Returns the win count for a given period for a user.
 
-    :param user: The user to retrieve the win count for.
+    :param db_user: The user to retrieve the win count for.
     :param server_id: The server to retrieve the win count for.
     :param period: The period for which to retrieve the win count.
 
     :return: The win count for the specified period.
     """
-    profile = await Profile.find_one(
-        Profile.user_id == user.id, Profile.server_id == server_id
+    db_profile = await Profile.find_one(
+        Profile.user_id == db_user.id, Profile.server_id == server_id
     )
 
-    if not profile or not profile.win_count:
+    if not db_profile or not db_profile.win_count:
         return 0
 
     match period:
         case Period.DAY:
-            return profile.win_count.days
+            return db_profile.win_count.days
         case Period.WEEK:
-            return profile.win_count.weeks
+            return db_profile.win_count.weeks
         case Period.MONTH:
-            return profile.win_count.months
+            return db_profile.win_count.months
         case _:
             return 0
 
 
 async def user_score_and_wins(
-    user: User, period: Period, previous: bool, server_id: int | None = None
+    db_user: User, period: Period, previous: bool, server_id: int | None = None
 ) -> tuple[User, int, int]:
     """
     Get the score and wins for a given period for a user.
 
+    :param db_user: The user to retrieve the score and wins for.
     :param period: The period for which to retrieve the score.
-    :param user_id: The ID of the user to retrieve the score for.
     :param previous: Whether to display the leaderboard of one period before.
     :param server_id: The ID of the server to retrieve the user's win_count for.
 
     :return: A tuple of the user, their score and wins.
     """
-    score = await user_score(user, period, previous)
+    score = await user_score(db_user, period, previous)
 
     win_count = 0
     if server_id:
-        win_count = await user_win_count(user, server_id, period)
+        win_count = await user_win_count(db_user, server_id, period)
 
-    return user, score, win_count
+    return db_user, score, win_count
 
 
 async def all_users_scores_and_wins(
-    users: list[User], period: Period, previous: bool, server_id: int | None = None
+    db_users: list[User], period: Period, previous: bool, server_id: int | None = None
 ) -> list[tuple[User, int, int]]:
     """
     Fetch and calculate the scores and wins for all users, for the selected time period.
 
-    :param users: The users in the server.
+    :param db_users: The users in the server.
     :param period: The period for which to retrieve and sort the scores.
     :param previous: Whether to display the leaderboard of one period before.
     :param server_id: The ID of the server to retrieve the user's win_count for.
@@ -155,7 +155,8 @@ async def all_users_scores_and_wins(
     :return: A list of users with their scores and wins.
     """
     coroutines = [
-        user_score_and_wins(user, period, previous, server_id) for user in users
+        user_score_and_wins(db_user, period, previous, server_id)
+        for db_user in db_users
     ]
     users_with_scores_and_wins = await asyncio.gather(*coroutines)
     return users_with_scores_and_wins
@@ -169,13 +170,15 @@ async def users_from_profiles(
 
     :param server_id: the server to retrieve the users that are in it.
     """
-    profiles = await Profile.find_many(Profile.server_id == server_id).to_list()
+    db_profiles = await Profile.find_many(Profile.server_id == server_id).to_list()
 
-    user_id_to_profile = {profile.user_id: profile for profile in profiles}
+    user_id_to_profile = {db_profile.user_id: db_profile for db_profile in db_profiles}
 
-    users = await User.find_many(In(User.id, set(user_id_to_profile.keys()))).to_list()
+    db_users = await User.find_many(
+        In(User.id, set(user_id_to_profile.keys()))
+    ).to_list()
 
-    return user_id_to_profile, users
+    return user_id_to_profile, db_users
 
 
 async def generate_leaderboard_embed(
@@ -193,8 +196,8 @@ async def generate_leaderboard_embed(
     Generate a leaderboard embed.
 
     :param period: The period.
-    :param sort_by: Sorting method
     :param server_id: The server's id.
+    :param sort_by: Sorting method
     :param author_user_id: The author's user ID.
     :param winners_only: Whether to display only the winners.
     :param global_leaderboard: Whether to display the global leaderboard.
@@ -205,8 +208,8 @@ async def generate_leaderboard_embed(
     :return: The leaderboard embed and view.
     """
     server_id = server_id if not global_leaderboard else GLOBAL_LEADERBOARD_ID
-    server = await Server.find_one(Server.id == server_id, fetch_links=True)
-    if not server:
+    db_server = await Server.find_one(Server.id == server_id, fetch_links=True)
+    if not db_server:
         return empty_leaderboard_embed(), None
     user_id_to_profile, users = await users_from_profiles(server_id)
     users_with_scores_and_wins = await all_users_scores_and_wins(
@@ -232,7 +235,7 @@ async def generate_leaderboard_embed(
         page_embed, place, prev_score = await build_leaderboard_page(
             period,
             sort_by,
-            server,
+            db_server,
             user_id_to_profile,
             sorted_users_with_metrics,
             winners_only,
@@ -258,7 +261,7 @@ async def generate_leaderboard_embed(
 async def build_leaderboard_page(
     period: Period,
     sort_by: LeaderboardSortBy,
-    server: Server,
+    db_server: Server,
     user_id_to_profile: dict[int, Profile],
     sorted_users: list[tuple[User, int, int]],
     winners_only: bool,
@@ -274,7 +277,7 @@ async def build_leaderboard_page(
 
     :param period: The period.
     :param sort_by: Sorting method
-    :param server: The server.
+    :param db_server: The server.
     :param user_id_to_profile: Mapping from user ids to their profile.
     :param sorted_users: The list of users sorted by selected metric
     (score or win count) in the respective period.
@@ -338,7 +341,7 @@ async def build_leaderboard_page(
 
     return (
         leaderboard_embed(
-            server,
+            db_server,
             page_index,
             num_pages,
             title,
@@ -447,7 +450,7 @@ def get_rank_emoji(place: int, score: int) -> str:
 
 
 async def send_leaderboard_winners(
-    bot: "DiscordBot", server: Server, period: Period
+    bot: "DiscordBot", db_server: Server, period: Period
 ) -> None:
     """
     Send the leaderboard winners to the specified channels on a Discord server.
@@ -457,13 +460,13 @@ async def send_leaderboard_winners(
     text channel, and handles forbidden (permission-related) errors when attempting to
     send the embed.
 
-    :param server: The server instance containing the list of channel IDs where the
+    :param db_server: The server instance containing the list of channel IDs where the
     leaderboard winners will be announced.
     :param period: The period for which the leaderboard is being sent (e.g., weekly,
     monthly).
     """
 
-    for channel_id in server.channels.winners:
+    for channel_id in db_server.channels.winners:
         channel = bot.get_channel(channel_id)
 
         if not channel or not isinstance(channel, discord.TextChannel):
@@ -472,7 +475,7 @@ async def send_leaderboard_winners(
         try:
             embed, view = await generate_leaderboard_embed(
                 period,
-                server.id,
+                db_server.id,
                 LeaderboardSortBy.SCORE,
                 winners_only=True,
                 previous=True,

@@ -34,7 +34,7 @@ stats_update_semaphore = asyncio.Semaphore(4)
 
 async def update_stats(
     bot: "DiscordBot",
-    user: User,
+    db_user: User,
     reset_day: bool = False,
 ) -> None:
     """
@@ -50,12 +50,8 @@ async def update_stats(
     """
 
     async with stats_update_semaphore:
-        stats = await fetch_problems_solved_and_rank(bot, user.leetcode_id)
+        stats = await fetch_problems_solved_and_rank(bot, db_user.leetcode_id)
         if not stats:
-            return
-
-        db_user = await User.find_one(User.id == user.id)
-        if not db_user:
             return
 
         (
@@ -157,12 +153,12 @@ async def update_wins(
         user_to_score[period] = {user.id: score for user, score, _ in users_and_scores}
 
     async for server in Server.all():
-        profiles = await Profile.find_many(Profile.server_id == server.id).to_list()
-        users: list[int] = [profile.user_id for profile in profiles]
+        db_profiles = await Profile.find_many(Profile.server_id == server.id).to_list()
+        user_ids: list[int] = [profile.user_id for profile in db_profiles]
 
         # Could occur for global server with ID 0. Prevents error from occurring when
         # max is used.
-        if not users:
+        if not user_ids:
             continue
 
         # Update win counts for the profiles.
@@ -173,7 +169,7 @@ async def update_wins(
             max_score = max(
                 [
                     user_to_score[period][user]
-                    for user in users
+                    for user in user_ids
                     if user in user_to_score[period]
                 ]
             )

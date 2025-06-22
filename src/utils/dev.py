@@ -204,12 +204,12 @@ async def prune_members_and_guilds(bot: "DiscordBot") -> None:
 
     # Delete users that no longer have any profiles.
     async for user in User.all():
-        profiles = await Profile.find_many(
+        db_profiles = await Profile.find_many(
             Profile.user_id == user.id,
             Profile.server_id != GLOBAL_LEADERBOARD_ID,
         ).to_list()
 
-        if len(profiles) == 0:
+        if len(db_profiles) == 0:
             await delete_user(user.id)
             bot.logger.info(f"Deleted user with user ID: {user.id}")
 
