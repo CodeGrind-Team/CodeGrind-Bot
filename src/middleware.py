@@ -16,10 +16,6 @@ def ensure_server_document(func: Callable) -> Callable:
 
     If the server document does not exist, it creates a new one. This is used
     as a decorator for functions interacting with server-specific data.
-
-    :param func: The function to wrap.
-
-    :return: The wrapped function that ensures the server document exists.
     """
 
     @wraps(func)
@@ -56,8 +52,6 @@ def defer_interaction(
     default.
     :param user_preferences_prompt: Whether to trigger a user preferences prompt upon
     completion.
-
-    :return: A decorator that defers interaction responses and checks for user prompts.
     """
 
     def ephemeral_response(func: Callable) -> Callable:
@@ -69,10 +63,6 @@ def defer_interaction(
         basic validation checks, sending an error message if the interaction is not
         in a valid state. Additionally, it may prompt the user to update their
         preferences if configured.
-
-        :param func: The function to be wrapped.
-
-        :return: The wrapped function that defers the interaction response.
         """
 
         @wraps(func)

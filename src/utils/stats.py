@@ -44,7 +44,7 @@ async def update_stats(
     user's submission statistics, and optionally creates a record with the updated
     stats.
 
-    :param user: The user whose stats are being updated.
+    :param db_user: The user whose stats are being updated.
     :param reset_day: If `True`, a new record is created and stored with the updated
     stats.
     """

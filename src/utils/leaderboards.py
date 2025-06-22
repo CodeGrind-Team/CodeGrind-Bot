@@ -363,9 +363,9 @@ def get_title(
     Get the title of the leaderboard.
 
     :param period: The leaderboard's period.
-    :param sort_by: Sorting method.
     :param winners_only: Whether to display only the winners.
     :param global_leaderboard: Whether to display the global leaderboard.
+    :param sort_by: The sorting method.
 
     :return: The title of the leaderboard.
     """

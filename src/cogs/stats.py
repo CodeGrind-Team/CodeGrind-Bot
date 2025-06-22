@@ -41,7 +41,7 @@ class StatsCog(commands.Cog):
         Display a user's stats.
 
         :param extension: The stats extension to add to the card.
-        :param member: The user whose stats to display. Defaults to you.
+        :param user: The user whose stats to display. Defaults to you.
         """
         member = user
         user_id = member.id if member else interaction.user.id

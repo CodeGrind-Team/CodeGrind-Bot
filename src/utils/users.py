@@ -34,9 +34,10 @@ async def register(
     """
     Registers a user to the system for the selected server.
 
+    :param guild: The Discord guild (server) to register the user into.
+    :param member: The user to register.
     :param send_message: The webhook to send messages.
-    :param server_id: The ID of the server to register the user into.
-    :param user: The user to register.
+    :param edit_original_response: The webhook to edit the original response.
     :param leetcode_id: The LeetCode ID of the user.
     """
     user_id = member.id
@@ -121,10 +122,9 @@ async def login(
     """
     Logs in a user to a server if user already exists.
 
+    :param guild: The Discord guild (server) to log the user into.
+    :param member: The user to log in.
     :param send_message: The webhook to send messages.
-    :param user_id: The user to log in.
-    :param server_id: The ID of the server to log the user into.
-    :param user_display_name: The display name of the user.
     """
     user_id = member.id
     server_id = guild.id
@@ -204,9 +204,6 @@ async def linking_process(
 async def unlink_user_from_server(user_id: int, server_id: int) -> None:
     """
     Removes user's profile for specified server.
-
-    :param send_message: The webhook to send messages.
-    :param leetcode_id: The LeetCode ID of the user.
     """
     await Profile.find_many(
         Profile.user_id == user_id, Profile.server_id == server_id
@@ -216,8 +213,6 @@ async def unlink_user_from_server(user_id: int, server_id: int) -> None:
 async def delete_user(user_id: int) -> None:
     """
     Deletes all of user's stored information.
-
-    :param user_id: The user's id.
     """
     await Profile.find_many(Profile.user_id == user_id).delete()
     await Record.find_many(Record.user_id == user_id).delete()

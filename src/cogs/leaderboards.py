@@ -46,8 +46,8 @@ class LeaderboardsCog(commands.Cog):
         View the leaderboard
 
         :param timeframe: Timeframe for the leaderboard
-        :param sort_by: Sorting method
         :param global_leaderboard: Whether to display the global leaderboard
+        :param sort_by: The sorting method
         """
         guild_id = cast(int, interaction.guild_id)
 

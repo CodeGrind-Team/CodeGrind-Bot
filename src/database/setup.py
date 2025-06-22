@@ -13,6 +13,7 @@ async def initialise_mongodb_connection(
     Initialise the MongoDB connection and create the necessary collections
 
     :param mongodb_uri: The MongoDB URI
+    :param global_leaderboard_id: The ID of the global leaderboard server document
     """
     mongodb_client = AsyncIOMotorClient(mongodb_uri)
 
