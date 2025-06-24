@@ -1,9 +1,10 @@
 import ast
-import re
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-import markdownify
+import bs4
+from bs4 import BeautifulSoup
+from markdownify import MarkdownConverter
 
 from src.constants import Difficulty
 from src.utils.common import convert_to_score
@@ -75,85 +76,132 @@ class UserStats:
     skills_problem_count: SkillsProblemCount
 
 
+class LeetCodeMarkdownConverter(MarkdownConverter):
+    """Custom converter for LeetCode HTML content."""
+
+    def convert(self, html: str) -> str:
+        # Remove `&nbsp;`.
+        html = html.replace("&nbsp;", " ")
+
+        return super().convert(html)
+
+    def convert_sup(  # type: ignore
+        self,
+        el: bs4.element.Tag,
+        text: str,
+        convert_as_inline: bool,
+        children_only: bool = False,
+    ) -> str:
+        """Convert superscript `<sup>...</sup>` to `^` notation."""
+        return f"^{text}"
+
+    def convert_img(  # type: ignore
+        self,
+        el: bs4.element.Tag,
+        text,
+        convert_as_inline: bool,
+        children_only: bool = False,
+    ) -> str:
+        """Remove images entirely."""
+        return ""
+
+    def convert_style(  # type: ignore
+        self,
+        el: bs4.element.Tag,
+        text: str,
+        convert_as_inline: bool,
+        children_only: bool = False,
+    ) -> str:
+        """Remove style tags entirely."""
+        return ""
+
+    def convert_code(  # type: ignore
+        self,
+        el: bs4.element.Tag,
+        text: str,
+        convert_as_inline: bool,
+        children_only: bool = False,
+    ) -> str:
+        """Convert code blocks while removing formatting inside them."""
+        # Remove any nested formatting tags from code content
+        clean_text = self.__clean_code_content(text)
+        return f"`{clean_text}`"
+
+    def convert_pre(  # type: ignore
+        self,
+        el: bs4.element.Tag,
+        text: str,
+        convert_as_inline: bool,
+        children_only: bool = False,
+    ) -> str:
+        """Convert pre blocks while removing formatting inside them."""
+        clean_text = self.__clean_code_content(text)
+        return f"\n```\n{clean_text}\n```\n"
+
+    def convert_hn(  # type: ignore
+        self,
+        n: int,
+        el: bs4.element.Tag,
+        text: str,
+        convert_as_inline: bool,
+        children_only: bool = False,
+    ) -> str:
+        """Convert headers using ATX style."""
+        return f"{'#' * n} {text}\n\n"
+
+    def __clean_code_content(self, text: str) -> str:
+        """Remove formatting from code content."""
+        soup = BeautifulSoup(text, "html.parser")
+
+        # Remove formatting tags but keep their text content.
+        for tag in soup.find_all(["b", "strong", "em", "i", "u"]):
+            tag.unwrap()  # type: ignore
+
+        return soup.get_text()
+
+
 def parse_content(content: str) -> tuple[str, str, str | None]:
     """
-    Parses the content of a LeetCode question to extract description and constraints.
+    Parses the content of a LeetCode question to extract description, example one, and
+    follow-up sections.
 
     :param content: The HTML content of the question.
-
-    :return: A tuple containing the description and constraints of the question,
-             or None if not found.
+    :return: A tuple containing the description, example one, and follow-up sections.
     """
-    position_example_one = content.find(
-        '<p><strong class="example">Example 1:</strong></p>'
-    )
-    position_example_two = content.find(
-        '<p><strong class="example">Example 2:</strong></p>'
-    )
-    position_follow_up = content.find("<strong>Follow up:</strong>")
+    EXAMPLE_ONE_TAG = '<p><strong class="example">Example 1:</strong></p>'
+    P_STRONG_TAG = "<p><strong"
+    FOLLOW_UP_TAG = "<strong>Follow up:</strong>"
 
-    description = html_to_markdown(content[:position_example_one])
-    example_one = html_to_markdown(
-        content[
-            position_example_one
-            + len(
-                '<p><strong class="example">Example 1:</strong></p>'
-            ) : position_example_two
-        ]
+    converter = LeetCodeMarkdownConverter()
+
+    position_example_one = content.find(EXAMPLE_ONE_TAG)
+    # Section 1: Description, Section 2: Example One, Section 3: ...
+    position_section_three = content.find(
+        P_STRONG_TAG, position_example_one + len(EXAMPLE_ONE_TAG)
+    )
+    position_follow_up = content.find(FOLLOW_UP_TAG)
+
+    description = converter.convert(content[:position_example_one])
+    example_one = converter.convert(
+        content[position_example_one + len(EXAMPLE_ONE_TAG) : position_section_three]
     )
 
     follow_up = None
     if position_follow_up != -1:
-        follow_up = html_to_markdown(
-            content[position_follow_up + len("<strong>Follow up:</strong>") :]
+        follow_up = converter.convert(
+            content[position_follow_up + len(FOLLOW_UP_TAG) :]
         )
 
-    return description, example_one, follow_up
+    # Ensure the description, example one, and follow-up are within embed
+    # description/field size limits.
+    EMBED_DESCRIPTION_MAX_LEN = 4096
+    EMBED_FIELD_MAX_LEN = 1024
 
-
-def html_to_markdown(html: str) -> str:
-    """
-    Converts HTML content to Markdown.
-
-    :param html: The HTML content to convert to Markdown.
-
-    :return: The Markdown content.
-    """
-    # Remove all bold, italics, and underlines from code blocks as markdowns doesn't
-    # support this.
-    html = re.sub(
-        r"(<code>|<pre>)(.*?)(<[/]code>|<[/]pre>)",
-        lambda m: m.group(0)
-        .replace("<b>", "")
-        .replace("</b>", "")
-        .replace("<em>", "")
-        .replace("</em>", "")
-        .replace("<strong>", "")
-        .replace("</strong>", "")
-        .replace("<u>", "")
-        .replace("</u>", ""),
-        html,
-        flags=re.DOTALL,
+    return (
+        description[:EMBED_DESCRIPTION_MAX_LEN],
+        example_one[:EMBED_FIELD_MAX_LEN],
+        follow_up[:EMBED_FIELD_MAX_LEN] if follow_up else None,
     )
-
-    subsitutions = [
-        (r"<sup>", r"^"),
-        (r"</sup>", r""),
-        # Replace image tag with the url src of that image
-        (r'<img.*?src="(.*?)".*?>', r""),
-        (r"<style.*?>.*?</style>", r""),
-        (r"&nbsp;", r" "),
-    ]
-
-    for pattern, replacement in subsitutions:
-        html = re.sub(pattern, replacement, html, flags=re.DOTALL)
-
-    markdown = markdownify.markdownify(html, heading_style="ATX")
-
-    # Remove unnecessary extra lines
-    markdown = re.sub(r"\n\n", "\n", markdown)
-
-    return markdown
 
 
 async def fetch_random_question(
