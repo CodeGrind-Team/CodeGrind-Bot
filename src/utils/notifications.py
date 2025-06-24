@@ -50,8 +50,8 @@ async def process_daily_question_and_stats_update(
         embed = await daily_question_embed(bot)
 
         try:
-            async for server in Server.all(fetch_links=True):
-                await send_daily_question(bot, server, embed)
+            async for db_server in Server.all(fetch_links=True):
+                await send_daily_question(bot, db_server, embed)
         except discord.errors.HTTPException:
             bot.logger.exception(
                 "HTTPException raised when trying to share daily questions to channels:"
@@ -63,8 +63,8 @@ async def process_daily_question_and_stats_update(
     if update_stats:
         await update_all_user_stats(bot, reset_day, reset_week, reset_month)
 
-    async for server in Server.all():
-        await Server.find_one(Server.id == server.id).update(
+    async for db_server in Server.all():
+        await Server.find_one(Server.id == db_server.id).update(
             Set(
                 {
                     Server.last_update_start: start,
@@ -73,28 +73,28 @@ async def process_daily_question_and_stats_update(
             )
         )  # type: ignore
 
-        if server.id == GLOBAL_LEADERBOARD_ID:
+        if db_server.id == GLOBAL_LEADERBOARD_ID:
             continue
 
         if reset_day:
-            await send_leaderboard_winners(bot, server, Period.DAY)
+            await send_leaderboard_winners(bot, db_server, Period.DAY)
 
         if reset_week:
-            await send_leaderboard_winners(bot, server, Period.WEEK)
+            await send_leaderboard_winners(bot, db_server, Period.WEEK)
 
         if reset_month:
-            await send_leaderboard_winners(bot, server, Period.MONTH)
+            await send_leaderboard_winners(bot, db_server, Period.MONTH)
 
         if midday:
-            if guild := bot.get_guild(server.id):
+            if guild := bot.get_guild(db_server.id):
                 try:
-                    await update_roles(guild, server.id)
+                    await update_roles(guild, db_server.id)
                 except discord.errors.Forbidden:
                     # Missing permissions are handled inside update_roles, so it
                     # shouldn't raise an error.
                     bot.logger.info(
                         f"Forbidden to add roles to members of server with ID: "
-                        f"{server.id}"
+                        f"{db_server.id}"
                     )
 
     bot.logger.info("Sending daily notifications and updating stats completed")
