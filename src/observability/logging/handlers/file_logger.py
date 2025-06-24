@@ -2,8 +2,10 @@ import logging
 import os
 from datetime import UTC, datetime
 
+from src.bot import Config
 
-def add_file_handler() -> None:
+
+def add_file_handler(config: Config) -> None:
     os.makedirs("src/logs", exist_ok=True)
 
     file_handler = logging.FileHandler(
