@@ -152,8 +152,10 @@ async def update_wins(
         )
         user_to_score[period] = {user.id: score for user, score, _ in users_and_scores}
 
-    async for server in Server.all():
-        db_profiles = await Profile.find_many(Profile.server_id == server.id).to_list()
+    async for db_server in Server.all():
+        db_profiles = await Profile.find_many(
+            Profile.server_id == db_server.id
+        ).to_list()
         user_ids: list[int] = [profile.user_id for profile in db_profiles]
 
         # Could occur for global server with ID 0. Prevents error from occurring when
@@ -184,7 +186,7 @@ async def update_wins(
             }
 
             await Profile.find_many(
-                Profile.server_id == server.id, In(Profile.user_id, winners)
+                Profile.server_id == db_server.id, In(Profile.user_id, winners)
             ).update(
                 Inc({increment_field: 1}),
                 Set({Profile.win_count.last_updated: datetime.now(UTC)}),
@@ -205,8 +207,8 @@ async def update_all_user_stats(
 
     counter = 0
     tasks = []
-    async for user in User.all():
-        task = asyncio.create_task(update_stats(bot, user, reset_day))
+    async for db_user in User.all():
+        task = asyncio.create_task(update_stats(bot, db_user, reset_day))
         tasks.append(task)
 
     total_users = len(tasks)
