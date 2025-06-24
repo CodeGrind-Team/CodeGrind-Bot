@@ -5,7 +5,8 @@ from os import environ
 import discord
 from dotenv import find_dotenv, load_dotenv
 
-from observability.logging.loggers import add_logging_handlers
+from observability.logging import add_logging_handlers
+from observability.monitoring import setup_datadog
 from src.bot import Config, DiscordBot
 
 if __name__ == "__main__":
@@ -18,8 +19,10 @@ if __name__ == "__main__":
         int(environ["LOGGING_CHANNEL_ID"]),
         int(environ["DEVELOPER_DISCORD_ID"]),
         os.getenv("PRODUCTION", "False") == "True",
-        os.getenv("TOPGG_TOKEN", None),
-        os.getenv("GOOGLE_APPLICATION_CREDENTIALS", None),
+        os.getenv("TOPGG_TOKEN"),
+        os.getenv("GOOGLE_APPLICATION_CREDENTIALS"),
+        os.getenv("DD_API_KEY"),
+        os.getenv("DD_APP_KEY"),
     )
 
     logs_path = os.path.join(os.path.dirname(__file__), "logs")
@@ -33,6 +36,7 @@ if __name__ == "__main__":
     discord_bot_logger.setLevel(logging.INFO)
 
     add_logging_handlers(config)
+    setup_datadog(config)
 
     try:
         bot = DiscordBot(intents, config, discord_bot_logger)

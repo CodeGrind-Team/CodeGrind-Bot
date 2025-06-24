@@ -19,6 +19,8 @@ governing permissions and limitations under the License.
 
 import logging
 
+from src.bot import Config
+
 
 class ConsoleLoggingFormatter(logging.Formatter):
     # Colours
@@ -54,7 +56,7 @@ class ConsoleLoggingFormatter(logging.Formatter):
         return formatter.format(record)
 
 
-def add_console_handler() -> None:
+def add_console_handler(config: Config) -> None:
     console_handler = logging.StreamHandler()
     console_handler.setFormatter(ConsoleLoggingFormatter())
     logging.getLogger().addHandler(console_handler)
