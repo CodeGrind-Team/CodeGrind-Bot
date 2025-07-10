@@ -1,32 +1,13 @@
-"""
-Copyright © Krypton 2019-2023 - https://github.com/kkrypt0nn (https://krypton.ninja)
-Description:
-🐍 A simple template to start to code your own and personalized discord bot in Python
-programming language.
-
-Version: 6.1.0
-
-Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
-file except in compliance with the License. You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software distributed under
-the License is distributed on an " AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
-ANY KIND, either express or implied. See the License for the specific language
-governing permissions and limitations under the License.
-"""
-
 import logging
 import os
-from datetime import UTC, datetime
 from os import environ
 
 import discord
-import google.cloud.logging
 from dotenv import find_dotenv, load_dotenv
 
-from src.bot import Config, DiscordBot, LoggingFormatter
+from src.bot import Config, DiscordBot
+from src.observability.logging import add_logging_handlers
+from src.observability.monitoring import setup_datadog
 
 if __name__ == "__main__":
     load_dotenv(find_dotenv())
@@ -38,8 +19,10 @@ if __name__ == "__main__":
         int(environ["LOGGING_CHANNEL_ID"]),
         int(environ["DEVELOPER_DISCORD_ID"]),
         os.getenv("PRODUCTION", "False") == "True",
-        os.getenv("TOPGG_TOKEN", None),
-        os.getenv("GOOGLE_APPLICATION_CREDENTIALS", None),
+        os.getenv("TOPGG_TOKEN"),
+        os.getenv("GOOGLE_APPLICATION_CREDENTIALS"),
+        os.getenv("DD_API_KEY"),
+        os.getenv("DD_APP_KEY"),
     )
 
     logs_path = os.path.join(os.path.dirname(__file__), "logs")
@@ -49,35 +32,14 @@ if __name__ == "__main__":
     intents = discord.Intents.default()
     intents.members = True
 
-    logger = logging.getLogger("discord_bot")
-    logger.setLevel(logging.INFO)
+    discord_bot_logger = logging.getLogger("discord_bot")
+    discord_bot_logger.setLevel(logging.INFO)
 
-    # Console handler
-    console_handler = logging.StreamHandler()
-    console_handler.setFormatter(LoggingFormatter())
+    add_logging_handlers(config)
+    setup_datadog(config)
 
-    os.makedirs("src/logs", exist_ok=True)
-    # File handler
-    file_handler = logging.FileHandler(
-        filename=f"src/logs/{datetime.now(UTC).strftime('%d%m%Y-%H%M%S')}.log",
-        encoding="utf-8",
-        mode="w",
-    )
-    file_handler_formatter = logging.Formatter(
-        "[{asctime}] [{levelname:<8}] {name}: {message}", "%d-%m-%Y %H:%M:%S", style="{"
-    )
-    file_handler.setFormatter(file_handler_formatter)
-
-    logger.addHandler(console_handler)
-    logging.getLogger().addHandler(file_handler)
-
-    if config.GOOGLE_APPLICATION_CREDENTIALS:
-        google_cloud_client = google.cloud.logging.Client()
-        google_cloud_client.setup_logging()
-
-    bot = DiscordBot(intents, config, logger)
-    bot.run(config.DISCORD_TOKEN)
     try:
+        bot = DiscordBot(intents, config, discord_bot_logger)
         bot.run(config.DISCORD_TOKEN)
     except discord.errors.LoginFailure as e:
         print(f"Login failed: {e}")
