@@ -89,8 +89,7 @@ class LeetCodeMarkdownConverter(MarkdownConverter):
         self,
         el: bs4.element.Tag,
         text: str,
-        convert_as_inline: bool,
-        children_only: bool = False,
+        parent_tags: set | None = None,
     ) -> str:
         """Convert superscript `<sup>...</sup>` to `^` notation."""
         return f"^{text}"
@@ -99,8 +98,7 @@ class LeetCodeMarkdownConverter(MarkdownConverter):
         self,
         el: bs4.element.Tag,
         text,
-        convert_as_inline: bool,
-        children_only: bool = False,
+        parent_tags: set | None = None,
     ) -> str:
         """Remove images entirely."""
         return ""
@@ -109,8 +107,7 @@ class LeetCodeMarkdownConverter(MarkdownConverter):
         self,
         el: bs4.element.Tag,
         text: str,
-        convert_as_inline: bool,
-        children_only: bool = False,
+        parent_tags: set | None = None,
     ) -> str:
         """Remove style tags entirely."""
         return ""
@@ -119,8 +116,7 @@ class LeetCodeMarkdownConverter(MarkdownConverter):
         self,
         el: bs4.element.Tag,
         text: str,
-        convert_as_inline: bool,
-        children_only: bool = False,
+        parent_tags: set | None = None,
     ) -> str:
         """Convert code blocks while removing formatting inside them."""
         # Remove any nested formatting tags from code content
@@ -131,8 +127,7 @@ class LeetCodeMarkdownConverter(MarkdownConverter):
         self,
         el: bs4.element.Tag,
         text: str,
-        convert_as_inline: bool,
-        children_only: bool = False,
+        parent_tags: set | None = None,
     ) -> str:
         """Convert pre blocks while removing formatting inside them."""
         clean_text = self.__clean_code_content(text)
@@ -143,8 +138,7 @@ class LeetCodeMarkdownConverter(MarkdownConverter):
         n: int,
         el: bs4.element.Tag,
         text: str,
-        convert_as_inline: bool,
-        children_only: bool = False,
+        parent_tags: set | None = None,
     ) -> str:
         """Convert headers using ATX style."""
         return f"{'#' * n} {text}\n\n"
