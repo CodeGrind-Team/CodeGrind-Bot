@@ -33,6 +33,7 @@ from html2image import Html2Image
 from src.constants import GLOBAL_LEADERBOARD_ID
 from src.database.models import Profile, Server
 from src.database.setup import initialise_mongodb_connection
+from src.utils.channel_logging import DiscordChannelLogger
 from src.utils.dev import dev_commands
 from src.utils.http_client import HttpClient
 from src.utils.neetcode import NeetcodeSolutions
@@ -44,7 +45,6 @@ from src.utils.schedules import (
     schedule_update_zerotrac_ratings,
 )
 from src.utils.users import delete_user, unlink_user_from_server
-from utils.channel_logging import DiscordChannelLogger
 
 
 @dataclass

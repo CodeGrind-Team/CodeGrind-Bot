@@ -44,15 +44,15 @@ class ConsoleLoggingFormatter(logging.Formatter):
 
     def format(self, record) -> str:
         log_colour = self.COLOURS[record.levelno]
-        format = (
+        format_str = (
             "(black){asctime}(reset) (levelcolour){levelname:<8}(reset) "
             "(green){name}(reset) {message}"
         )
-        format = format.replace("(black)", self.black + self.bold)
-        format = format.replace("(reset)", self.reset)
-        format = format.replace("(levelcolour)", log_colour)
-        format = format.replace("(green)", self.green + self.bold)
-        formatter = logging.Formatter(format, "%Y-%m-%d %H:%M:%S", style="{")
+        format_str = format_str.replace("(black)", self.black + self.bold)
+        format_str = format_str.replace("(reset)", self.reset)
+        format_str = format_str.replace("(levelcolour)", log_colour)
+        format_str = format_str.replace("(green)", self.green + self.bold)
+        formatter = logging.Formatter(format_str, "%Y-%m-%d %H:%M:%S", style="{")
         return formatter.format(record)
 
 

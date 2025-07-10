@@ -32,7 +32,7 @@ The steps for setting up a testing version of the bot can be found in our [Setup
 
 Distributed under the GPL-3.0 License. See [LICENSE](/LICENSE) for more information.
 
-However, some files are licensed differently. Specifically, [`src/bot.py`](/src/bot.py) and [`src\observability\logging\handlers\console_logger.py`](/src/observability/logging/handlers/console_logger.py) files are licensed under the Apache License 2.0. These files include code from [Python-Discord-Bot-Template](https://github.com/kkrypt0nn/Python-Discord-Bot-Template) and require attribution.
+However, some files are licensed differently. Specifically, [`src/bot.py`](/src/bot.py) and [`src/observability/logging/handlers/console_logger.py`](/src/observability/logging/handlers/console_logger.py) files are licensed under the Apache License 2.0. These files include code from [Python-Discord-Bot-Template](https://github.com/kkrypt0nn/Python-Discord-Bot-Template) and require attribution.
 
 ## Acknowledgements
 

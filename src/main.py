@@ -5,9 +5,9 @@ from os import environ
 import discord
 from dotenv import find_dotenv, load_dotenv
 
-from observability.logging import add_logging_handlers
-from observability.monitoring import setup_datadog
 from src.bot import Config, DiscordBot
+from src.observability.logging import add_logging_handlers
+from src.observability.monitoring import setup_datadog
 
 if __name__ == "__main__":
     load_dotenv(find_dotenv())

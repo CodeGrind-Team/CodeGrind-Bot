@@ -9,7 +9,7 @@ def add_file_handler(config: Config) -> None:
     os.makedirs("src/logs", exist_ok=True)
 
     file_handler = logging.FileHandler(
-        filename=f"logs/{datetime.now(UTC).strftime('%d%m%Y-%H%M%S')}.log",
+        filename=f"src/logs/{datetime.now(UTC).strftime('%d%m%Y-%H%M%S')}.log",
         encoding="utf-8",
         mode="w",
     )
