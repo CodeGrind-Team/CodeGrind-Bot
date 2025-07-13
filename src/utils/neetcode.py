@@ -19,8 +19,9 @@ class NeetcodeSolution:
     difficulty: str
     video: str
     code: str
-    neetcode150: bool = False
     blind75: bool = False
+    neetcode150: bool = False
+    neetcode250: bool = False
 
 
 class NeetcodeSolutions:
@@ -107,8 +108,9 @@ class NeetcodeSolutions:
                     difficulty=solution["difficulty"],
                     video=solution["video"],
                     code=solution["code"],
-                    neetcode150=True if "neetcode150" in solution else False,
                     blind75=True if "blind75" in solution else False,
+                    neetcode150=True if "neetcode150" in solution else False,
+                    neetcode250=True if "neetcode250" in solution else False,
                 )
             except ValueError as e:
                 self.bot.logger.exception(
