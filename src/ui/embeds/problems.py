@@ -1,8 +1,9 @@
+import random
 from typing import TYPE_CHECKING
 
 import discord
 
-from src.constants import Difficulty
+from src.constants import Difficulty, ProblemList, GRIND_75_QUESTION_TITLES
 from src.ui.embeds.common import failure_embed
 from src.utils.problems import (
     fetch_daily_question,
@@ -37,9 +38,21 @@ async def search_question_embed(bot: "DiscordBot", search_text: str) -> discord.
 
 
 async def random_question_embed(
-    bot: "DiscordBot", difficulty: Difficulty
+    bot: "DiscordBot",
+    difficulty: Difficulty,
+    problem_list: ProblemList = ProblemList.LEETCODE_ALL,
 ) -> discord.Embed:
-    question_title = await fetch_random_question(bot, difficulty)
+    question_title: str | None = None
+
+    match problem_list:
+        case ProblemList.LEETCODE_ALL:
+            question_title = await fetch_random_question(bot, difficulty)
+        case ProblemList.GRIND_75:
+            question_title = random.choice(GRIND_75_QUESTION_TITLES)
+        case _:
+            question_title = random.choice(
+                tuple(bot.neetcode.problem_lists[problem_list])
+            )
 
     if not question_title:
         return question_error_embed()

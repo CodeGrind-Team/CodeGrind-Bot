@@ -5,7 +5,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-from src.constants import Difficulty
+from src.constants import Difficulty, ProblemList
 from src.middleware import defer_interaction
 from src.ui.embeds.problems import (
     daily_question_embed,
@@ -25,6 +25,14 @@ class ProblemsCog(commands.GroupCog, name="problem"):
         Medium = Difficulty.MEDIUM
         Hard = Difficulty.HARD
         Random = Difficulty.RANDOM
+
+    class ProblemListField(Enum):
+        LeetCode_All = ProblemList.LEETCODE_ALL
+        Grind_75 = ProblemList.GRIND_75
+        Blind_75 = ProblemList.BLIND_75
+        NeetCode_150 = ProblemList.NEETCODE_150
+        NeetCode_250 = ProblemList.NEETCODE_250
+        NeetCode_All = ProblemList.NEETCODE_ALL
 
     def __init__(self, bot: "DiscordBot") -> None:
         self.bot = bot
@@ -60,13 +68,17 @@ class ProblemsCog(commands.GroupCog, name="problem"):
         self,
         interaction: discord.Interaction,
         difficulty: DifficultyField = DifficultyField.Random,
+        problem_list: ProblemListField = ProblemListField.LeetCode_All,
     ) -> None:
         """
         Get a random LeetCode problem of your chosen difficulty
 
         :param difficulty: The desired difficulty level
+        :param problem_list: Grind 75, Blind 75, NeetCode 150, etc...
         """
-        embed = await random_question_embed(self.bot, difficulty.value)
+        embed = await random_question_embed(
+            self.bot, difficulty.value, problem_list.value
+        )
         await interaction.followup.send(embed=embed)
 
 
