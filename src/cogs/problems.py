@@ -27,8 +27,6 @@ class ProblemsCog(commands.GroupCog, name="problem"):
         Random = Difficulty.RANDOM
 
     class ProblemListField(Enum):
-        LeetCode_All = ProblemList.LEETCODE_ALL
-        Grind_75 = ProblemList.GRIND_75
         Blind_75 = ProblemList.BLIND_75
         NeetCode_150 = ProblemList.NEETCODE_150
         NeetCode_250 = ProblemList.NEETCODE_250
@@ -68,16 +66,16 @@ class ProblemsCog(commands.GroupCog, name="problem"):
         self,
         interaction: discord.Interaction,
         difficulty: DifficultyField = DifficultyField.Random,
-        problem_list: ProblemListField = ProblemListField.LeetCode_All,
+        problem_list: ProblemListField | None = None,
     ) -> None:
         """
         Get a random LeetCode problem of your chosen difficulty
 
         :param difficulty: The desired difficulty level
-        :param problem_list: Grind 75, Blind 75, NeetCode 150, etc...
+        :param problem_list: Blind 75, NeetCode 150, NeetCode 250, etc...
         """
         embed = await random_question_embed(
-            self.bot, difficulty.value, problem_list.value
+            self.bot, difficulty.value, problem_list.value if problem_list else None
         )
         await interaction.followup.send(embed=embed)
 

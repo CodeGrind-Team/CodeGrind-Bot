@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING
 
 import discord
 
-from src.constants import Difficulty, ProblemList, GRIND_75_QUESTION_TITLES
+from src.constants import Difficulty, NeetCodeBasedProblemList, ProblemList
 from src.ui.embeds.common import failure_embed
 from src.utils.problems import (
     fetch_daily_question,
@@ -40,19 +40,16 @@ async def search_question_embed(bot: "DiscordBot", search_text: str) -> discord.
 async def random_question_embed(
     bot: "DiscordBot",
     difficulty: Difficulty,
-    problem_list: ProblemList = ProblemList.LEETCODE_ALL,
+    problem_list: ProblemList | None = None,
 ) -> discord.Embed:
     question_title: str | None = None
 
-    match problem_list:
-        case ProblemList.LEETCODE_ALL:
-            question_title = await fetch_random_question(bot, difficulty)
-        case ProblemList.GRIND_75:
-            question_title = random.choice(GRIND_75_QUESTION_TITLES)
-        case _:
-            question_title = random.choice(
-                tuple(bot.neetcode.problem_lists[problem_list])
-            )
+    if not problem_list:
+        question_title = await fetch_random_question(bot, difficulty)
+    elif problem_list in NeetCodeBasedProblemList and problem_list in bot.problem_lists:
+        question_title = random.choice(tuple(bot.problem_lists[problem_list]))
+    else:
+        raise NotImplementedError
 
     if not question_title:
         return question_error_embed()
@@ -61,7 +58,10 @@ async def random_question_embed(
     return embed
 
 
-async def question_embed(bot: "DiscordBot", question_title: str) -> discord.Embed:
+async def question_embed(
+    bot: "DiscordBot",
+    question_title: str,
+) -> discord.Embed:
     info = await fetch_question_info(bot, question_title)
 
     if not info:
@@ -100,9 +100,28 @@ async def question_embed(bot: "DiscordBot", question_title: str) -> discord.Embe
             name="Zerotrac Rating: ", value=f"||{info.question_rating}||", inline=True
         )
 
+    problem_lists_in = sorted(
+        [
+            problem_list
+            for problem_list, question_titles in bot.problem_lists.items()
+            if question_title in question_titles
+        ],
+        key=lambda problem_list: problem_list.value,
+    )
+
+    problem_lists_text = ", ".join(
+        problem_list.value.replace("_", " ").title()
+        for problem_list in problem_lists_in
+    )
+
     embed.set_footer(
-        text=f"Accepted: {info.total_accepted}  |  Submissions: "
-        f"{info.total_submission}  |  Acceptance Rate: {info.ac_rate}"
+        text=(
+            f"Accepted: {info.total_accepted}  |  Submissions: "
+            f"{info.total_submission}  |  Acceptance Rate: {info.ac_rate}"
+            f"\n\nThis problem is part of: {problem_lists_text}"
+            if problem_lists_in
+            else ""
+        )
     )
 
     return embed

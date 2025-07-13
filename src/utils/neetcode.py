@@ -38,7 +38,7 @@ class NeetcodeSolutions:
         Updates the solutions.
         """
         self.solutions = await self.__fetch_neetcode_solutions()
-        self.problem_lists = self.__get_problem_lists(self.solutions)
+        self.__add_problem_lists()
         self.bot.logger.info("Updated NeetCode solutions")
 
     async def __fetch_neetcode_solutions(self) -> dict[str, NeetcodeSolution]:
@@ -112,9 +112,9 @@ class NeetcodeSolutions:
                     difficulty=solution["difficulty"],
                     video=solution["video"],
                     code=solution["code"],
-                    blind75=True if "blind75" in solution else False,
-                    neetcode150=True if "neetcode150" in solution else False,
-                    neetcode250=True if "neetcode250" in solution else False,
+                    blind75="blind75" in solution,
+                    neetcode150="neetcode150" in solution,
+                    neetcode250="neetcode250" in solution,
                 )
             except ValueError as e:
                 self.bot.logger.exception(
@@ -123,23 +123,18 @@ class NeetcodeSolutions:
 
         return link_to_solution
 
-    @staticmethod
-    def __get_problem_lists(
-        solutions: dict[str, NeetcodeSolution],
-    ) -> DefaultDict[ProblemList, set[str]]:
-        problem_lists: DefaultDict[ProblemList, set[str]] = defaultdict(set)
+    def __add_problem_lists(self) -> None:
+        """Adds the NeetCode based problem lists to the bot's problem lists."""
 
-        for problem in solutions.values():
+        for problem in self.solutions.values():
             if problem.blind75:
-                problem_lists[ProblemList.BLIND_75].add(problem.title)
+                self.bot.problem_lists[ProblemList.BLIND_75].add(problem.title)
             if problem.neetcode150:
-                problem_lists[ProblemList.NEETCODE_150].add(problem.title)
+                self.bot.problem_lists[ProblemList.NEETCODE_150].add(problem.title)
             if problem.neetcode250:
-                problem_lists[ProblemList.NEETCODE_250].add(problem.title)
+                self.bot.problem_lists[ProblemList.NEETCODE_250].add(problem.title)
 
-            problem_lists[ProblemList.NEETCODE_ALL].add(problem.title)
-
-        return problem_lists
+            self.bot.problem_lists[ProblemList.NEETCODE_ALL].add(problem.title)
 
 
 def neetcode_solution_github_link(github_code_filename: str, language: Language) -> str:

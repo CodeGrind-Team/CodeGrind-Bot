@@ -53,12 +53,18 @@ class Language(Enum):
 
 
 class ProblemList(Enum):
-    LEETCODE_ALL = "leetcode_all"
-    GRIND_75 = "grind_75"
     BLIND_75 = "blind_75"
     NEETCODE_150 = "neetcode_150"
     NEETCODE_250 = "neetcode_250"
     NEETCODE_ALL = "neetcode_all"
+
+
+NeetCodeBasedProblemList = {
+    ProblemList.BLIND_75,
+    ProblemList.NEETCODE_150,
+    ProblemList.NEETCODE_250,
+    ProblemList.NEETCODE_ALL,
+}
 
 
 class StatsCardExtensions(Enum):
@@ -199,81 +205,3 @@ STREAK_ROLES = {
 }
 
 VERIFIED_ROLE = "CodeGrind Verified"
-
-GRIND_75_QUESTION_TITLES = {
-    "two-sum",
-    "longest-substring-without-repeating-characters",
-    "longest-palindromic-substring",
-    "clone-graph",
-    "ransom-note",
-    "string-to-integer-atoi",
-    "container-with-most-water",
-    "word-break",
-    "linked-list-cycle",
-    "middle-of-the-linked-list",
-    "3sum",
-    "rotting-oranges",
-    "letter-combinations-of-a-phone-number",
-    "lru-cache",
-    "valid-parentheses",
-    "merge-two-sorted-lists",
-    "evaluate-reverse-polish-notation",
-    "merge-k-sorted-lists",
-    "first-bad-version",
-    "longest-palindrome",
-    "binary-search",
-    "min-stack",
-    "time-based-key-value-store",
-    "01-matrix",
-    "diameter-of-binary-tree",
-    "partition-equal-subset-sum",
-    "search-in-rotated-sorted-array",
-    "combination-sum",
-    "find-median-from-data-stream",
-    "majority-element",
-    "trapping-rain-water",
-    "serialize-and-deserialize-binary-tree",
-    "permutations",
-    "maximum-subarray",
-    "spiral-matrix",
-    "minimum-height-trees",
-    "merge-intervals",
-    "insert-interval",
-    "find-all-anagrams-in-a-string",
-    "unique-paths",
-    "coin-change",
-    "add-binary",
-    "climbing-stairs",
-    "binary-tree-right-side-view",
-    "number-of-islands",
-    "maximum-profit-in-job-scheduling",
-    "sort-colors",
-    "minimum-window-substring",
-    "subsets",
-    "word-search",
-    "reverse-linked-list",
-    "course-schedule",
-    "implement-trie-prefix-tree",
-    "accounts-merge",
-    "largest-rectangle-in-histogram",
-    "contains-duplicate",
-    "flood-fill",
-    "basic-calculator",
-    "validate-binary-search-tree",
-    "invert-binary-tree",
-    "binary-tree-level-order-traversal",
-    "kth-smallest-element-in-a-bst",
-    "maximum-depth-of-binary-tree",
-    "construct-binary-tree-from-preorder-and-inorder-traversal",
-    "implement-queue-using-stacks",
-    "lowest-common-ancestor-of-a-binary-search-tree",
-    "lowest-common-ancestor-of-a-binary-tree",
-    "task-scheduler",
-    "balanced-binary-tree",
-    "product-of-array-except-self",
-    "valid-anagram",
-    "k-closest-points-to-origin",
-    "best-time-to-buy-and-sell-stock",
-    "valid-palindrome",
-    "word-ladder",
-)

@@ -20,8 +20,9 @@ governing permissions and limitations under the License.
 import logging
 import os
 import platform
+from collections import defaultdict
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, DefaultDict
 
 import aiohttp
 import discord
@@ -30,7 +31,7 @@ from beanie.odm.operators.update.general import Set
 from discord.ext import commands
 from html2image import Html2Image
 
-from src.constants import GLOBAL_LEADERBOARD_ID
+from src.constants import GLOBAL_LEADERBOARD_ID, ProblemList
 from src.database.models import Profile, Server
 from src.database.setup import initialise_mongodb_connection
 from src.utils.channel_logging import DiscordChannelLogger
@@ -81,6 +82,9 @@ class DiscordBot(commands.Bot):
         self.channel_logger = DiscordChannelLogger(self, self.config.LOGGING_CHANNEL_ID)
         self.ratings = Ratings(self)
         self.neetcode = NeetcodeSolutions(self)
+        # {problem_list: {problem_id,}}
+        self.problem_lists: DefaultDict[ProblemList, set[str]] = defaultdict(set)
+
         self._http_client: HttpClient | None = None
         self._topggpy: topgg.client.DBLClient | None = None
 
