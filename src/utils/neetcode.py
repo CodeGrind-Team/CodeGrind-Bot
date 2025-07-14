@@ -1,9 +1,10 @@
 import json
 import re
+from collections import defaultdict
 from dataclasses import dataclass
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, DefaultDict
 
-from src.constants import Language
+from src.constants import Language, ProblemList
 
 if TYPE_CHECKING:
     # To prevent circular imports
@@ -19,8 +20,9 @@ class NeetcodeSolution:
     difficulty: str
     video: str
     code: str
-    neetcode150: bool = False
     blind75: bool = False
+    neetcode150: bool = False
+    neetcode250: bool = False
 
 
 class NeetcodeSolutions:
@@ -28,22 +30,25 @@ class NeetcodeSolutions:
         self.bot = bot
         # {link/question-title-slug: NeetcodeSolution}
         self.solutions: dict[str, NeetcodeSolution] = {}
+        # {problem_list: {problem_id,}}
+        self.problem_lists: DefaultDict[ProblemList, set[str]] = defaultdict(set)
 
     async def update_solutions(self) -> None:
         """
         Updates the solutions.
         """
-        self.solutions = await self._fetch_neetcode_solutions()
+        self.solutions = await self.__fetch_neetcode_solutions()
+        self.__add_problem_lists()
         self.bot.logger.info("Updated NeetCode solutions")
 
-    async def _fetch_neetcode_solutions(self) -> dict[str, NeetcodeSolution]:
+    async def __fetch_neetcode_solutions(self) -> dict[str, NeetcodeSolution]:
         """
         Fetches the NeetCode solutions data.
 
         :return: The dictionary mapping from link/question-title-slug to
         `NeetcodeSolution`.
         """
-        main_js_filename = await self._retrieve_neetcode_main_js_filename()
+        main_js_filename = await self.__retrieve_neetcode_main_js_filename()
 
         if not (
             response_data := await self.bot.http_client.fetch_data(
@@ -55,7 +60,7 @@ class NeetcodeSolutions:
         solutions = self._parse_main_js(response_data)
         return solutions
 
-    async def _retrieve_neetcode_main_js_filename(self) -> str | None:
+    async def __retrieve_neetcode_main_js_filename(self) -> str | None:
         """
         Fetches https://neetcode.io/ and retrieves the filename of the
         main.[a-z0-9]{16}.js file.
@@ -107,8 +112,9 @@ class NeetcodeSolutions:
                     difficulty=solution["difficulty"],
                     video=solution["video"],
                     code=solution["code"],
-                    neetcode150=True if "neetcode150" in solution else False,
-                    blind75=True if "blind75" in solution else False,
+                    blind75="blind75" in solution,
+                    neetcode150="neetcode150" in solution,
+                    neetcode250="neetcode250" in solution,
                 )
             except ValueError as e:
                 self.bot.logger.exception(
@@ -116,6 +122,19 @@ class NeetcodeSolutions:
                 )
 
         return link_to_solution
+
+    def __add_problem_lists(self) -> None:
+        """Adds the NeetCode based problem lists to the bot's problem lists."""
+
+        for problem in self.solutions.values():
+            if problem.blind75:
+                self.bot.problem_lists[ProblemList.BLIND_75].add(problem.title)
+            if problem.neetcode150:
+                self.bot.problem_lists[ProblemList.NEETCODE_150].add(problem.title)
+            if problem.neetcode250:
+                self.bot.problem_lists[ProblemList.NEETCODE_250].add(problem.title)
+
+            self.bot.problem_lists[ProblemList.NEETCODE_ALL].add(problem.title)
 
 
 def neetcode_solution_github_link(github_code_filename: str, language: Language) -> str:

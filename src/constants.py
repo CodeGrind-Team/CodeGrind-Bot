@@ -52,6 +52,21 @@ class Language(Enum):
     DART = "dart"
 
 
+class ProblemList(Enum):
+    BLIND_75 = "blind_75"
+    NEETCODE_150 = "neetcode_150"
+    NEETCODE_250 = "neetcode_250"
+    NEETCODE_ALL = "neetcode_all"
+
+
+NeetCodeBasedProblemList = {
+    ProblemList.BLIND_75,
+    ProblemList.NEETCODE_150,
+    ProblemList.NEETCODE_250,
+    ProblemList.NEETCODE_ALL,
+}
+
+
 class StatsCardExtensions(Enum):
     ACTIVITY = "activity"
     HEATMAP = "heatmap"
