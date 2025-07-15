@@ -1,14 +1,15 @@
 import asyncio
 import io
-import os
+import uuid
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
 import discord
-import requests
 from beanie.odm.operators.update.general import Inc, Set
 from beanie.operators import In
 from PIL import Image, UnidentifiedImageError
+from playwright.async_api import Error as PlaywrightError
+from playwright.async_api import FloatRect
 
 from src.constants import Period, StatsCardExtensions
 from src.database.models import (
@@ -21,7 +22,6 @@ from src.database.models import (
     Submissions,
     User,
 )
-from src.utils.common import to_thread
 from src.utils.leaderboards import all_users_scores_and_wins
 from src.utils.problems import fetch_problems_solved_and_rank
 
@@ -225,14 +225,12 @@ async def update_all_user_stats(
         bot.logger.info("All users wins updated")
 
 
-@to_thread
-def stats_card(
+async def stats_card(
     bot: "DiscordBot",
     leetcode_id: str,
-    filename: str,
     extension: StatsCardExtensions,
     display_url: bool,
-) -> discord.File | None:
+) -> tuple[str, discord.File] | None:
     width = 500
     height = 200
     if extension in (StatsCardExtensions.ACTIVITY, StatsCardExtensions.CONTEST):
@@ -243,50 +241,68 @@ def stats_card(
     url = f"""https://leetcard.jacoblin.cool/{leetcode_id}?theme=dark&animation=false&
     width={width}&height={height}&ext={extension.value}"""
 
-    # Making sure the website is reachable before running hti.screenshot()
-    # as the method will stall if url isn't reachable.
-    try:
-        response = requests.get(url)
-        response.raise_for_status()
+    return await capture_stats_card(bot, display_url, url, width, height)
 
-    except requests.exceptions.RequestException:
+
+async def capture_stats_card(
+    bot: "DiscordBot",
+    display_url: bool,
+    url: str,
+    width: int,
+    height: int,
+) -> tuple[str, discord.File] | None:
+    context = await bot.browser.new_context()
+    try:
+        page = await context.new_page()
+        await page.goto(url)
+
+        image_bytes = await page.screenshot(
+            clip=FloatRect(x=0, y=0, width=width, height=height)
+        )
+
+    except PlaywrightError as e:
+        bot.logger.exception(f"An error occurred while capturing the stats card: {e}")
         return
 
-    paths = bot.html2image.screenshot(url=url, size=(width, height))
+    finally:
+        await context.close()
+
+    screenshot_buffer = io.BytesIO(image_bytes)
 
     if not display_url:
-        anonymise_stats_card(bot, paths[0])
+        if not (
+            anonymised_screenshot_buffer := anonymise_stats_card(bot, screenshot_buffer)
+        ):
+            return
 
-    with open(paths[0], "rb") as f:
-        # Read the file contents.
-        data = f.read()
-        # Create a BytesIO object from the data.
-        image_binary = io.BytesIO(data)
-        # Move the cursor to the beginning.
-        image_binary.seek(0)
+        screenshot_buffer = anonymised_screenshot_buffer
 
-        file = discord.File(fp=image_binary, filename=f"{filename}.png")
+    screenshot_buffer.seek(0)
 
-    os.remove(paths[0])
-
-    return file
+    filename = str(uuid.uuid4())
+    return filename, discord.File(fp=screenshot_buffer, filename=f"{filename}.png")
 
 
-def anonymise_stats_card(bot: "DiscordBot", path: str) -> None:
+def anonymise_stats_card(
+    bot: "DiscordBot", image_bytes: io.BytesIO
+) -> io.BytesIO | None:
     """
     Anonymise the stats card at the given path using Pillow (PIL).
 
     This function modifies any given stats card to remove the user's
     LeetCode ID from the image if they want to be anonymous.
 
-    :param path: The path to the stats card image.
+    :param image_bytes: The stats card image as a byte stream.
     """
     try:
-        stats_card = Image.open(path)
+        stats_card = Image.open(image_bytes)
         hidden_banner = Image.open("src/ui/assets/stats_card_hidden_banner.png")
         region = hidden_banner.crop((0, 0, 435, 30))
         stats_card.paste(region, (60, 20, 495, 50))
-        stats_card.save(path)
+
+        output_buffer = io.BytesIO()
+        stats_card.save(output_buffer, format="PNG")
+        return output_buffer
 
     except UnidentifiedImageError as e:
         bot.logger.exception(

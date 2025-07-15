@@ -11,6 +11,7 @@ from src.constants import DifficultyScore
 def to_thread(func: Callable) -> Callable:
     """
     Decorator to run a function in a separate thread.
+    Useful for blocking operations that should not block the event loop.
 
     :param func: The function to run in a separate thread.
 

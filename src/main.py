@@ -15,7 +15,6 @@ if __name__ == "__main__":
     config = Config(
         environ["DISCORD_TOKEN"],
         environ["MONGODB_URI"],
-        environ["BROWSER_EXECUTABLE_PATH"],
         int(environ["LOGGING_CHANNEL_ID"]),
         int(environ["DEVELOPER_DISCORD_ID"]),
         os.getenv("PRODUCTION", "False") == "True",
