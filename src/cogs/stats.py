@@ -23,7 +23,7 @@ class StatsCog(commands.Cog):
         Activity = StatsCardExtensions.ACTIVITY
         Heatmap = StatsCardExtensions.HEATMAP
         Contest = StatsCardExtensions.CONTEST
-        Default = StatsCardExtensions.NONE
+        Stats_Only = StatsCardExtensions.NONE
 
     def __init__(self, bot: "DiscordBot") -> None:
         self.bot = bot

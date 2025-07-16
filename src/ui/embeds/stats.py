@@ -1,5 +1,3 @@
-import random
-import string
 from typing import TYPE_CHECKING
 
 import discord
@@ -20,13 +18,12 @@ async def stats_embed(
     display_url: bool,
     extension: StatsCardExtensions,
 ) -> tuple[discord.Embed, discord.File | None]:
-    # Use a randomised filename for privacy.
-    filename = "".join(random.choices(string.ascii_letters + string.digits, k=25))
+    file_created = await stats_card(bot, leetcode_id, extension, display_url)
 
-    file = await stats_card(bot, leetcode_id, filename, extension, display_url)
-
-    if not file:
+    if not file_created:
         return error_embed(), None
+
+    filename, file = file_created
 
     embed = discord.Embed(
         title=display_name,

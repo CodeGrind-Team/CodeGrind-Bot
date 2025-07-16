@@ -29,7 +29,7 @@ import discord
 import topgg
 from beanie.odm.operators.update.general import Set
 from discord.ext import commands
-from html2image import Html2Image
+from playwright.async_api import Browser, Playwright, async_playwright
 
 from src.constants import GLOBAL_LEADERBOARD_ID, ProblemList
 from src.database.models import Profile, Server
@@ -52,7 +52,6 @@ from src.utils.users import delete_user, unlink_user_from_server
 class Config:
     DISCORD_TOKEN: str
     MONGODB_URI: str
-    BROWSER_EXECUTABLE_PATH: str
     LOGGING_CHANNEL_ID: int
     DEVELOPER_DISCORD_ID: int
     PRODUCTION: bool
@@ -78,7 +77,6 @@ class DiscordBot(commands.Bot):
         self.tree.on_error = self.tree_on_error
         self.config = config
         self.logger = logger
-        self.html2image = Html2Image(browser_executable=config.BROWSER_EXECUTABLE_PATH)
         self.channel_logger = DiscordChannelLogger(self, self.config.LOGGING_CHANNEL_ID)
         self.ratings = Ratings(self)
         self.neetcode = NeetcodeSolutions(self)
@@ -87,6 +85,8 @@ class DiscordBot(commands.Bot):
 
         self._http_client: HttpClient | None = None
         self._topggpy: topgg.client.DBLClient | None = None
+        self._browser: Browser | None = None
+        self._playwright: Playwright | None = None
 
     @property
     def http_client(self) -> HttpClient:
@@ -99,6 +99,18 @@ class DiscordBot(commands.Bot):
         if self._topggpy is None:
             raise RuntimeError("setup_hook() must be called first")
         return self._topggpy
+
+    @property
+    def playwright(self) -> Playwright:
+        if self._playwright is None:
+            raise RuntimeError("setup_hook() must be called first")
+        return self._playwright
+
+    @property
+    def browser(self) -> Browser:
+        if self._browser is None:
+            raise RuntimeError("setup_hook() must be called first")
+        return self._browser
 
     async def on_autopost_success(self) -> None:
         """
@@ -158,6 +170,12 @@ class DiscordBot(commands.Bot):
         await initialise_mongodb_connection(
             self.config.MONGODB_URI, GLOBAL_LEADERBOARD_ID
         )
+
+        self._playwright = await async_playwright().start()
+        self._browser = await self._playwright.chromium.launch(
+            headless=True, chromium_sandbox=False
+        )
+
         await self.load_cogs()
         await self.init_topgg()
 
@@ -272,6 +290,8 @@ class DiscordBot(commands.Bot):
         """
         try:
             await self.http_client.session.close()
+            await self.browser.close()
+            await self.playwright.stop()
             await super().close()
         finally:
             if self.config.PRODUCTION:
