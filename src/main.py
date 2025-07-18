@@ -12,6 +12,8 @@ from src.observability.monitoring import setup_datadog
 if __name__ == "__main__":
     load_dotenv(find_dotenv())
 
+    google_application_credentials = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
+
     config = Config(
         environ["DISCORD_TOKEN"],
         environ["MONGODB_URI"],
@@ -19,7 +21,12 @@ if __name__ == "__main__":
         int(environ["DEVELOPER_DISCORD_ID"]),
         os.getenv("PRODUCTION", "False") == "True",
         os.getenv("TOPGG_TOKEN"),
-        os.getenv("GOOGLE_APPLICATION_CREDENTIALS"),
+        (
+            google_application_credentials
+            if google_application_credentials is not None
+            and os.path.isfile(google_application_credentials)
+            else None
+        ),
         os.getenv("DD_API_KEY"),
         os.getenv("DD_APP_KEY"),
     )
