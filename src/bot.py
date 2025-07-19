@@ -29,6 +29,7 @@ import aiohttp
 import discord
 import topgg
 from beanie.odm.operators.update.general import Set
+from datadog.dogstatsd.base import statsd
 from discord.ext import commands
 from playwright.async_api import Browser, Playwright, async_playwright
 
@@ -207,6 +208,10 @@ class DiscordBot(commands.Bot):
                 f"Executed /{executed_command} command by {interaction.user.name} "
                 f"(ID: {interaction.user.id}) in DMs"
             )
+
+        statsd.increment(
+            "discord.command.executed", tags=["command:" + executed_command]
+        )
 
     async def on_guild_remove(self, guild: discord.Guild) -> None:
         """
