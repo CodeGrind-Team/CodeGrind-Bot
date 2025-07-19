@@ -20,6 +20,7 @@ governing permissions and limitations under the License.
 import logging
 import os
 import platform
+import sys
 from collections import defaultdict
 from dataclasses import dataclass
 from typing import Any, DefaultDict
@@ -28,6 +29,7 @@ import aiohttp
 import discord
 import topgg
 from beanie.odm.operators.update.general import Set
+from datadog.dogstatsd.base import statsd
 from discord.ext import commands
 from playwright.async_api import Browser, Playwright, async_playwright
 
@@ -207,6 +209,10 @@ class DiscordBot(commands.Bot):
                 f"(ID: {interaction.user.id}) in DMs"
             )
 
+        statsd.increment(
+            "discord.command.executed", tags=["command:" + executed_command]
+        )
+
     async def on_guild_remove(self, guild: discord.Guild) -> None:
         """
         Called when a guild gets deleted.
@@ -288,6 +294,12 @@ class DiscordBot(commands.Bot):
         Closes the connection to Discord, gracefully closes the session, and reboots
         the device.
         """
+        self.logger.fatal(
+            "Closing bot." "\nTriggering container restart."
+            if self.config.PRODUCTION
+            else ""
+        )
+
         try:
             await self.http_client.session.close()
             await self.browser.close()
@@ -295,7 +307,7 @@ class DiscordBot(commands.Bot):
             await super().close()
         finally:
             if self.config.PRODUCTION:
-                os.system("sudo reboot")
+                sys.exit(1)
 
     async def on_error(self, event_method: str, /, *args: Any, **kwargs: Any) -> None:
         """
@@ -304,9 +316,7 @@ class DiscordBot(commands.Bot):
         Currently this causes an outage, and therefore will log the error and restart
         the bot.
         """
-        self.logger.critical(
-            "Critical error in %s.\nBot is closing/restarting.", event_method
-        )
+        self.logger.critical("Critical error in %s.", event_method)
         await self.close()
 
     @staticmethod
