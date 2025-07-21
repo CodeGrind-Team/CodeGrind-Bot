@@ -42,7 +42,9 @@ if __name__ == "__main__":
     discord_bot_logger.setLevel(logging.INFO)
 
     add_logging_handlers(config)
-    setup_datadog(config)
+
+    if config.PRODUCTION:
+        setup_datadog(config)
 
     try:
         bot = DiscordBot(intents, config, discord_bot_logger)
