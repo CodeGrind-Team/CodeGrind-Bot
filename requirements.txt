@@ -4,7 +4,7 @@ aiosignal==1.4.0
 annotated-types==0.7.0
 attrs==25.3.0
 backoff==2.2.1
-beanie==2.0.0
+beanie==1.30.0
 beautifulsoup4==4.13.4
 cachetools==5.5.2
 certifi==2025.6.15
@@ -30,7 +30,7 @@ grpcio-status==1.73.0
 idna==3.10
 importlib_metadata==8.7.0
 JSON-log-formatter==1.1.1
-lazy-model==0.3.0
+lazy-model==0.2.0
 markdownify==1.1.0
 motor==3.7.1
 multidict==6.4.4
