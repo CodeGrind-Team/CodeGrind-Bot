@@ -215,10 +215,10 @@ async def update_all_user_stats(
     for completed_task in asyncio.as_completed(tasks):
         await completed_task
         counter += 1
-        if counter % 200 == 0 or counter == total_users:
-            bot.logger.info(f"{counter} / {total_users} users stats updated")
+        # if counter % 200 == 0 or counter == total_users:
+        #     bot.logger.info(f"{counter} / {total_users} users stats updated")
 
-    bot.logger.info("All users stats updated")
+    bot.logger.info(f"All {total_users} users stats updated")
 
     if reset_day or reset_week or reset_month:
         await update_wins(reset_day, reset_week, reset_month)
