@@ -1,8 +1,16 @@
 from src.bot import Config
 
-from .handlers import add_console_handler, add_file_handler, add_json_handler
+from .handlers import (
+    add_console_handler,
+    add_file_handler,
+    add_gcp_handler,
+)
 
-PRODUCTION_HANDLERS = [add_json_handler]
+PRODUCTION_HANDLERS = [
+    # Re-add once fixed: add_json_handler
+    add_console_handler,
+    add_gcp_handler,
+]
 NON_PRODUCTION_HANDLERS = [
     add_console_handler,
     add_file_handler,
