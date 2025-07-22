@@ -30,7 +30,7 @@ import aiohttp
 import discord
 import topgg
 from beanie.odm.operators.update.general import Set
-from datadog.dogstatsd.base import statsd
+from datadog.dogstatsd.base import DogStatsd, statsd
 from discord.ext import commands
 from playwright.async_api import Browser, Playwright, async_playwright
 
@@ -151,12 +151,6 @@ class DiscordBot(commands.Bot):
                         f"Failed to load extension {extension}\n{exception}"
                     )
 
-    async def on_ready(self) -> None:
-        """
-        Called when the client is done preparing the data received from Discord.
-        """
-        self.logger.info("Ready")
-
     async def setup_hook(self) -> None:
         """
         Called only once to setup the bot.
@@ -186,6 +180,13 @@ class DiscordBot(commands.Bot):
         schedule_update_neetcode_solutions.start(self)
         schedule_question_and_stats_update.start(self)
         schedule_prune_members_and_guilds.start(self)
+
+    async def on_ready(self) -> None:
+        """
+        Called when the client is done preparing the data received from Discord.
+        """
+        self.logger.info("Bot is ready.")
+        statsd.service_check("discord.bot.status", DogStatsd.OK)
 
     async def on_interaction(self, interaction: discord.Interaction) -> None:
         """
@@ -304,6 +305,15 @@ class DiscordBot(commands.Bot):
 
         await dev_commands(self, message)
 
+    async def on_disconnect(self) -> None:
+        """
+        Called when the client has disconnected from Discord, or a connection attempt
+        to Discord has failed. This could happen either through the internet being
+        disconnected, explicit calls to close, or Discord terminating the connection
+        one way or the other.
+        """
+        statsd.service_check("discord.bot.status", DogStatsd.CRITICAL)
+
     async def close(self) -> None:
         """
         Closes the connection to Discord, gracefully closes the session, and reboots
@@ -314,7 +324,7 @@ class DiscordBot(commands.Bot):
             if self.config.PRODUCTION
             else ""
         )
-        statsd.increment("discord.bot.closed")
+        statsd.service_check("discord.bot.status", DogStatsd.CRITICAL)
 
         try:
             await self.http_client.session.close()
@@ -333,9 +343,7 @@ class DiscordBot(commands.Bot):
         the bot.
         """
         self.logger.critical("Critical error in %s.", event_method)
-        statsd.increment(
-            "discord.bot.error", tags=["level:critical", "event:" + event_method]
-        )
+        statsd.service_check("discord.bot.status", DogStatsd.CRITICAL)
 
         await self.close()
 
