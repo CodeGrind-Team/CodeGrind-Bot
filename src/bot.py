@@ -23,13 +23,14 @@ import platform
 import sys
 from collections import defaultdict
 from dataclasses import dataclass
+from datetime import UTC, datetime
 from typing import Any, DefaultDict
 
 import aiohttp
 import discord
 import topgg
 from beanie.odm.operators.update.general import Set
-from datadog.dogstatsd.base import statsd
+from datadog.dogstatsd.base import DogStatsd, statsd
 from discord.ext import commands
 from playwright.async_api import Browser, Playwright, async_playwright
 
@@ -150,12 +151,6 @@ class DiscordBot(commands.Bot):
                         f"Failed to load extension {extension}\n{exception}"
                     )
 
-    async def on_ready(self) -> None:
-        """
-        Called when the client is done preparing the data received from Discord.
-        """
-        self.logger.info("Ready")
-
     async def setup_hook(self) -> None:
         """
         Called only once to setup the bot.
@@ -186,6 +181,13 @@ class DiscordBot(commands.Bot):
         schedule_question_and_stats_update.start(self)
         schedule_prune_members_and_guilds.start(self)
 
+    async def on_ready(self) -> None:
+        """
+        Called when the client is done preparing the data received from Discord.
+        """
+        self.logger.info("Bot is ready.")
+        statsd.service_check("discord.bot.status", DogStatsd.OK)
+
     async def on_interaction(self, interaction: discord.Interaction) -> None:
         """
         The code in this event is executed every time a normal command has been
@@ -210,7 +212,13 @@ class DiscordBot(commands.Bot):
             )
 
         statsd.increment(
-            "discord.command.executed", tags=["command:" + executed_command]
+            "discord.commands.count",
+            tags=["command:" + executed_command],
+        )
+        statsd.timing(
+            "discord.commands.duration",
+            (datetime.now(UTC) - interaction.created_at).total_seconds(),
+            tags=["command:" + executed_command],
         )
 
     async def on_guild_remove(self, guild: discord.Guild) -> None:
@@ -218,21 +226,19 @@ class DiscordBot(commands.Bot):
         Called when a guild gets deleted.
         Delete the server and all it's profiles.
         """
+        await Profile.find_many(Profile.server_id == guild.id).delete()
+        await Server.find_one(Server.id == guild.id).delete()
+
         self.logger.info(
             f"Guild {guild.name} (ID: {guild.id}) discord account removed",
         )
-        await Profile.find_many(Profile.server_id == guild.id).delete()
-        await Server.find_one(Server.id == guild.id).delete()
+        statsd.increment("discord.guilds.removed")
 
     async def on_raw_member_remove(self, payload: discord.RawMemberRemoveEvent) -> None:
         """
         Called when a member leaves a guild.
         Delete the profile of the user.
         """
-        self.logger.info(
-            f"Member {payload.user.name} (ID: {payload.user.id}) in Guild "
-            f"(ID: {payload.guild_id}) discord account removed",
-        )
         await unlink_user_from_server(payload.guild_id, payload.user.id)
 
         db_profiles = await Profile.find_many(
@@ -242,6 +248,12 @@ class DiscordBot(commands.Bot):
 
         if len(db_profiles) == 0:
             await delete_user(payload.user.id)
+
+        self.logger.info(
+            f"Member {payload.user.name} (ID: {payload.user.id}) in Guild "
+            f"(ID: {payload.guild_id}) discord account removed",
+        )
+        statsd.increment("discord.guilds.members.removed")
 
     async def on_member_update(
         self, before: discord.Member, after: discord.Member
@@ -260,6 +272,8 @@ class DiscordBot(commands.Bot):
             Set({Profile.preference.name: after.display_name})
         )  # type: ignore
 
+        statsd.increment("discord.guilds.members.updated")
+
     async def on_user_update(self, before: discord.User, after: discord.User) -> None:
         """
         Called a user updated their account information, such as username.
@@ -275,6 +289,8 @@ class DiscordBot(commands.Bot):
             Set({Profile.preference.name: after.display_name})
         )  # type: ignore
 
+        statsd.increment("discord.users.updated")
+
     async def on_message(self, message: discord.Message) -> None:
         """
         Called whenever a message is sent. However, due to not having messages intent,
@@ -289,6 +305,15 @@ class DiscordBot(commands.Bot):
 
         await dev_commands(self, message)
 
+    async def on_disconnect(self) -> None:
+        """
+        Called when the client has disconnected from Discord, or a connection attempt
+        to Discord has failed. This could happen either through the internet being
+        disconnected, explicit calls to close, or Discord terminating the connection
+        one way or the other.
+        """
+        statsd.service_check("discord.bot.status", DogStatsd.CRITICAL)
+
     async def close(self) -> None:
         """
         Closes the connection to Discord, gracefully closes the session, and reboots
@@ -299,6 +324,7 @@ class DiscordBot(commands.Bot):
             if self.config.PRODUCTION
             else ""
         )
+        statsd.service_check("discord.bot.status", DogStatsd.CRITICAL)
 
         try:
             await self.http_client.session.close()
@@ -317,6 +343,8 @@ class DiscordBot(commands.Bot):
         the bot.
         """
         self.logger.critical("Critical error in %s.", event_method)
+        statsd.service_check("discord.bot.status", DogStatsd.CRITICAL)
+
         await self.close()
 
     @staticmethod
@@ -339,6 +367,8 @@ class DiscordBot(commands.Bot):
                 colour=0xE02B2B,
             )
             await interaction.response.send_message(embed=embed)
+            statsd.increment("discord.commands.error", tags=["error:cooldown"])
+
         elif isinstance(error, discord.app_commands.errors.MissingPermissions):
             embed = discord.Embed(
                 description="You are missing the permission(s) `"
@@ -347,6 +377,10 @@ class DiscordBot(commands.Bot):
                 colour=0xE02B2B,
             )
             await interaction.response.send_message(embed=embed)
+            statsd.increment(
+                "discord.commands.error", tags=["error:member_permissions"]
+            )
+
         elif isinstance(error, discord.app_commands.errors.BotMissingPermissions):
             embed = discord.Embed(
                 description="I am missing the permission(s) `"
@@ -355,5 +389,7 @@ class DiscordBot(commands.Bot):
                 colour=0xE02B2B,
             )
             await interaction.response.send_message(embed=embed)
+            statsd.increment("discord.commands.error", tags=["error:bot_permissions"])
+
         else:
             raise error

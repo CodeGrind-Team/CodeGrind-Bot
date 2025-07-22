@@ -1,5 +1,7 @@
+import asyncio
 import logging
 import os
+import signal
 from os import environ
 
 import discord
@@ -9,7 +11,17 @@ from src.bot import Config, DiscordBot
 from src.observability.logging import add_logging_handlers
 from src.observability.monitoring import setup_datadog
 
-if __name__ == "__main__":
+
+async def shutdown(
+    signal: signal.Signals, loop: asyncio.AbstractEventLoop, bot: DiscordBot
+) -> None:
+    logging.info(f"Received exit signal {signal.name}.")
+    await bot.close()
+    logging.info("Bot has been shut down gracefully.")
+    loop.stop()
+
+
+async def main() -> None:
     load_dotenv(find_dotenv())
 
     google_application_credentials = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
@@ -46,8 +58,20 @@ if __name__ == "__main__":
     if config.PRODUCTION:
         setup_datadog(config)
 
+    bot = DiscordBot(intents, config, discord_bot_logger)
+
+    # Gracefully handle shutdown signals.
+    loop = asyncio.get_running_loop()
+    for sig in (signal.SIGINT, signal.SIGTERM):
+        loop.add_signal_handler(
+            sig, lambda s=sig: asyncio.create_task(shutdown(s, loop, bot))
+        )
+
     try:
-        bot = DiscordBot(intents, config, discord_bot_logger)
-        bot.run(config.DISCORD_TOKEN)
+        await bot.start(config.DISCORD_TOKEN)
     except discord.errors.LoginFailure as e:
-        print(f"Login failed: {e}")
+        logging.critical(f"Login failed: {e}")
+
+
+if __name__ == "__main__":
+    asyncio.run(main())

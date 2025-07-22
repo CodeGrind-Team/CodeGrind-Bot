@@ -1,9 +1,10 @@
 services:
   app:
+    container_name: codegrind-bot
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: codegrind-bot
+    init: true
     env_file:
       - .env
     environment:
@@ -13,8 +14,8 @@ services:
     restart: unless-stopped
 
   datadog:
-    image: gcr.io/datadoghq/agent:latest
     container_name: datadog-agent
+    image: gcr.io/datadoghq/agent:latest
     env_file:
       - .env
     environment:
