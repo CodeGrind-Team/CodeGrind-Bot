@@ -3,9 +3,10 @@ from typing import TYPE_CHECKING
 
 import discord
 from beanie.odm.operators.update.general import Set
+from datadog.dogstatsd.base import statsd
 
 from src.constants import GLOBAL_LEADERBOARD_ID, Period
-from src.database.models import Server
+from src.database.models import Server, User
 from src.ui.embeds.problems import daily_question_embed
 from src.utils.leaderboards import send_leaderboard_winners
 from src.utils.roles import update_roles
@@ -99,6 +100,9 @@ async def process_daily_question_and_stats_update(
 
     bot.logger.info("Sending daily notifications and updating stats completed")
     await bot.channel_logger.info("Completed updating", include_error_counts=True)
+
+    statsd.gauge("db.servers.count", await Server.all().count())
+    statsd.gauge("db.users.count", await User.all().count())
 
 
 async def send_daily_question(
