@@ -186,7 +186,11 @@ class DiscordBot(commands.Bot):
         Called when the client is done preparing the data received from Discord.
         """
         self.logger.info("Bot is ready.")
-        statsd.service_check("discord.bot.status", DogStatsd.OK)
+        statsd.service_check(
+            "discord.bot.status",
+            DogStatsd.OK,
+            tags=["bot:" + self.user.name if self.user else "Unknown"],
+        )
 
     async def on_interaction(self, interaction: discord.Interaction) -> None:
         """
@@ -312,7 +316,11 @@ class DiscordBot(commands.Bot):
         disconnected, explicit calls to close, or Discord terminating the connection
         one way or the other.
         """
-        statsd.service_check("discord.bot.status", DogStatsd.CRITICAL)
+        statsd.service_check(
+            "discord.bot.status",
+            DogStatsd.WARNING,
+            tags=["bot:" + self.user.name if self.user else "Unknown"],
+        )
 
     async def close(self) -> None:
         """
@@ -324,7 +332,11 @@ class DiscordBot(commands.Bot):
             if self.config.PRODUCTION
             else ""
         )
-        statsd.service_check("discord.bot.status", DogStatsd.CRITICAL)
+        statsd.service_check(
+            "discord.bot.status",
+            DogStatsd.CRITICAL,
+            tags=["bot:" + self.user.name if self.user else "Unknown"],
+        )
 
         try:
             await self.http_client.session.close()
@@ -343,8 +355,6 @@ class DiscordBot(commands.Bot):
         the bot.
         """
         self.logger.critical("Critical error in %s.", event_method)
-        statsd.service_check("discord.bot.status", DogStatsd.CRITICAL)
-
         await self.close()
 
     @staticmethod
