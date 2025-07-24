@@ -64,7 +64,7 @@ class Config:
     DD_APP_KEY: str | None
 
 
-class DiscordBot(commands.Bot):
+class DiscordBot(commands.AutoShardedBot):
     def __init__(
         self, intents: discord.Intents, config: Config, logger: logging.Logger
     ) -> None:
