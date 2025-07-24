@@ -341,7 +341,7 @@ class DiscordBot(commands.AutoShardedBot):
         Currently this causes an outage, and therefore will log the error and restart
         the bot.
         """
-        self.logger.critical("Critical error in %s.", event_method)
+        self.logger.critical(f"Critical error in {event_method}:", exc_info=True)
         await self.close()
 
     @staticmethod
