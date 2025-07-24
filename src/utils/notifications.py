@@ -5,7 +5,7 @@ import discord
 from beanie.odm.operators.update.general import Set
 from datadog.dogstatsd.base import statsd
 
-from src.constants import GLOBAL_LEADERBOARD_ID, Period
+from src.constants import GLOBAL_LEADERBOARD_ID, VERIFIED_ROLE, Period
 from src.database.models import Server, User
 from src.ui.embeds.problems import daily_question_embed
 from src.utils.leaderboards import send_leaderboard_winners
@@ -64,6 +64,7 @@ async def process_daily_question_and_stats_update(
     if update_stats:
         await update_all_user_stats(bot, reset_day, reset_week, reset_month)
 
+    enabled_roles_server_count = 0
     async for db_server in Server.all():
         await Server.find_one(Server.id == db_server.id).update(
             Set(
@@ -87,9 +88,13 @@ async def process_daily_question_and_stats_update(
             await send_leaderboard_winners(bot, db_server, Period.MONTH)
 
         if midday:
-            if guild := bot.get_guild(db_server.id):
+            # Only update roles for servers that have the VERIFIED_ROLE.
+            if (guild := bot.get_guild(db_server.id)) and discord.utils.get(
+                guild.roles, name=VERIFIED_ROLE
+            ):
                 try:
                     await update_roles(guild, db_server.id)
+                    enabled_roles_server_count += 1
                 except discord.errors.Forbidden:
                     # Missing permissions are handled inside update_roles, so it
                     # shouldn't raise an error.
@@ -97,6 +102,8 @@ async def process_daily_question_and_stats_update(
                         f"Forbidden to add roles to members of server with ID: "
                         f"{db_server.id}"
                     )
+
+    statsd.gauge("discord.bot.roles.servers.count", enabled_roles_server_count)
 
     bot.logger.info("Sending daily notifications and updating stats completed")
     await bot.channel_logger.info("Completed updating", include_error_counts=True)
