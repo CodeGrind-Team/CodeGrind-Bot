@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 
 import discord
 from beanie.operators import In
+from datadog.dogstatsd.base import statsd
 
 from src.constants import GLOBAL_LEADERBOARD_ID, LeaderboardSortBy, Period, RankEmoji
 from src.database.models import Profile, Record, Server, User
@@ -488,3 +489,7 @@ async def send_leaderboard_winners(
                 f"Missing permissions on channel ({channel_id}) to send leaderboard "
                 "winners."
             )
+
+        statsd.increment(
+            "discord.bot.notifications.sent", tags=["type:leaderboard_winners"]
+        )

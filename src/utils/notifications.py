@@ -133,3 +133,5 @@ async def send_daily_question(
             bot.logger.info(
                 f"Forbidden to share daily question to channel with ID: {channel_id}"
             )
+
+        statsd.increment("discord.bot.notifications.sent", tags=["type:daily_question"])
