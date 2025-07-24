@@ -46,6 +46,7 @@ async def process_daily_question_and_stats_update(
     ) or force_reset_month
 
     midday = start.hour == 12 and start.minute == 0
+    should_update_roles = midday
 
     if reset_day:
         embed = await daily_question_embed(bot)
@@ -87,7 +88,7 @@ async def process_daily_question_and_stats_update(
         if reset_month:
             await send_leaderboard_winners(bot, db_server, Period.MONTH)
 
-        if midday:
+        if should_update_roles:
             # Only update roles for servers that have the VERIFIED_ROLE.
             if (guild := bot.get_guild(db_server.id)) and discord.utils.get(
                 guild.roles, name=VERIFIED_ROLE
@@ -103,7 +104,8 @@ async def process_daily_question_and_stats_update(
                         f"{db_server.id}"
                     )
 
-    statsd.gauge("discord.bot.roles.servers.count", enabled_roles_server_count)
+    if should_update_roles:
+        statsd.gauge("discord.bot.roles.servers.count", enabled_roles_server_count)
 
     bot.logger.info("Sending daily notifications and updating stats completed")
     await bot.channel_logger.info("Completed updating", include_error_counts=True)
