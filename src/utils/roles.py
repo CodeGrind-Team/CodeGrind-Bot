@@ -1,6 +1,7 @@
 from typing import Any
 
 import discord
+from datadog.dogstatsd.base import statsd
 from discord import Role
 
 from src.constants import (
@@ -170,6 +171,7 @@ async def give_verified_role(guild: discord.Guild, member: discord.Member) -> No
         return
 
     await member.add_roles(role)
+    statsd.increment("discord.bot.roles.added")
 
 
 async def give_tier_group_role(
@@ -197,7 +199,9 @@ async def give_tier_group_role(
         role = discord.utils.get(guild.roles, name=codegrind_tier.role_name)
         if role and role in member.roles and role != role_to_assign:
             await member.remove_roles(role)
+            statsd.increment("discord.bot.roles.removed")
 
     if role_to_assign:
         # Give the member the appropriate role.
         await member.add_roles(role_to_assign)
+        statsd.increment("discord.bot.roles.added")

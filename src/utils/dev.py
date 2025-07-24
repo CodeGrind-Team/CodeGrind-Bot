@@ -4,6 +4,7 @@ from random import random
 from typing import TYPE_CHECKING
 
 import discord
+from datadog.dogstatsd.base import statsd
 
 from src.constants import GLOBAL_LEADERBOARD_ID
 from src.database.models import Profile, Server, User
@@ -174,25 +175,30 @@ async def prune_members_and_guilds(bot: "DiscordBot") -> None:
     Refresh members in the database by deleting profiles, users, and servers that no
     longer exist.
     """
-    server_index = 0
     async for db_server in Server.all():
-        server_index += 1
-        if server_index % 100 == 0:
-            bot.logger.info(f"Refreshing members: {server_index} servers checked")
-
-        if db_server.id == 0:
+        if db_server.id == GLOBAL_LEADERBOARD_ID:
             continue
+
+        db_profiles = Profile.find_many(Profile.server_id == db_server.id)
 
         # Delete servers that no longer have the bot in them.
         try:
             guild = await bot.fetch_guild(db_server.id)
         except discord.errors.NotFound:
             await db_server.delete()
+            await db_profiles.delete()
+
             bot.logger.info(f"Deleted server with ID: {db_server.id}")
+            statsd.increment("db.servers.deleted", tags=["source:pruning"])
+            statsd.increment(
+                "db.profiles.deleted",
+                await db_profiles.count(),
+                tags=["source:pruning"],
+            )
             continue
 
         # Delete profiles that no longer have the corresponding member in the server.
-        async for db_profile in Profile.find_many(Profile.server_id == db_server.id):
+        async for db_profile in db_profiles:
             try:
                 await guild.fetch_member(db_profile.user_id)
             except discord.errors.NotFound:
@@ -201,17 +207,22 @@ async def prune_members_and_guilds(bot: "DiscordBot") -> None:
                     f"Deleted profile with user ID: {db_profile.user_id} and "
                     f"server ID: {db_server.id}"
                 )
+                statsd.increment("db.profiles.deleted", tags=["source:pruning"])
 
     # Delete users that no longer have any profiles.
     async for db_user in User.all():
-        db_profiles = await Profile.find_many(
-            Profile.user_id == db_user.id,
-            Profile.server_id != GLOBAL_LEADERBOARD_ID,
-        ).to_list()
-
-        if len(db_profiles) == 0:
+        if (
+            await Profile.find_many(
+                Profile.user_id == db_user.id,
+                Profile.server_id != GLOBAL_LEADERBOARD_ID,
+            ).count()
+            == 0
+        ):
             await delete_user(db_user.id)
             bot.logger.info(f"Deleted user with user ID: {db_user.id}")
+            statsd.increment("db.users.deleted", tags=["source:pruning"])
+
+    bot.logger.info("Pruning completed.")
 
 
 async def dev_commands(bot: "DiscordBot", message: discord.Message) -> None:

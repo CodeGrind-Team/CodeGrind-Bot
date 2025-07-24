@@ -189,7 +189,7 @@ class DiscordBot(commands.Bot):
         statsd.service_check(
             "discord.bot.status",
             DogStatsd.OK,
-            tags=["bot:" + self.user.name if self.user else "Unknown"],
+            tags=[f"bot:{self.user.name if self.user else 'Unknown'}"],
         )
 
     async def on_interaction(self, interaction: discord.Interaction) -> None:
@@ -217,12 +217,12 @@ class DiscordBot(commands.Bot):
 
         statsd.increment(
             "discord.commands.count",
-            tags=["command:" + executed_command],
+            tags=[f"command:{executed_command}"],
         )
         statsd.timing(
             "discord.commands.duration",
             (datetime.now(UTC) - interaction.created_at).total_seconds(),
-            tags=["command:" + executed_command],
+            tags=[f"command:{executed_command}"],
         )
 
     async def on_guild_remove(self, guild: discord.Guild) -> None:
@@ -309,19 +309,6 @@ class DiscordBot(commands.Bot):
 
         await dev_commands(self, message)
 
-    async def on_disconnect(self) -> None:
-        """
-        Called when the client has disconnected from Discord, or a connection attempt
-        to Discord has failed. This could happen either through the internet being
-        disconnected, explicit calls to close, or Discord terminating the connection
-        one way or the other.
-        """
-        statsd.service_check(
-            "discord.bot.status",
-            DogStatsd.WARNING,
-            tags=["bot:" + self.user.name if self.user else "Unknown"],
-        )
-
     async def close(self) -> None:
         """
         Closes the connection to Discord, gracefully closes the session, and reboots
@@ -335,7 +322,7 @@ class DiscordBot(commands.Bot):
         statsd.service_check(
             "discord.bot.status",
             DogStatsd.CRITICAL,
-            tags=["bot:" + self.user.name if self.user else "Unknown"],
+            tags=[f"bot:{self.user.name if self.user else 'Unknown'}"],
         )
 
         try:

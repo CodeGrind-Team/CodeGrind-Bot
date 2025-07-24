@@ -71,7 +71,7 @@ async def schedule_prune_members_and_guilds(bot: "DiscordBot") -> None:
     await prune_members_and_guilds(bot)
 
 
-@tasks.loop(hours=168)
+@tasks.loop(hours=168, reconnect=False)
 @task_exception_handler
 async def schedule_update_zerotrac_ratings(bot: "DiscordBot") -> None:
     """
@@ -82,7 +82,7 @@ async def schedule_update_zerotrac_ratings(bot: "DiscordBot") -> None:
     await bot.ratings.update_ratings()
 
 
-@tasks.loop(hours=24)
+@tasks.loop(hours=24, reconnect=False)
 @task_exception_handler
 async def schedule_update_neetcode_solutions(bot: "DiscordBot") -> None:
     """
