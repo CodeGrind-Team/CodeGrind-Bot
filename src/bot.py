@@ -119,12 +119,18 @@ class DiscordBot(commands.AutoShardedBot):
         """
         Runs when stats are posted to topgg
         """
+        guild_count = self.topggpy.guild_count
+        member_count = len(set(self.get_all_members()))
+
         self.logger.info(
-            f"Posted server count ({self.topggpy.guild_count}), shard count "
+            f"Posted server count ({guild_count}), shard count "
             f"({self.shard_count})",
         )
+        self.logger.info(f"Total bot member count ({member_count})")
 
-        self.logger.info(f"Total bot member count ({len(set(self.get_all_members()))})")
+        statsd.gauge("discord.bot.shards.count", self.shard_count)
+        statsd.gauge("discord.bot.guilds.count", guild_count)
+        statsd.gauge("discord.bot.members.count", member_count)
 
     async def init_topgg(self) -> None:
         """
