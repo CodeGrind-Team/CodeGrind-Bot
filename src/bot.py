@@ -187,14 +187,26 @@ class DiscordBot(commands.AutoShardedBot):
         schedule_question_and_stats_update.start(self)
         schedule_prune_members_and_guilds.start(self)
 
-    async def on_ready(self) -> None:
+    async def on_connect(self) -> None:
         """
-        Called when the client is done preparing the data received from Discord.
+        Called when the client has successfully connected to Discord.
         """
-        self.logger.info("Bot is ready.")
+        self.logger.info("Bot is connected.")
         statsd.service_check(
             "discord.bot.status",
             DogStatsd.OK,
+            tags=[f"bot:{self.user.name if self.user else 'Unknown'}"],
+        )
+
+    async def on_disconnect(self) -> None:
+        """
+        Called when the client has disconnected from Discord, or a connection attempt
+        to Discord has failed.
+        """
+        self.logger.info("Bot is disconnected.")
+        statsd.service_check(
+            "discord.bot.status",
+            DogStatsd.CRITICAL,
             tags=[f"bot:{self.user.name if self.user else 'Unknown'}"],
         )
 
