@@ -2,7 +2,7 @@ from datetime import UTC, datetime, time
 from functools import wraps
 from typing import TYPE_CHECKING, Callable
 
-from datadog.dogstatsd.base import statsd
+from datadog.dogstatsd.base import DogStatsd, statsd
 from discord.ext import tasks
 
 from src.utils.dev import prune_members_and_guilds
@@ -89,3 +89,26 @@ async def schedule_update_neetcode_solutions(bot: "DiscordBot") -> None:
     Update NeetCode solutions data daily.
     """
     await bot.neetcode.update_solutions()
+
+
+@tasks.loop(minutes=1, reconnect=False)
+@task_exception_handler
+async def schedule_ok_service_check(bot: "DiscordBot") -> None:
+    """
+    Send an OK service check to Datadog to indicate that the bot is running and
+    connected.
+    """
+    statsd.service_check(
+        "discord.bot.status",
+        DogStatsd.OK,
+        tags=[f"bot:{bot.user.name if bot.user else 'Unknown'}"],
+    )
+
+
+TASKS_TO_SCHEDULE = [
+    schedule_question_and_stats_update,
+    schedule_prune_members_and_guilds,
+    schedule_update_zerotrac_ratings,
+    schedule_update_neetcode_solutions,
+    schedule_ok_service_check,
+]
