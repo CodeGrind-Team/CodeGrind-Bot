@@ -41,6 +41,7 @@ async def main() -> None:
         ),
         os.getenv("DD_API_KEY"),
         os.getenv("DD_APP_KEY"),
+        os.getenv("DD_HOST_NAME"),
     )
 
     logs_path = os.path.join(os.path.dirname(__file__), "logs")

@@ -57,6 +57,7 @@ class Config:
     GOOGLE_APPLICATION_CREDENTIALS: str | None
     DD_API_KEY: str | None
     DD_APP_KEY: str | None
+    DD_HOST_NAME: str | None
 
 
 class DiscordBot(commands.AutoShardedBot):
@@ -188,7 +189,6 @@ class DiscordBot(commands.AutoShardedBot):
         statsd.service_check(
             "discord.bot.status",
             DogStatsd.OK,
-            tags=[f"bot:{self.user.name if self.user else 'Unknown'}"],
         )
 
     async def on_disconnect(self) -> None:
@@ -200,7 +200,6 @@ class DiscordBot(commands.AutoShardedBot):
         statsd.service_check(
             "discord.bot.status",
             DogStatsd.CRITICAL,
-            tags=[f"bot:{self.user.name if self.user else 'Unknown'}"],
         )
 
     async def on_interaction(self, interaction: discord.Interaction) -> None:
@@ -333,7 +332,6 @@ class DiscordBot(commands.AutoShardedBot):
         statsd.service_check(
             "discord.bot.status",
             DogStatsd.CRITICAL,
-            tags=[f"bot:{self.user.name if self.user else 'Unknown'}"],
         )
 
         try:
