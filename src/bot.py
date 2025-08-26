@@ -188,7 +188,6 @@ class DiscordBot(commands.AutoShardedBot):
         statsd.service_check(
             "discord.bot.status",
             DogStatsd.OK,
-            tags=[f"bot:{self.user.name if self.user else 'Unknown'}"],
         )
 
     async def on_disconnect(self) -> None:
@@ -200,7 +199,6 @@ class DiscordBot(commands.AutoShardedBot):
         statsd.service_check(
             "discord.bot.status",
             DogStatsd.CRITICAL,
-            tags=[f"bot:{self.user.name if self.user else 'Unknown'}"],
         )
 
     async def on_interaction(self, interaction: discord.Interaction) -> None:
@@ -333,7 +331,6 @@ class DiscordBot(commands.AutoShardedBot):
         statsd.service_check(
             "discord.bot.status",
             DogStatsd.CRITICAL,
-            tags=[f"bot:{self.user.name if self.user else 'Unknown'}"],
         )
 
         try:

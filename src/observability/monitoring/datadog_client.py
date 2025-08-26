@@ -12,4 +12,7 @@ def setup_datadog(config: Config) -> None:
         app_key=config.DD_APP_KEY,
         statsd_host=DD_STATSD_HOST,
         statsd_port=DD_STATSD_PORT,
+        statsd_constant_tags=[
+            "app:codegrind-bot" if config.PRODUCTION else "app:codegrind-bot-dev"
+        ],
     )
