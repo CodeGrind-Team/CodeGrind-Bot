@@ -91,7 +91,7 @@ async def schedule_update_neetcode_solutions(bot: "DiscordBot") -> None:
     await bot.neetcode.update_solutions()
 
 
-@tasks.loop(minutes=1, reconnect=False)
+@tasks.loop(seconds=30, reconnect=False)
 @task_exception_handler
 async def schedule_ok_service_check(bot: "DiscordBot") -> None:
     """

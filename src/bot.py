@@ -198,7 +198,7 @@ class DiscordBot(commands.AutoShardedBot):
         self.logger.info("Bot is disconnected.")
         statsd.service_check(
             "discord.bot.status",
-            DogStatsd.CRITICAL,
+            DogStatsd.WARNING,
         )
 
     async def on_interaction(self, interaction: discord.Interaction) -> None:
