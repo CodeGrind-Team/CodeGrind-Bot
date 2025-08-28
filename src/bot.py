@@ -133,7 +133,11 @@ class DiscordBot(commands.AutoShardedBot):
         """
         if self.config.PRODUCTION and self.config.TOPGG_TOKEN:
             self._topggpy = topgg.client.DBLClient(
-                self, self.config.TOPGG_TOKEN, autopost=True, post_shard_count=True
+                self,
+                self.config.TOPGG_TOKEN,
+                autopost=True,
+                post_shard_count=True,
+                session=(client := self._http_client) and client.session,
             )
 
     async def load_cogs(self) -> None:
