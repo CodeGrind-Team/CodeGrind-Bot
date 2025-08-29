@@ -34,12 +34,16 @@ class HttpClient:
                     case 200:
                         return await response.text()
                     case _:
-                        self.bot.logger.exception(
-                            f"Failed to fetch data: (code: {response.status})"
+                        self.bot.logger.error(
+                            f"GET request failed | Status code: {response.status} | "
+                            f"URL: {response.url}"
                         )
 
-        except (aiohttp.ClientError, asyncio.TimeoutError) as e:
-            self.bot.logger.exception(f"Failed to fetch data: {e}")
+        except (aiohttp.ClientError, asyncio.TimeoutError):
+            self.bot.logger.exception(
+                "GET request failed | "
+                "ClientError or TimeoutError occurred while fetching data"
+            )
 
     @backoff.on_exception(backoff.expo, RateLimitExceededException, logger=None)
     async def post_data(self, *args, **kwargs) -> dict | None:
@@ -64,15 +68,19 @@ class HttpClient:
                             self.bot.channel_logger.rate_limited()
                             raise RateLimitExceededException()
                         case 403:
-                            self.bot.logger.exception(
-                                f"Post request forbidden access "
-                                f"(code: {response.status})",
+                            self.bot.logger.error(
+                                f"POST request forbidden | "
+                                f"Status code: {response.status} | "
+                                f"URL: {response.url}"
                             )
                             self.bot.channel_logger.forbidden()
                         case _:
-                            self.bot.logger.exception(
-                                f"Post request error: (code: {response.status})"
+                            self.bot.logger.error(
+                                f"POST request failed | "
+                                f"Status code: {response.status} | URL: {response.url}"
                             )
 
-            except (aiohttp.ClientError, asyncio.TimeoutError) as e:
-                self.bot.logger.exception(f"Failed to post data: {e}")
+            except (aiohttp.ClientError, asyncio.TimeoutError):
+                self.bot.logger.exception(
+                    "Failed to POST data | ClientError or TimeoutError occurred"
+                )

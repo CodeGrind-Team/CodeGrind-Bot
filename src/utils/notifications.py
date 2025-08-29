@@ -32,7 +32,7 @@ async def process_daily_question_and_stats_update(
     :param force_reset_week: Whether to force the weekly reset.
     :param force_reset_month: Whether to force the monthly reset.
     """
-    bot.logger.info("Sending daily notifications and updating stats started")
+    bot.logger.info("Daily tasks started | Beginning notifications and stats update")
     await bot.channel_logger.info("Started updating")
 
     start = datetime.now(UTC)
@@ -55,12 +55,9 @@ async def process_daily_question_and_stats_update(
             async for db_server in Server.all(fetch_links=True):
                 await send_daily_question(bot, db_server, embed)
         except discord.errors.HTTPException:
-            bot.logger.exception(
-                "HTTPException raised when trying to share daily questions to channels:"
-                " embed length over limit."
-            )
+            bot.logger.exception("Failed to share daily questions to channels")
 
-        bot.logger.info("Daily question sent to all servers")
+        bot.logger.info("Daily question broadcast completed")
 
     if update_stats:
         await update_all_user_stats(bot, reset_day, reset_week, reset_month)
@@ -99,15 +96,16 @@ async def process_daily_question_and_stats_update(
                 except discord.errors.Forbidden:
                     # Missing permissions are handled inside update_roles, so it
                     # shouldn't raise an error.
-                    bot.logger.info(
-                        f"Forbidden to add roles to members of server with ID: "
-                        f"{db_server.id}"
+                    bot.logger.warning(
+                        f"Role update forbidden | Server ID: {db_server.id}"
                     )
 
     if should_update_roles:
         statsd.gauge("discord.bot.roles.servers.count", enabled_roles_server_count)
 
-    bot.logger.info("Sending daily notifications and updating stats completed")
+    bot.logger.info(
+        "Daily tasks completed | Notifications sent and stats updated successfully"
+    )
     await bot.channel_logger.info("Completed updating", include_error_counts=True)
 
     statsd.gauge("db.servers.count", await Server.all().count())
@@ -139,8 +137,9 @@ async def send_daily_question(
             )
 
         except discord.errors.Forbidden:
-            bot.logger.info(
-                f"Forbidden to share daily question to channel with ID: {channel_id}"
+            bot.logger.warning(
+                "Cannot post daily question | Missing permissions | "
+                f"Channel ID: {channel_id}"
             )
 
         statsd.increment("discord.bot.notifications.sent", tags=["type:daily_question"])

@@ -22,7 +22,7 @@ class Ratings:
             return
 
         self.ratings = self._parse_ratings(response_data)
-        self.bot.logger.info("Updated ratings")
+        self.bot.logger.info("Problem ratings update completed")
 
     def _parse_ratings(self, data: str) -> dict[str, float]:
         ratings = {}

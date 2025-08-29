@@ -63,9 +63,12 @@ async def main() -> None:
     # Gracefully handle shutdown signals.
     loop = asyncio.get_running_loop()
     for sig in (signal.SIGINT, signal.SIGTERM):
-        loop.add_signal_handler(
-            sig, lambda s=sig: asyncio.create_task(shutdown(s, loop, bot))
-        )
+        try:
+            loop.add_signal_handler(
+                sig, lambda s=sig: asyncio.create_task(shutdown(s, loop, bot))
+            )
+        except NotImplementedError:
+            logging.warning("Signal handlers are not supported on Windows.")
 
     try:
         await bot.start(config.DISCORD_TOKEN)

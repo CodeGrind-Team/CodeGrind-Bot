@@ -34,7 +34,7 @@ class DiscordChannelLogger:
         """
         self.rate_limits += 1
         if self.rate_limits % 100 == 0:
-            self.bot.logger.info(f"{self.rate_limits} rate limited requests")
+            self.bot.logger.info(f"Rate limited requests | Count: {self.rate_limits}")
 
     def forbidden(self) -> None:
         """
@@ -127,7 +127,9 @@ class DiscordChannelLogger:
 
         except discord.errors.Forbidden:
             self.bot.logger.exception(
-                "DiscordChannelLogger.log: missing permissions on logging channel.",
+                "Missing permissions to post in the dev Discord channel",
             )
-        except Exception as e:
-            self.bot.logger.exception(f"DiscordChannelLogger.log : Error: {e}")
+        except Exception:
+            self.bot.logger.exception(
+                "Unexpected error occurred while logging to dev Discord channel"
+            )

@@ -34,8 +34,10 @@ def task_exception_handler(func: Callable) -> Callable:
                 tags=[f"task:{func.__name__}"],
             )
 
-        except Exception as e:
-            bot.logger.critical(f"Task '{func.__name__}' encountered an error: {e}")
+        except Exception:
+            bot.logger.critical(
+                f"Task execution failed | Name: {func.__name__}", exc_info=True
+            )
 
             statsd.increment("discord.tasks.error", tags=[f"task:{func.__name__}"])
 

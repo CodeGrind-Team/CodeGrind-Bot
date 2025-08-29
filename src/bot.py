@@ -112,16 +112,16 @@ class DiscordBot(commands.AutoShardedBot):
 
     async def on_autopost_success(self) -> None:
         """
-        Runs when stats are posted to topgg
+        Runs when stats are posted to topgg.
         """
         guild_count = self.topggpy.guild_count
         member_count = len(set(self.get_all_members()))
 
         self.logger.info(
-            f"Posted server count ({guild_count}), shard count "
-            f"({self.shard_count})",
+            f"Successfully posted bot stats to Top.gg | "
+            f"Guilds: {guild_count} | Shards: {self.shard_count} | "
+            f"Members: {member_count}"
         )
-        self.logger.info(f"Total bot member count ({member_count})")
 
         statsd.gauge("discord.bot.shards.count", self.shard_count)
         statsd.gauge("discord.bot.guilds.count", guild_count)
@@ -133,7 +133,11 @@ class DiscordBot(commands.AutoShardedBot):
         """
         if self.config.PRODUCTION and self.config.TOPGG_TOKEN:
             self._topggpy = topgg.client.DBLClient(
-                self, self.config.TOPGG_TOKEN, autopost=True, post_shard_count=True
+                self,
+                self.config.TOPGG_TOKEN,
+                autopost=True,
+                post_shard_count=True,
+                session=(client := self._http_client) and client.session,
             )
 
     async def load_cogs(self) -> None:
@@ -145,24 +149,21 @@ class DiscordBot(commands.AutoShardedBot):
                 extension = file[:-3]
                 try:
                     await self.load_extension(f"src.cogs.{extension}")
-                    self.logger.info(f"Loaded extension '{extension}'")
-                except Exception as e:
-                    exception = f"{type(e).__name__}: {e}"
-                    self.logger.error(
-                        f"Failed to load extension {extension}\n{exception}"
-                    )
+                    self.logger.info(f"Extension loaded | Name: {extension}")
+                except Exception:
+                    self.logger.exception(f"Failed to load extension {extension}")
 
     async def setup_hook(self) -> None:
         """
         Called only once to setup the bot.
         """
-        self.logger.info(f"Logged in as {self.user.name if self.user else 'Unknown'} ")
-        self.logger.info(f"discord.py API version: {discord.__version__}")
-        self.logger.info(f"Python version: {platform.python_version()}")
         self.logger.info(
-            f"Running on: {platform.system()} {platform.release()} ({os.name})"
+            f"Bot startup initiated | "
+            f"User: {self.user.name if self.user else 'Unknown'} | "
+            f"discord.py: {discord.__version__} | "
+            f"Python: {platform.python_version()} | "
+            f"OS: {platform.system()} {platform.release()} ({os.name})"
         )
-        self.logger.info("-------------------")
 
         self._http_client = HttpClient(self, aiohttp.ClientSession())
         await initialise_mongodb_connection(
@@ -184,7 +185,7 @@ class DiscordBot(commands.AutoShardedBot):
         """
         Called when the client has successfully connected to Discord.
         """
-        self.logger.info("Bot is connected.")
+        self.logger.info("Bot connected to Discord")
         statsd.service_check(
             "discord.bot.status",
             DogStatsd.OK,
@@ -195,7 +196,7 @@ class DiscordBot(commands.AutoShardedBot):
         Called when the client has disconnected from Discord, or a connection attempt
         to Discord has failed.
         """
-        self.logger.info("Bot is disconnected.")
+        self.logger.info("Bot disconnected from Discord")
         statsd.service_check(
             "discord.bot.status",
             DogStatsd.WARNING,
@@ -206,23 +207,17 @@ class DiscordBot(commands.AutoShardedBot):
         The code in this event is executed every time a normal command has been
         *successfully* executed.
         """
-        if not interaction.command:
+        if not (interaction.command and interaction.guild):
             return
 
         full_command_name = interaction.command.qualified_name
         split = full_command_name.split(" ")
         executed_command = str(split[0])
-        if interaction.guild is not None:
-            self.logger.info(
-                f"Executed /{executed_command} command in {interaction.guild.name} "
-                f"(ID: {interaction.guild.id}) by {interaction.user.name} "
-                f"(ID: {interaction.user.id})"
-            )
-        else:
-            self.logger.info(
-                f"Executed /{executed_command} command by {interaction.user.name} "
-                f"(ID: {interaction.user.id}) in DMs"
-            )
+
+        self.logger.info(
+            f"Executed command | Name: {executed_command} | "
+            f"Guild: {interaction.guild.name} | User: {interaction.user.name}"
+        )
 
         statsd.increment(
             "discord.commands.count",
@@ -242,9 +237,6 @@ class DiscordBot(commands.AutoShardedBot):
         await Profile.find_many(Profile.server_id == guild.id).delete()
         await Server.find_one(Server.id == guild.id).delete()
 
-        self.logger.info(
-            f"Guild {guild.name} (ID: {guild.id}) discord account removed",
-        )
         statsd.increment("discord.guilds.removed")
 
     async def on_raw_member_remove(self, payload: discord.RawMemberRemoveEvent) -> None:
@@ -262,10 +254,6 @@ class DiscordBot(commands.AutoShardedBot):
         if len(db_profiles) == 0:
             await delete_user(payload.user.id)
 
-        self.logger.info(
-            f"Member {payload.user.name} (ID: {payload.user.id}) in Guild "
-            f"(ID: {payload.guild_id}) discord account removed",
-        )
         statsd.increment("discord.guilds.members.removed")
 
     async def on_member_update(
@@ -324,7 +312,7 @@ class DiscordBot(commands.AutoShardedBot):
         the device.
         """
         self.logger.fatal(
-            "Closing bot." "\nTriggering container restart."
+            "Bot is shutting down" " | Container restart triggered"
             if self.config.PRODUCTION
             else ""
         )
@@ -349,7 +337,11 @@ class DiscordBot(commands.AutoShardedBot):
         Currently this causes an outage, and therefore will log the error and restart
         the bot.
         """
-        self.logger.critical(f"Critical error in {event_method}:", exc_info=True)
+        self.logger.critical(
+            f"Critical error occurred | Method: {event_method} | "
+            "Check exception details below",
+            exc_info=True,
+        )
         await self.close()
 
     @staticmethod
