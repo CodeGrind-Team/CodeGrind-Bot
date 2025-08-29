@@ -39,7 +39,7 @@ class NeetcodeSolutions:
         """
         self.solutions = await self.__fetch_neetcode_solutions()
         self.__add_problem_lists()
-        self.bot.logger.info("Updated NeetCode solutions")
+        self.bot.logger.info("NeetCode solutions updated")
 
     async def __fetch_neetcode_solutions(self) -> dict[str, NeetcodeSolution]:
         """
@@ -116,9 +116,9 @@ class NeetcodeSolutions:
                     neetcode150="neetcode150" in solution,
                     neetcode250="neetcode250" in solution,
                 )
-            except ValueError as e:
+            except ValueError:
                 self.bot.logger.exception(
-                    f"Error parsing a NeetCode solution ({solution}): {e}"
+                    f"NeetCode solution parsing failed | Solution: {solution}"
                 )
 
         return link_to_solution

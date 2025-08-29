@@ -218,11 +218,14 @@ async def update_all_user_stats(
         # if counter % 200 == 0 or counter == total_users:
         #     bot.logger.info(f"{counter} / {total_users} users stats updated")
 
-    bot.logger.info(f"All {total_users} users stats updated")
+    bot.logger.info(f"User stats update completed | Total users: {total_users}")
 
     if reset_day or reset_week or reset_month:
         await update_wins(reset_day, reset_week, reset_month)
-        bot.logger.info("All users wins updated")
+        bot.logger.info(
+            "User wins update completed | Reset periods applied - "
+            f"Day: {reset_day}, Week: {reset_week}, Month: {reset_month}"
+        )
 
 
 async def stats_card(
@@ -260,8 +263,8 @@ async def capture_stats_card(
             clip=FloatRect(x=0, y=0, width=width, height=height)
         )
 
-    except PlaywrightError as e:
-        bot.logger.exception(f"An error occurred while capturing the stats card: {e}")
+    except PlaywrightError:
+        bot.logger.exception(f"Stats card generation failed | URL: {url}")
         return
 
     finally:
@@ -304,7 +307,5 @@ def anonymise_stats_card(
         stats_card.save(output_buffer, format="PNG")
         return output_buffer
 
-    except UnidentifiedImageError as e:
-        bot.logger.exception(
-            f"An error occurred while opening or identifying the stats card image: {e}"
-        )
+    except UnidentifiedImageError:
+        bot.logger.exception("Stats card anonymisation failed")

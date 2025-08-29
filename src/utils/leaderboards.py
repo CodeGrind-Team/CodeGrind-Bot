@@ -486,8 +486,7 @@ async def send_leaderboard_winners(
 
         except discord.errors.Forbidden:
             bot.logger.exception(
-                f"Missing permissions on channel ({channel_id}) to send leaderboard "
-                "winners."
+                f"Leaderboard posting failed | Channel ID: {channel_id}"
             )
 
         statsd.increment(

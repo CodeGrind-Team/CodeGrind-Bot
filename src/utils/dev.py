@@ -40,7 +40,7 @@ class ChannelLogger:
         """
         self.rate_limits += 1
         if self.rate_limits % 100 == 0:
-            self.bot.logger.info(f"{self.rate_limits} rate limited requests")
+            self.bot.logger.info(f"Rate limited requests | Count: {self.rate_limits}")
 
     def forbidden(self) -> None:
         """
@@ -145,7 +145,7 @@ async def share_announcement(bot: "DiscordBot", message: discord.Message) -> Non
     announcement = message.content[
         message_content.find("share announcement\n") + len("share announcement\n") :
     ]
-    bot.logger.info(f"on_message: share announcement: {announcement}")
+    bot.logger.info(f"Announcement shared | Content: {announcement}")
 
     image_url: str | None = None
     if len(message.attachments) == 1:
@@ -164,9 +164,8 @@ async def share_announcement(bot: "DiscordBot", message: discord.Message) -> Non
                         await channel.send(content=announcement)
 
                 except discord.errors.Forbidden:
-                    bot.logger.info(
-                        f"Forbidden to share announcement to channel with ID: "
-                        f"{channel_id}"
+                    bot.logger.warning(
+                        f"Cannot share announcement | Channel ID: {channel_id}"
                     )
 
 
@@ -188,7 +187,7 @@ async def prune_members_and_guilds(bot: "DiscordBot") -> None:
             await db_server.delete()
             await db_profiles.delete()
 
-            bot.logger.info(f"Deleted server with ID: {db_server.id}")
+            bot.logger.info(f"Server deleted | ID: {db_server.id}")
             statsd.increment("db.servers.deleted", tags=["source:pruning"])
             statsd.increment(
                 "db.profiles.deleted",
@@ -204,8 +203,8 @@ async def prune_members_and_guilds(bot: "DiscordBot") -> None:
             except discord.errors.NotFound:
                 await db_profile.delete()
                 bot.logger.info(
-                    f"Deleted profile with user ID: {db_profile.user_id} and "
-                    f"server ID: {db_server.id}"
+                    f"Profile deleted | User ID: {db_profile.user_id} | "
+                    f"Server ID: {db_server.id}"
                 )
                 statsd.increment("db.profiles.deleted", tags=["source:pruning"])
 
@@ -219,10 +218,10 @@ async def prune_members_and_guilds(bot: "DiscordBot") -> None:
             == 0
         ):
             await delete_user(db_user.id)
-            bot.logger.info(f"Deleted user with user ID: {db_user.id}")
+            bot.logger.info(f"User deleted | ID: {db_user.id}")
             statsd.increment("db.users.deleted", tags=["source:pruning"])
 
-    bot.logger.info("Pruning completed.")
+    bot.logger.info("Pruning completed")
 
 
 async def dev_commands(bot: "DiscordBot", message: discord.Message) -> None:
@@ -237,34 +236,34 @@ async def dev_commands(bot: "DiscordBot", message: discord.Message) -> None:
         await share_announcement(bot, message)
 
     elif "restart" in message_content:
-        bot.logger.info("on_message: restart")
+        bot.logger.info("Dev command executed | Action: restart")
         await bot.close()
 
     elif "maintenance" in message_content:
         if "on" in message_content:
-            bot.logger.info("on_message: maintenance on")
+            bot.logger.info("Dev command executed | Action: maintenance on")
             await bot.change_presence(
                 status=discord.Status.do_not_disturb,
                 activity=discord.Game(name="Under Maintenance"),
             )
 
         elif "off" in message_content:
-            bot.logger.info("on_message: maintenance off")
+            bot.logger.info("Dev command executed | Action: maintenance off")
             await bot.change_presence(
                 status=discord.Status.online,
                 activity=None,
             )
 
     elif "sync" in message_content:
-        bot.logger.info("on_message: sync")
+        bot.logger.info("Dev command executed | Action: sync")
         await bot.tree.sync()
 
     elif "update stats" in message_content:
-        bot.logger.info("on_message: update stats")
+        bot.logger.info("Dev command executed | Action: update stats")
         await process_daily_question_and_stats_update(bot)
 
     elif "reset stats" in message_content:
-        bot.logger.info("on_message: reset stats")
+        bot.logger.info("Dev command executed | Action: reset stats")
         await process_daily_question_and_stats_update(
             bot,
             not ("no-update" in message_content),
@@ -274,7 +273,7 @@ async def dev_commands(bot: "DiscordBot", message: discord.Message) -> None:
         )
 
     elif "prune members" in message_content:
-        bot.logger.info("on_message: prune members")
+        bot.logger.info("Dev command executed | Action: prune members")
         await prune_members_and_guilds(bot)
 
-    bot.logger.info("on_message completed")
+    bot.logger.info("Dev command processing completed")

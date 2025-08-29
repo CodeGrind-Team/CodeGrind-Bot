@@ -248,17 +248,11 @@ async def fetch_random_question(
                 return question["titleSlug"]
 
         except (ValueError, TypeError):
-            bot.logger.exception(
-                f"fetch_random_question: failed to decode json. Error code "
-                f"({response_data})"
-            )
+            bot.logger.exception(f"JSON decode failed | Response: {response_data}")
             return
 
     # Log a warning if no non-premium question is found after MAX_ATTEMPTS attempts.
-    bot.logger.warning(
-        f"fetch_random_question: failed to find an unpaid question after "
-        f"{MAX_ATTEMPTS} attempts"
-    )
+    bot.logger.warning(f"Failed to find an unpaid question | Attempts: {MAX_ATTEMPTS}")
     return
 
 
@@ -292,9 +286,7 @@ async def fetch_daily_question(bot: "DiscordBot") -> str | None:
         title_slug = response_data["data"]["challenge"]["question"]["titleSlug"]
 
     except (ValueError, TypeError):
-        bot.logger.exception(
-            f"fetch_daily_question: failed to decode json. Error code ({response_data})"
-        )
+        bot.logger.exception(f"JSON decode failed | Response: {response_data}")
         return
 
     return title_slug
@@ -353,9 +345,7 @@ async def search_question(bot: "DiscordBot", text: str) -> str | None:
         question_title_slug = questions_matched_list["questions"][0]["titleSlug"]
 
     except (ValueError, TypeError):
-        bot.logger.exception(
-            f"search_question: failed to decode json. Error code ({response_data})"
-        )
+        bot.logger.exception(f"JSON decode failed | Response: {response_data}")
         return
 
     return question_title_slug
@@ -372,8 +362,6 @@ async def fetch_question_info(
     :return: Information about the LeetCode question, or None if an error occurs or no
              question is found.
     """
-    bot.logger.info(f"Fetched question with title: {question_title_slug}")
-
     payload = {
         "operationName": "questionInfo",
         "query": """
@@ -415,9 +403,7 @@ async def fetch_question_info(
         ac_rate = stats["acRate"]
 
     except (ValueError, TypeError):
-        bot.logger.exception(
-            f"fetch_question_info: failed to decode json. Error code ({response_data})",
-        )
+        bot.logger.exception(f"JSON decode failed | Response: {response_data}")
         return
 
     # Get question rating
@@ -567,8 +553,8 @@ async def fetch_problems_solved_and_rank(
 
     except (ValueError, TypeError):
         bot.logger.exception(
-            f"fetch_problems_solved_and_rank: Failed to decode json for user "
-            f"({leetcode_id}): {response_data}",
+            f"LeetCode JSON decoding failed | User: {leetcode_id} | "
+            f"Response data: {response_data}"
         )
         return
 
