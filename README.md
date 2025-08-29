@@ -24,11 +24,12 @@ Track progress, compete with friends, and solve coding challenges - directly wit
 
 <div align="center">
     <div>
-        <img src="docs/images/15172024-command-problemsearch-q2058-unspoilered.png" height="400">
-        <img src="docs/images/15172024-command-neetcode-q2348-unspoilered.png" height="400">
+        <img src="docs/images/2025_08_29_command_problemsearch_q2058_unspoilered.png" height="400">
+        <img src="docs/images/2025_08_29_command_neetcode_q2348_unspoilered.png" height="400">
     </div>
     <div>
-        <img src="docs/images/15172024-command-leaderboard-global-alltime-p1.png" height="300">
+        <img src="docs/images/2025_08_29_command_leaderboard_global_alltime_p1.png" height="375">
+        <img src="docs/images/2025_08_29_command_stats_hidden.png" height="375">
     </div>
 </div>
 
