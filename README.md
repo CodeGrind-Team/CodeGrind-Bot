@@ -1,26 +1,39 @@
 # CodeGrind Bot
 
-[![CodeFactor](https://www.codefactor.io/repository/github/codegrind-team/codegrind-bot/badge)](https://www.codefactor.io/repository/github/codegrind-team/codegrind-bot) ![Contributors](https://img.shields.io/github/contributors/CodeGrind-Team/CodeGrind-Bot?color=dark-green) ![Issues](https://img.shields.io/github/issues/CodeGrind-Team/CodeGrind-Bot)
+[![Discord Bots](https://top.gg/api/widget/servers/1059122559066570885.svg)](https://top.gg/bot/1059122559066570885) ![Contributors](https://img.shields.io/github/contributors/CodeGrind-Team/CodeGrind-Bot?color=dark-green) ![Issues](https://img.shields.io/github/issues/CodeGrind-Team/CodeGrind-Bot) [![CodeFactor](https://www.codefactor.io/repository/github/codegrind-team/codegrind-bot/badge)](https://www.codefactor.io/repository/github/codegrind-team/codegrind-bot)
 
-## About the Project
 
-CodeGrind Bot is a Discord bot designed for LeetCode users that promotes friendly competition and continuous skill progression. Users can track and compare their LeetCode stats in daily/weekly/monthly/all-time leaderboards within their server or globally, among many other LeetCode related commands.
+## About
 
-> Please note: while the bot uses the LeetCode API for data, it's not officially affiliated with LeetCode. Proper respect for the copyrights and terms of use of LeetCode is expected from all users.
+The all-in-one Discord bot for LeetCode users!
+Track progress, compete with friends, and solve coding challenges - directly within Discord.
 
-## Usage examples
+> Please note: while the bot uses the LeetCode API for data, it is **not officially affiliated** with LeetCode.
+
+### Key Features
+
+* **LeetCode Integration** – Connect your account and view stats, activity heatmaps, and contest history.
+* **Leaderboards** – Compete locally in your server or globally across all servers. Filter by daily, weekly, monthly, or all-time, and sort by score or win count.
+* **Problem Search & Practice** – Get the problem of the day, pull random problems by difficulty, or search for specific ones instantly.
+* **NeetCode Solutions** – Access NeetCode’s high-quality solutions in your preferred language.
+* **Progress Roles** – Unlock milestone and streak roles as you grind.
+
+> Use the `/help` command for more detailed information.
+
+### Usage examples
 
 <div align="center">
     <div>
-        <img src="docs/images/15172024-command-problemsearch-q2058-unspoilered.png" height="400">
-        <img src="docs/images/15172024-command-neetcode-q2348-unspoilered.png" height="400">
+        <img src="docs/images/2025_08_29_command_problemsearch_q2058_unspoilered.png" height="400">
+        <img src="docs/images/2025_08_29_command_neetcode_q2348_unspoilered.png" height="400">
     </div>
     <div>
-        <img src="docs/images/15172024-command-leaderboard-global-alltime-p1.png" height="300">
+        <img src="docs/images/2025_08_29_command_leaderboard_global_alltime_p1.png" height="375">
+        <img src="docs/images/2025_08_29_command_stats_hidden.png" height="375">
     </div>
 </div>
 
-## Contributing
+## Contributions
 
 Contributions are welcomed and appreciated. Feel free to open a pull request!
 
@@ -36,5 +49,4 @@ However, some files are licensed differently. Specifically, [`src/bot.py`](/src/
 
 ## Acknowledgements
 
-- [LeetCode-Stats-Card](https://github.com/JacobLinCool/LeetCode-Stats-Card)
-- [ImgShields](https://shields.io/)
+* [LeetCode-Stats-Card](https://github.com/JacobLinCool/LeetCode-Stats-Card)
