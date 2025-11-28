@@ -196,7 +196,7 @@ class DiscordBot(commands.AutoShardedBot):
         Called when the client has disconnected from Discord, or a connection attempt
         to Discord has failed.
         """
-        self.logger.info("Bot disconnected from Discord")
+        self.logger.warning("Bot disconnected from Discord")
         statsd.service_check(
             "discord.bot.status",
             DogStatsd.WARNING,

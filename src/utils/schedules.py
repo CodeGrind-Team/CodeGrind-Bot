@@ -84,7 +84,7 @@ async def schedule_update_zerotrac_ratings(bot: "DiscordBot") -> None:
     await bot.ratings.update_ratings()
 
 
-@tasks.loop(hours=24, reconnect=False)
+@tasks.loop(hours=168, reconnect=False)
 @task_exception_handler
 async def schedule_update_neetcode_solutions(bot: "DiscordBot") -> None:
     """

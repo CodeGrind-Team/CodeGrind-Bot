@@ -34,12 +34,14 @@ class NeetcodeSolutions:
         self.problem_lists: DefaultDict[ProblemList, set[str]] = defaultdict(set)
 
     async def update_solutions(self) -> None:
-        """
-        Updates the solutions.
-        """
-        self.solutions = await self.__fetch_neetcode_solutions()
-        self.__add_problem_lists()
-        self.bot.logger.info("NeetCode solutions updated")
+        """Fetch and update the NeetCode solutions."""
+        if not (solutions := await self.__fetch_neetcode_solutions()):
+            self.bot.logger.warning("Failed to update NeetCode solutions")
+            return
+
+        self.solutions = solutions
+        self.problem_lists = self.__create_problem_lists()
+        self.bot.logger.info("NeetCode solutions updated successfully")
 
     async def __fetch_neetcode_solutions(self) -> dict[str, NeetcodeSolution]:
         """
@@ -48,7 +50,8 @@ class NeetcodeSolutions:
         :return: The dictionary mapping from link/question-title-slug to
         `NeetcodeSolution`.
         """
-        main_js_filename = await self.__retrieve_neetcode_main_js_filename()
+        if not (main_js_filename := await self.__retrieve_neetcode_main_js_filename()):
+            return {}
 
         if not (
             response_data := await self.bot.http_client.fetch_data(
@@ -91,11 +94,13 @@ class NeetcodeSolutions:
         :return: The dictionary mapping from link/question-title-slug to
         `NeetcodeSolution`.
         """
-        solutions_full = re.search(r"M=(\[\{.*?\}\])", main_js)
-        if not solutions_full:
+        if not (solutions_full := re.search(r"\[\{problem.*?\}\]", main_js)):
+            self.bot.logger.warning(
+                "NeetCode solutions array pattern not found in main.js"
+            )
             return {}
 
-        solutions = solutions_full.group(1)
+        solutions = solutions_full.group(0)
         solutions = solutions.replace("!0", "true")
         solutions = re.sub(r"([{,])(\w+):", r'\1"\2":', solutions)
         solutions_objects: list[dict] = json.loads(solutions)
@@ -123,18 +128,21 @@ class NeetcodeSolutions:
 
         return link_to_solution
 
-    def __add_problem_lists(self) -> None:
-        """Adds the NeetCode based problem lists to the bot's problem lists."""
+    def __create_problem_lists(self) -> DefaultDict[ProblemList, set[str]]:
+        """Create problem lists from the solutions."""
+        problem_lists: DefaultDict[ProblemList, set[str]] = defaultdict(set)
 
         for problem in self.solutions.values():
             if problem.blind75:
-                self.bot.problem_lists[ProblemList.BLIND_75].add(problem.title)
+                problem_lists[ProblemList.BLIND_75].add(problem.title)
             if problem.neetcode150:
-                self.bot.problem_lists[ProblemList.NEETCODE_150].add(problem.title)
+                problem_lists[ProblemList.NEETCODE_150].add(problem.title)
             if problem.neetcode250:
-                self.bot.problem_lists[ProblemList.NEETCODE_250].add(problem.title)
+                problem_lists[ProblemList.NEETCODE_250].add(problem.title)
 
-            self.bot.problem_lists[ProblemList.NEETCODE_ALL].add(problem.title)
+            problem_lists[ProblemList.NEETCODE_ALL].add(problem.title)
+
+        return problem_lists
 
 
 def neetcode_solution_github_link(github_code_filename: str, language: Language) -> str:
