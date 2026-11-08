@@ -62,17 +62,18 @@ async def process_daily_question_and_stats_update(
     if update_stats:
         await update_all_user_stats(bot, reset_day, reset_week, reset_month)
 
+    # One update for all servers rather than one per server.
+    await Server.find_all().update(
+        Set(
+            {
+                Server.last_update_start: start,
+                Server.last_update_end: datetime.now(UTC),
+            }
+        )
+    )  # type: ignore
+
     enabled_roles_server_count = 0
     async for db_server in Server.all():
-        await Server.find_one(Server.id == db_server.id).update(
-            Set(
-                {
-                    Server.last_update_start: start,
-                    Server.last_update_end: datetime.now(UTC),
-                }
-            )
-        )  # type: ignore
-
         if db_server.id == GLOBAL_LEADERBOARD_ID:
             continue
 

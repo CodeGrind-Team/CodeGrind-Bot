@@ -185,13 +185,13 @@ async def prune_members_and_guilds(bot: "DiscordBot") -> None:
             guild = await bot.fetch_guild(db_server.id)
         except discord.errors.NotFound:
             await db_server.delete()
-            await db_profiles.delete()
+            delete_result = await db_profiles.delete()
 
             bot.logger.info(f"Server deleted | ID: {db_server.id}")
             statsd.increment("db.servers.deleted", tags=["source:pruning"])
             statsd.increment(
                 "db.profiles.deleted",
-                await db_profiles.count(),
+                delete_result.deleted_count if delete_result else 0,
                 tags=["source:pruning"],
             )
             continue
@@ -208,15 +208,13 @@ async def prune_members_and_guilds(bot: "DiscordBot") -> None:
                 )
                 statsd.increment("db.profiles.deleted", tags=["source:pruning"])
 
-    # Delete users that no longer have any profiles.
+    # Delete users that no longer have any profiles. The users with profiles are
+    # fetched in one query rather than one query per user.
+    user_ids_with_profiles = set(
+        await Profile.distinct("user_id", {"server_id": {"$ne": GLOBAL_LEADERBOARD_ID}})
+    )
     async for db_user in User.all():
-        if (
-            await Profile.find_many(
-                Profile.user_id == db_user.id,
-                Profile.server_id != GLOBAL_LEADERBOARD_ID,
-            ).count()
-            == 0
-        ):
+        if db_user.id not in user_ids_with_profiles:
             await delete_user(db_user.id)
             bot.logger.info(f"User deleted | ID: {db_user.id}")
             statsd.increment("db.users.deleted", tags=["source:pruning"])
