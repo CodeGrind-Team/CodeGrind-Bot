@@ -101,12 +101,18 @@ class NeetcodeSolutions:
             return {}
 
         solutions = solutions_full.group(0)
-        solutions = solutions.replace("!0", "true")
+        # Minified booleans: `!0` is true and `!1` is false.
+        solutions = re.sub(r":!0(?=[,}])", ":true", solutions)
+        solutions = re.sub(r":!1(?=[,}])", ":false", solutions)
         solutions = re.sub(r"([{,])(\w+):", r'\1"\2":', solutions)
         solutions_objects: list[dict] = json.loads(solutions)
 
         link_to_solution: dict[str, NeetcodeSolution] = {}
         for solution in solutions_objects:
+            # NeetCode Pro problems have no public solution code.
+            if "code" not in solution:
+                continue
+
             try:
                 title = solution["link"].strip("/")
                 link_to_solution[title] = NeetcodeSolution(
@@ -117,9 +123,9 @@ class NeetcodeSolutions:
                     difficulty=solution["difficulty"],
                     video=solution["video"],
                     code=solution["code"],
-                    blind75="blind75" in solution,
-                    neetcode150="neetcode150" in solution,
-                    neetcode250="neetcode250" in solution,
+                    blind75=solution.get("blind75") is True,
+                    neetcode150=solution.get("neetcode150") is True,
+                    neetcode250=solution.get("neetcode250") is True,
                 )
             except ValueError:
                 self.bot.logger.exception(

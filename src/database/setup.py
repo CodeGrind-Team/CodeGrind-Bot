@@ -1,7 +1,7 @@
 import os
 
 from beanie import init_beanie
-from motor.motor_asyncio import AsyncIOMotorClient
+from pymongo import AsyncMongoClient
 
 from .models import Profile, Record, Server, User
 
@@ -15,7 +15,7 @@ async def initialise_mongodb_connection(
     :param mongodb_uri: The MongoDB URI
     :param global_leaderboard_id: The ID of the global leaderboard server document
     """
-    mongodb_client = AsyncIOMotorClient(mongodb_uri)
+    mongodb_client: AsyncMongoClient = AsyncMongoClient(mongodb_uri)
 
     await init_beanie(
         database=mongodb_client.bot,
