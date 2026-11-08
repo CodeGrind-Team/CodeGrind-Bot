@@ -11,7 +11,73 @@ services:
       GOOGLE_APPLICATION_CREDENTIALS: /app/google_cloud_service_key.json
     volumes:
       - ./google_cloud_service_key.json:/app/google_cloud_service_key.json:ro
+    depends_on:
+      mongo:
+        condition: service_healthy
+        # Only applies when the self-hosted database is enabled (profile "mongo").
+        required: false
     restart: unless-stopped
+
+  # Self-hosted MongoDB. Enable with the "mongo" profile. It is only reachable
+  # from the other containers (no published port). See ops/README.md.
+  mongo:
+    container_name: codegrind-mongo
+    image: mongo:8.0.34-noble
+    entrypoint: ["/ops/entrypoint.sh"]
+    command: ["--auth", "--wiredTigerCacheSizeGB", "1"]
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME:-}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:-}
+      MONGO_BOT_USERNAME: ${MONGO_BOT_USERNAME:-codegrind}
+      MONGO_BOT_PASSWORD: ${MONGO_BOT_PASSWORD:-}
+      MONGO_BACKUP_USERNAME: ${MONGO_BACKUP_USERNAME:-backup}
+      MONGO_BACKUP_PASSWORD: ${MONGO_BACKUP_PASSWORD:-}
+    volumes:
+      - mongo-data:/data/db
+      - ./ops/mongo/entrypoint.sh:/ops/entrypoint.sh:ro
+      - ./ops/mongo/init-users.sh:/docker-entrypoint-initdb.d/init-users.sh:ro
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+    profiles: ["mongo"]
+
+  # Nightly encrypted backups of the self-hosted MongoDB, with retention.
+  # Enable with the "backup" profile. See ops/README.md.
+  backup:
+    container_name: codegrind-backup
+    build:
+      context: ./ops/backup
+    environment:
+      BACKUP_MONGO_URI: mongodb://${MONGO_BACKUP_USERNAME:-backup}:${MONGO_BACKUP_PASSWORD:-}@mongo:27017/?authSource=admin
+      BACKUP_RESTORE_URI: mongodb://${MONGO_ROOT_USERNAME:-}:${MONGO_ROOT_PASSWORD:-}@mongo:27017/?authSource=admin
+      BACKUP_AGE_RECIPIENTS: ${BACKUP_AGE_RECIPIENTS:-}
+      BACKUP_RCLONE_REMOTE: ${BACKUP_RCLONE_REMOTE:-}
+      BACKUP_TIME: ${BACKUP_TIME:-03:00}
+      BACKUP_KEEP_LOCAL: ${BACKUP_KEEP_LOCAL:-7}
+      BACKUP_KEEP_DAILY: ${BACKUP_KEEP_DAILY:-14}
+      BACKUP_KEEP_WEEKLY: ${BACKUP_KEEP_WEEKLY:-8}
+      BACKUP_KEEP_MONTHLY: ${BACKUP_KEEP_MONTHLY:-12}
+      BACKUP_DISCORD_WEBHOOK_URL: ${BACKUP_DISCORD_WEBHOOK_URL:-}
+      RCLONE_CONFIG: /config/rclone.conf
+    volumes:
+      - backup-data:/backups
+      - backup-state:/state
+      - ./ops/backup/config:/config:ro
+    depends_on:
+      mongo:
+        condition: service_healthy
+    healthcheck:
+      # Unhealthy if no backup has succeeded in the last 26 hours.
+      test: ["CMD", "/opt/backup/entrypoint.sh", "health"]
+      interval: 10m
+      timeout: 10s
+      start_period: 30m
+    restart: unless-stopped
+    profiles: ["backup"]
 
   datadog:
     container_name: datadog-agent
@@ -36,3 +102,8 @@ services:
       - /sys/fs/cgroup:/host/sys/fs/cgroup:ro
     restart: unless-stopped
     profiles: [ "datadog" ]
+
+volumes:
+  mongo-data:
+  backup-data:
+  backup-state:

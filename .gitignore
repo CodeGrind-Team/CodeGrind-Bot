@@ -187,3 +187,5 @@ temp/
 
 # MacOS
 .DS_Store
+# Self-hosted MongoDB backups (rclone credentials, never commit)
+ops/backup/config/
