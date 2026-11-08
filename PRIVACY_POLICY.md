@@ -2,7 +2,13 @@
 
 We take your privacy seriously. This section outlines how we handle user data when you use our Discord bot:
 
-- **Data Collection**: Our bot may collect and store certain data necessary for its functionality, such as user IDs, messages, and commands entered.
+- **Data Collection**: Our bot only collects and stores the data necessary for its functionality:
+  - Discord user IDs and server IDs.
+  - Discord display names (server nicknames or usernames), used to display you on leaderboards.
+  - Your linked LeetCode username, your LeetCode statistics, and your leaderboard win counts.
+  - Your per-server preferences (e.g. anonymous mode, whether to show your profile URL).
+
+  We do **not** read or store the content of your messages, and we do not collect presence data (e.g. online status or activities).
 
 - **Data Usage**: The collected data is used solely for the purpose of providing the bot's intended functionality. We do not share this data with third parties.
 
@@ -22,4 +28,4 @@ Please note that while we take precautions to protect user data, no method of da
 
 If you have any questions or concerns about our data handling practices, please reach us in our dedicated CodeGrind Bot server: [CodeGrind Arena](https://discord.com/invite/T4xRgssgu9).
 
-Last updated: 23/05/2024
+Last updated: 08/11/2026
