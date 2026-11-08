@@ -1,6 +1,7 @@
 from typing import Any
 
 import discord
+from beanie.operators import In
 from datadog.dogstatsd.base import statsd
 from discord import Role
 
@@ -138,8 +139,14 @@ async def update_roles(guild: discord.Guild, server_id: int) -> None:
     if not guild.me.guild_permissions.manage_roles:
         return
 
-    async for profile in Profile.find_many(Profile.server_id == server_id):
-        db_user = await User.find_one(User.id == profile.user_id)
+    db_profiles = await Profile.find_many(Profile.server_id == server_id).to_list()
+    db_users = await User.find_many(
+        In(User.id, {profile.user_id for profile in db_profiles})
+    ).to_list()
+    user_id_to_user = {db_user.id: db_user for db_user in db_users}
+
+    for profile in db_profiles:
+        db_user = user_id_to_user.get(profile.user_id)
 
         if not db_user:
             # This shouldn't happen

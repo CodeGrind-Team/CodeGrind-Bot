@@ -1,6 +1,7 @@
 import asyncio
 import io
 import uuid
+from collections import defaultdict
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
@@ -22,7 +23,7 @@ from src.database.models import (
     Submissions,
     User,
 )
-from src.utils.leaderboards import all_users_scores_and_wins
+from src.utils.leaderboards import users_scores
 from src.utils.problems import fetch_problems_solved_and_rank
 
 if TYPE_CHECKING:
@@ -147,16 +148,15 @@ async def update_wins(
         if not reset:
             continue
 
-        users_and_scores = await all_users_scores_and_wins(
-            all_users, period, previous=True
-        )
-        user_to_score[period] = {user.id: score for user, score, _ in users_and_scores}
+        user_to_score[period] = await users_scores(all_users, period, previous=True)
+
+    # Fetch all profiles in one query rather than one query per server.
+    server_to_user_ids: dict[int, list[int]] = defaultdict(list)
+    async for db_profile in Profile.all():
+        server_to_user_ids[db_profile.server_id].append(db_profile.user_id)
 
     async for db_server in Server.all():
-        db_profiles = await Profile.find_many(
-            Profile.server_id == db_server.id
-        ).to_list()
-        user_ids: list[int] = [profile.user_id for profile in db_profiles]
+        user_ids = server_to_user_ids.get(db_server.id, [])
 
         # Could occur for global server with ID 0. Prevents error from occurring when
         # max is used.
@@ -169,11 +169,12 @@ async def update_wins(
                 continue
 
             max_score = max(
-                [
+                (
                     user_to_score[period][user]
                     for user in user_ids
                     if user in user_to_score[period]
-                ]
+                ),
+                default=0,
             )
             # Scores of 0 don't count as a win.
             if max_score <= 0:
